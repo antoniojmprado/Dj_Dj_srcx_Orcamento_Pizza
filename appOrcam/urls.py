@@ -1,0 +1,8 @@
+from django.urls import path
+from appOrcam import views
+
+urlpatterns = [
+    # não necessariamente 'home'. Pode ser index, main whatever...
+    path('', views.home, name='home'),
+
+]

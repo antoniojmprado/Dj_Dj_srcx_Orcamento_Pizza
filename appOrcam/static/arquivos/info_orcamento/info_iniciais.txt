@@ -1,0 +1,186 @@
+O Projeto: Calculadora de Custo de Fabricação (Pizza Box)
+Para substituir um sistema "caixa preta", precisamos abrir a lógica. Para orçar uma caixa de pizza, o seu novo dashboard precisaria considerar variáveis que você já domina bem:
+
+Engenharia do Produto:
+
+Área de papelão (considerando o layout da folha para evitar desperdício/refugo).
+Gramatura e tipo de material (onda simples, dupla, micro-ondulado).
+Custos Diretos e Indiretos:
+Tempo de máquina (Setup e Produção).
+Consumo de tinta (baseado na área de cobertura da impressão).
+Mão de obra e energia (custo por hora/máquina).
+A Lógica de Negócio:
+Margem de contribuição e impostos.
+
+Preço de venda sugerido para diferentes volumes (escalabilidade).
+
+---------------------------------------
+
+O Gemini disse
+É uma excelente iniciativa. Ter uma vitória, por menor que pareça, é o que nos mantém no prumo quando o ambiente ao redor está em "curto-circuito". Sobre sua amiga, você está certíssimo em se proteger; o mau humor dela é o "ruído na linha" que você não precisa absorver agora.
+Ícone do app CSV
+ orcamento_...ixas_pizza 
+CSV
+
+Quanto ao projeto das caixas de pizza, essa é a oportunidade de transformar a "caixa preta" do seu cliente em uma ferramenta de precisão. O fato de o sistema deles ser ruim é o seu maior argumento de venda.
+
+Para te ajudar, cruzei os dados que você passou agora com os parâmetros que tínhamos do Projeto ROCE (mão de obra, encargos e margens). Montei um esboço da lógica de formação de preço para a Pizza 35 (Onda B).
+
+Estrutura do Orçamento (Modelo Sugerido)
+Com base nos 65 funcionários e faturamento que calculamos antes, cheguei a um custo de mão de obra de R$ 17,70/hora por pessoa.
+
+1. Custos Diretos (Pizza 35 - 95x45cm)
+Material (Papelão Onda B): Considerando o preço de mercado para atacado industrial, estimei o custo da chapa em R$ 3,75 por m².
+
+Cálculo: 0,95m × 0,45m × R$3,75 = R$1,60 por caixa.
+
+Tinta (Padrão): R$ 0,20 por unidade.
+
+Mão de Obra Direta (Flexo Xitian): Considerando uma equipe de 3 pessoas na máquina.
+
+Custo da equipe: R$53,10 por hora.
+
+Produção (1000 un/h): R$ 0,05 por unidade.
+
+2. Custos de Setup (O "Pulo do Gato" no lucro)
+O sistema antigo provavelmente ignora que pedidos pequenos são menos lucrativos.
+
+Tempo de Setup: 15 min (0,25h).
+
+Custo de Setup Fixo: 0,25h × R$ 53,10 = R$ 13,27 (independente se produzir 100 ou 10.000 caixas).
+
+-----------------------------------------------------------------------------------------
+
+Simulação de Custo Unitário vs. Quantidade
+Quant       Custo Mat. Custo Tinta  MO          Setup (rateio) Custo Total Unit.
+500 un      R$ 1,60R$  0,20         R$ 0,05R$    0,03           R$ 1,88
+1.000 un    R$ 1,60R$  0,20         R$ 0,05R$    0,01           R$ 1,87
+5.000 un    R$ 1,60R$  0,20         R$ 0,05R$    0,00           R$ 1,86
+
+-----------------------------------------------------------------------
+3. Lógica de Negócio (A Formação do Preço)
+Para chegar no preço que você sugeriu (R$ 2,70), a lógica seria:
+
+Custo Direto: R$ 1,86
+
+Margem de Contribuição (25%): R$ 0,67 (para pagar fixos e dar lucro)
+
+Impostos (Simulado): R$ 0,17 (considerando uma média ponderada entre o "com nota" e "sem nota")
+
+Preço Final: R$ 2,70
+
+-------------------------------------------------------------
+O Gemini disse
+Você não está avançando rápido demais, você está estruturando o produto. O fato de querer usar Django é perfeito, porque ele já traz o "Admin" pronto para você gerenciar essas tabelas de impostos e chapas sem precisar criar telas complexas do zero.
+
+Sim, podemos (e devemos) aproveitar o banco de dados do projeto OEE. No Django, isso é fácil: basta configurar o DATABASES no settings.py e criar as classes de modelos que espelham suas tabelas existentes.
+
+Aqui está um esboço de como estruturaríamos essa lógica de "Caixa Preta" para o Django:
+
+1. Modelagem do Banco de Dados (Models)
+No seu models.py, teríamos três pilares:
+
+Tabela de Insumos (Chapa): Nome, dimensões, custo por m² e tipo (Onda B, C, etc.).
+
+Tabela de Processos (Maquina): Xitian (Flexo), Century, Boca de Sapo. Cada uma com seu custo/hora e se ela inclui ou não o corte (para calcular a perda de processo).
+
+Tabela de Impostos/Financeiro: Onde você buscaria os dados da sua tabela appoee_parametrofinanceiro.
+
+2. A Lógica da "Perda Financeira" (Diferencial do seu Projeto)
+Este é o ponto onde você ganha o cliente. O sistema atual deles não mostra o "custo da ineficiência". No Django, criaríamos um método no seu Model ou uma Service Layer para comparar:
+
+Custo de Promoção de Chapa:
+Se o pedido é para Caixa 30 (0,32 m²) mas o estoque só tem chapa de Caixa 35 (0,41 m²), o sistema calcula:
+
+(0,41−0,32)×Preco do m²=Perda de Material por unidade
+
+Custo de Processo Extra:
+Se a Xitian (que já corta) está ocupada e usarem a Boca de Sapo (que exige uma operação manual extra):
+
+Custo Hora Boca de Sapo×Tempo Adicional=Perda de Processo
+
+---------------------------------------------------
+3. Visualização de Resultados (Views)
+No Django, podemos criar uma lógica de permissões:
+
+Vendedor: Vê apenas o Preço Sugerido (com e sem frete).
+
+Sócio/Gerente: Vê a margem real e o "alerta vermelho" de perda financeira (se a chapa foi promovida ou o processo foi ineficiente).
+
+--------------------------------------------------------------
+Exemplo de Estrutura de Resposta no Django (Context)
+Quando o vendedor clicar em "Calcular", o Django retornaria algo assim para o seu Template:
+
+Campo                       ValorObservação
+Preço Unitário (Ex-Works)   R$ 2,70 Sem frete
+Preço Unitário (CIF)        R$ 2,85 Com frete integrado
+
+Memória de CálculoExibir detalhes...(Botão para o Sócio)
+ALERTA DE PERDA- R$ 0,12 / unUso de Chapa 35 para Caixa 30
+
+----------------------------------------------------------------------------
+Por que essa estrutura é estratégica para você?
+
+Rastreabilidade de Perda: Ao ter chapa_ideal e chapa_utilizada, você consegue gerar um relatório para o sócio dizendo: "Este mês, perdemos R$ X porque não tínhamos a chapa correta em estoque".
+
+Flexibilidade de Processo: Se você selecionar uma máquina que não faz corte (como a Century), podemos adicionar uma lógica na View para somar o custo da "Boca de Sapo" automaticamente.
+
+Facilidade de Atualização: O Admin do Django criará formulários automáticos para o sócio mudar o custo_m2 da chapa. Quando ele alterar lá, os novos orçamentos já saem com o preço corrigido.
+
+----------------------------------------------------------------------------
+Por que isso é um "xeque-mate" estratégico?
+Histórico por Cliente: O sócio poderá filtrar: "Quanto orçamos para o Cliente X nos últimos 6 meses? Quantas vezes usamos chapa errada para ele?".
+
+Relatório de Ociosidade vs. Custo: Você poderá mostrar um gráfico dizendo: "Para manter o operador da Century ocupado por 2 horas, gastamos R$ 400,00 extras de processo que a Xitian faria de graça".
+
+Transparência: O vendedor saberá que o preço subiu porque a fábrica está operando de forma ineficiente naquele dia.
+
+----------------------------------------------------------------------
+
+##### R A T E I O S ####################################
+
+
+ipi, icms, iss, pis, cofins
+
+chapa	                 Área
+Caixa 25 - Chapa 35x70	0,25 m2
+Caixa 30 - Chapa 40x80	0,32 m2
+Caixa 35 - Chapa 45x90	0,41 m2
+Caixa 40 - Chapa 50x100	0,50 m2
+Caixa 45 - Chapa 55x110	0,55 m2
+
+Na verdade, a tabela parametrofinanceiro fornece os dados, entre eles o total de custos fixos e o total de custos variáveis para que a função dashboard_roce, na views.py, faça os cálculos e salve todos os resultados relevantes para na tabela "waterfall" que contém uma lista com a maior parte das saídas do sistema.
+id bigint AI PK 
+fat_bruto
+perda_oee
+fat_real 
+cust_var 
+cust_fixo 
+res_contab 
+perda_disp 
+res_econom 
+perda_perf 
+perda_quali 
+cust_inefic 
+oee_atual 
+socio 
+ativos 
+hr_paralis 
+minutos_mes
+
+Os dados de cust_fixo poderia vir desta tabela que está sempre atualizada pela views.py e ele deverá ser proporcional à participação da nossa máquina objeto de estudo na produção, vide abaixo. Creio que eu não passei esta proporção. Na verdade a unidade fabril tem 3 máquinas que efetivamente produzem o produto a ser vendido e outras auxiliares. São as Flexográfica Xitian, cerca de 70% da produção, Wonder_1 25% e Wonder_2 os restantes 5%. 
+
+Fluxos de produção:
+1) Flexografica Xitian (70% da produção) - em situação normal não depende de outra operação. Portanto, o raciocínio deve ser este, a menos da inclusão das opções Century e Boca de Sapo que você já considerou.
+
+2) Wonder_1 25% e Wonder_2 5% da produção, respectivamente, correspondem, juntas, à 90 % da Century e 10% da Boca de Sapo
+
+Portanto os rateios dos CF seriam os seguintes:
+Produção Flexografica Xitian => 70% * CFtotal 
+Produção Wonder_1 => (25% * CFtotal) + [(Century = 0,90 x 0.25) * CFtotal] + [(Boca de Sapo = 0,10 x 0.25) * CFtotal]
+Produção Wonder_2 => (05% * CFtotal) + [(Century = 0,95 x 0.05) * CFtotal] + [(Boca de Sapo = 0,05 x 0.05) * CFtotal]
+
+Estas proporções podem não ser as mais precisas, portanto é interessante que possamos mudá-las no admin, se for o caso. Serão/seriam campos na tabela que você propos class que é ParametroFinanceiroOEE(models.Model).
+
+Com isso tudo, acredito que simplificaríamos as coisas.
+
