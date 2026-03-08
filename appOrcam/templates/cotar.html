@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block body %}
+
+
+<div class="container">
+    <h2>Inserir Informações</h2>
+     
+    <form action="" method = "POST" >
+
+        {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+        <!-- Campos normais do ModelForm -->
+      
+            {% comment %} {% for field in form %}
+                <div class="mb-3">
+                    
+                           {{ field.label_tag }}: {{ field }}
+                       
+
+                    {% if field.errors %}
+                        <div class="text-danger">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %} {% endcomment %}
+
+            <table>
+                {{ form.as_table }}
+            </table>
+        <hr>
+
+        <input type="submit" value = "registrar">
+    </form>
+
+</div>
+
+{% endblock %}

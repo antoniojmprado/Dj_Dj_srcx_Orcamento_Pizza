@@ -1,4 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from pyexpat.errors import messages
+
+from django.shortcuts import redirect, render, get_object_or_404
+
+from appOrcam.forms import OrcamentoForm
 from .models import Orcamento
 
 # =========================
@@ -17,3 +21,23 @@ def imprimir_orcamento(request, pk):
 
     # Passamos o objeto para o template
     return render(request, 'orcamento_pdf.html', {'orcamento': orcamento})
+
+
+# =========================
+# SALVAR ORÇAMENTO
+# =========================
+
+def form_modelForm(request):
+    if request.method == "POST":
+        form = OrcamentoForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            # salva o orçamento no banco de dados
+            form.save()
+            
+            return redirect('home')
+
+    else:
+        form = OrcamentoForm()
+
+        return render(request, 'cotar.html', { 'form': form })

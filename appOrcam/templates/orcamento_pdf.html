@@ -10,14 +10,16 @@
         <p>Data: {{ orcamento.data_criacao|date:"d/m/Y" }}</p>
     </div>
 
-    <div class="grid">
-        <div>
-            <strong>CLIENTE:</strong> {{ orcamento.cliente }}<br>
-            <strong>PRODUTO:</strong> {{ orcamento.produto_nome }}
-        </div>
-        <div>
-            <strong>QUANTIDADE:</strong> {{ orcamento.quantidade }} caixas
-        </div>
+    <div class="d-flex justify-content-between">
+            <div >
+                    <strong>CLIENTE:</strong> {{ orcamento.cliente }}
+            </div>
+            <div >
+                    <strong>PRODUTO:</strong> {{ orcamento.produto_nome }}
+            </div>
+            <div >
+                    <strong>QUANTIDADE:</strong> {{ orcamento.quantidade }} caixas
+            </div>
     </div>
 
     <table>
@@ -36,19 +38,19 @@
                 <td>R$ {{ orcamento.preco_final_unitario|stringformat:".2f" }}</td>
             </tr>
             <tr>
-                <td>Markup: {{ orcamento.margem_real|stringformat:".0f" }}%</td>
-                <td>Frete unitário incluso: R$ {{ orcamento.custo_frete_unitario|stringformat:".2f" }}/caixa</td>
+                <td><strong>Markup:</strong> {{ orcamento.margem_real|stringformat:".0f" }}%
+                 --------- Frete unitário incluso: R$ {{ orcamento.custo_frete_unitario|stringformat:".2f" }}/caixa</td>
+            </tr>
+            <hr>
+            <tr> 
+                <td>    
+                   <p><strong>Composição do Preço Final:</strong></p>
+                   <p>{{ orcamento.resumo_composicao }}</p>
+                </td>
             </tr>
         </tbody>
     </table>
-
-    <div class="total">
-        VALOR TOTAL: R$ {{ orcamento.total_geral|default:"---" }}
-    </div>
     
-    <p style="margin-top: 50px; font-size: 1.0rem; color: #777;">
-        * {{ orcamento.resumo_composicao }}
-    </p>
 
 {% endblock %}
 

@@ -231,4 +231,6 @@ class Orcamento(models.Model):
                 f"💰 Máquina + Margem: R$ {outros_margem:.2f}"
             )
     resumo_composicao.short_description = 'Detalhamento de Composição'
+    
+
         

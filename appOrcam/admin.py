@@ -1,5 +1,7 @@
+import django
+from django.urls import reverse
 from django.contrib import admin
-
+from django.utils.html import format_html
 from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, Orcamento, Chapa
 
 
@@ -34,9 +36,16 @@ class Custo_freteAdmin(admin.ModelAdmin):
 
 @admin.register(Orcamento)
 class OrcamentoAdmin(admin.ModelAdmin):
+
+    def imprimir_orcamento_btn(self, obj):
+        # Gerar o link para a página de impressão do orçamento
+        url = reverse('imprimir_orcamento', kwargs={'pk': obj.pk})
+        return format_html('<a href="{}" target="_blank">Imprimir PDF</a>', url)
+    
+    
     # 1. Trava os campos para o formulário não sobrescrever o cálculo do Python
-    readonly_fields = ('preco_final_unitario',
-                       'perda_material', 'data_criacao', 'resumo_composicao')
+    readonly_fields = ('preco_final_unitario', 'perda_material',
+                       'data_criacao', 'resumo_composicao', 'imprimir_orcamento_btn')  # Adicione o campo do botão aqui
 
     # 2. Configura o que aparece na 'vitrine' (lista de orçamentos)
     list_display = (
@@ -47,7 +56,8 @@ class OrcamentoAdmin(admin.ModelAdmin):
         'maquina_impressao',
         'preco_final_unitario',
         'perda_material_formatada',  # Usando sua função de formatação aqui
-        'resumo_composicao'
+        'resumo_composicao',
+        'imprimir_orcamento_btn',  # Botão para imprimir o orçamento em PDF
     )
 
     # 3. Mantém seus filtros e busca
@@ -81,3 +91,5 @@ class OrcamentoAdmin(admin.ModelAdmin):
     def perda_material_formatada(self, obj):
         return f"R$ {obj.perda_material:.2f}"
     perda_material_formatada.short_description = 'Perda de Papelão'
+    
+         
