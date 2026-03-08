@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from appOrcam.models import ConfiguracaoRateio, Orcamento, Chapa, ParametrosOrcamento
+from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, Orcamento, Chapa
 
 
 @admin.register(Chapa)
@@ -18,26 +18,36 @@ class ConfiguracaoRateioAdmin(admin.ModelAdmin):
     list_editable = ('producao_un_hora',)
     
 
-@admin.register(ParametrosOrcamento)
-class ParametrosOrcamentoAdmin(admin.ModelAdmin):
+@admin.register(Custo_tinta)
+class Custo_tintaAdmin(admin.ModelAdmin):
     # Isso impede que você crie vários registros; você só edita um.
     def has_add_permission(self, request):
-        return not ParametrosOrcamento.objects.exists()
+        return not Custo_tinta.objects.exists()
+    
+
+@admin.register(Custo_frete)
+class Custo_freteAdmin(admin.ModelAdmin):
+    # Isso impede que você crie vários registros; você só edita um.
+    def has_add_permission(self, request):
+        return not Custo_frete.objects.exists()
+
 
 @admin.register(Orcamento)
 class OrcamentoAdmin(admin.ModelAdmin):
     # 1. Trava os campos para o formulário não sobrescrever o cálculo do Python
     readonly_fields = ('preco_final_unitario',
-                       'perda_material', 'data_criacao')
+                       'perda_material', 'data_criacao', 'resumo_composicao')
 
     # 2. Configura o que aparece na 'vitrine' (lista de orçamentos)
     list_display = (
+        'id',
         'cliente',
         'produto_nome',
         'quantidade',
         'maquina_impressao',
         'preco_final_unitario',
-        'perda_material_formatada'  # Usando sua função de formatação aqui
+        'perda_material_formatada',  # Usando sua função de formatação aqui
+        'resumo_composicao'
     )
 
     # 3. Mantém seus filtros e busca
@@ -57,8 +67,11 @@ class OrcamentoAdmin(admin.ModelAdmin):
         ('Configuração de Produção', {
             'fields': ('chapa_ideal', 'chapa_utilizada', 'maquina_impressao', 'maquina_corte', 'margem_real')
         }),
+        ('Valor do frete por unidade ("Frete por Unidade" no calculador de Fretes)', {
+            'fields': ('custo_frete_unitario',)
+        }),
         ('Resultados (Calculados Automaticamente)', {
-            'fields': ('preco_final_unitario', 'perda_material')
+            'fields': ('preco_final_unitario', 'perda_material', 'resumo_composicao')
         }),
     )
 

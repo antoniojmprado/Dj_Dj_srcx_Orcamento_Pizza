@@ -184,3 +184,7 @@ Estas proporções podem não ser as mais precisas, portanto é interessante que
 
 Com isso tudo, acredito que simplificaríamos as coisas.
 
+Modifiquei o nome da tabela ParametrosOrcamento para apporcam_custo_tinta. Ficou mais intuitivo.
+
+Incluí a tabela Custo_frete
+

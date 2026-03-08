@@ -1,0 +1,50 @@
+Aqui está o seu To-Do List e sugestões para os Próximos Passos em 07/03/2026
+
+📋 To-Do List: Próximos Passos
+OK • Refino dos Insumos: Ajustar o campo de Custo de Tinta (decidir se fica fixo em R$ 0,20 ou se baixamos para R$ 0,10 conforme a realidade).
+Resp: Melhor não deixá-lo fixo, mas R$ 0,20/unidade como default, podendo ser alterado.
+
+• Painel de Visibilidade: Criar no Admin um resumo que mostre a porcentagem de cada custo (Quanto é papelão? Quanto é máquina? Quanto é lucro?).
+Resp: Seria interessante.
+
+OK • Campo de Frete: Adicionar o custo de logística nos Parâmetros Globais para não esquecer do diesel na entrega.
+Resp: Sim, embora o orçamentista não calcule os fretes. A meu ver isto deveria ser alterado. Hoje quem calcula é o(a) vendedor(a)
+
+• Simulador de Velocidade: Criar um campo "Opcional" no Orçamento para testar: "E se eu rodar essa máquina a 800 un/h em vez de 600? Quanto cai o preço?".
+
+• Relatório PDF: Gerar uma "Folha de Rosto" simples para você imprimir ou mandar para o cliente.
+Resp: Seria a última coisa a fazer.
+
+• Template para inserir os dados e fazer os cálculos sem precisar do Admin.
+
+• Visualização de Resumo no Admin? Algo que mostrasse assim logo abaixo do preço:
+
+Análise do Preço:
+
+Papelão: R$ 1,18 (40%)
+
+Máquina: R$ 1,09 (37%)
+
+Tinta: R$ 0,20 (7%)
+
+Margem: R$ 0,48 (16%)
+
+Ponto de Equilíbrio: R$ 2,47 (Preço mínimo sem lucro)
+
+
+Bom descanso! Quando você voltar, estaremos prontos para transformar esses R$ 2,13 e R$ 2,95 na proposta comercial perfeita. Até mais tarde!
+
+###############################################################################
+• Horas de Produção - entrada automática aparecendo no relatório h/turno, turnos/dia etc.
+    MaquinaFinancasOEE 378.40
+    Exemplo Flexo:
+    8.8 h/turno x 2 turno/dia x 5 dia/sem x 4.3 sem/mes = 378.4 h/mes ou 22.704min
+###############################################################################
+
+• Quando escolher um outro papel, este não pode ter área menor que o necessário...
+
+• Máquinas de Corte: Century e Boca de Sapo
+
+• Modifiquei o nome da tabela ParametrosOrcamento para apporcam_custo_tinta coloquei o valor default R$ 0.20/unidade. Ficou mais intuitivo.
+
+• Incluí a tabela Custo_frete coloquei o valor default R$ 0.30/unidade

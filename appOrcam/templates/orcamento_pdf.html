@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block body %}
+
+<div class="header">
+        <h1>ORÇAMENTO #{{ orcamento.id }}</h1>
+        <p>Data: {{ orcamento.data_criacao|date:"d/m/Y" }}</p>
+    </div>
+
+    <div class="grid">
+        <div>
+            <strong>CLIENTE:</strong> {{ orcamento.cliente }}<br>
+            <strong>PRODUTO:</strong> {{ orcamento.produto_nome }}
+        </div>
+        <div>
+            <strong>QUANTIDADE:</strong> {{ orcamento.quantidade }} caixas
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Descrição do Produto</th>
+                <th>Impressora</th>
+                <th>Valor Unitário</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr>
+                <td>Caixa de Pizza (Chapa: {{ orcamento.chapa_utilizada }})</td>
+                <td>{{ orcamento.maquina_impressao }}</td>
+                <td>R$ {{ orcamento.preco_final_unitario|stringformat:".2f" }}</td>
+            </tr>
+            <tr>
+                <td>Markup: {{ orcamento.margem_real|stringformat:".0f" }}%</td>
+                <td>Frete unitário incluso: R$ {{ orcamento.custo_frete_unitario|stringformat:".2f" }}/caixa</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="total">
+        VALOR TOTAL: R$ {{ orcamento.total_geral|default:"---" }}
+    </div>
+    
+    <p style="margin-top: 50px; font-size: 1.0rem; color: #777;">
+        * {{ orcamento.resumo_composicao }}
+    </p>
+
+{% endblock %}
+
