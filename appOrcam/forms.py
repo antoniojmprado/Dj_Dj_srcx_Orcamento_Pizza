@@ -1,12 +1,30 @@
-from django import forms                 
-from django.core.exceptions import ValidationError
-from django.utils import timezone
+from django import forms
+from django.apps import apps
+from .models import Orcamento
 
 
 class OrcamentoForm(forms.ModelForm):
-
-    class Meta:  # Em vez de passar a classe diretamente, você pode importar aqui dentro
-        from .models import Orcamento
+    class Meta:
         model = Orcamento
-        fields = "__all__"
+        fields = [
+            'cliente', 'produto_nome', 'quantidade',
+            'maquina_impressao', 'maquina_corte',
+            'chapa_ideal', 'chapa_utilizada', 
+            'margem_real','custo_frete_unitario'
+        ]
 
+    def __init__(self, *args, **kwargs):
+        super(OrcamentoForm, self).__init__(*args, **kwargs)
+
+        # Filtro de Segurança: Só mostra máquinas que imprimem (1 no MySQL)
+        try:
+            # Pegamos o modelo do appOEE de forma dinâmica
+            Maquina = apps.get_model('appOEE', 'Maquina')
+
+            # Aplicamos o filtro booleano (True = 1)
+            # Isso vai tirar Century e Boca de Sapo da lista de impressão automaticamente
+            self.fields['maquina_impressao'].queryset = Maquina.objects.filter(impressora=True)
+            self.fields['maquina_corte'].queryset = Maquina.objects.filter(corte=True)
+        except Exception:
+            # Se algo falhar na inicialização, o formulário não trava o site
+            pass

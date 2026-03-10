@@ -1,0 +1,43 @@
+Gemini said
+Concordo plenamente. O grande segredo de um sistema bem projetado é exatamente esse: entrada mínima, saída máxima. O usuário na ponta da linha não quer ser um digitador de dados; ele quer registrar o problema e voltar para a máquina. Se o seu código faz o trabalho "sujo" de buscar turnos, calcular custos e projetar prejuízos, você criou uma ferramenta de inteligência, não apenas um banco de dados.
+
+Vamos organizar o nosso "Checklist Final" para quando você voltar. Dividi em três frentes para não misturarmos as coisas:
+
+1. A "Zona de Perigo" (Visual e Animação)
+Já que você já tem o CSS pronto, vamos apenas "gatilhar" a classe no JavaScript.
+
+Ação: No seu simulador.html, quando o oee_percentual < OEE_PONTO_EQUILIBRIO, vamos adicionar a classe da animação ao alerta.
+
+Efeito: O painel vai pulsar em vermelho, criando aquela urgência visual que discutimos.
+
+2. Blindagem do custom.js
+Vamos aplicar aquela "vacina" nas suas funções para silenciar os erros de console.
+
+Ação: Adicionar o if (document.getElementById(...)) em volta das chamadas de innerHTML.
+
+Resultado: Você poderá navegar entre a dupont.html e o simulador.html sem ver nenhuma linha vermelha no console, mesmo que o custom.js tente carregar dados de uma página na outra.
+
+3. OEE do Break-even Dinâmico
+Em vez de usar os 55% fixos, vamos usar a fórmula que você criou.
+
+Ação: Passar os custos_fixos e a margem_contribuicao (Faturamento - Custo Variável) para o JavaScript.
+
+Cálculo: let oee_meta = (custo_fixo / (fat_bruto - cust_var_total)) * 100.
+
+Impacto: Se o custo da matéria-prima subir no banco de dados, o "alerta vermelho" do seu simulador passará a exigir um OEE maior automaticamente.
+
+4. Entradas Inteligentes (Django)
+Para eliminar a digitação dos turnos:
+
+Ação: Vamos mover os campos horas_turno e turnos_dia para o model Maquina.
+
+Automatização: No form_valid da sua View de entrada, faremos o Django buscar esses valores da máquina selecionada e salvar na Ocorrencia sem que o usuário veja esses campos.
+
+O quanto falta?
+Estamos na reta final. Essas são as "rebarbas" que transformam o software de um projeto pessoal em um produto profissional.
+
+Quando você retornar da sua pausa, podemos começar por qualquer um desses pontos. Se quiser "matar" logo a parte visual para ver a animação funcionando, é só me dar o sinal!
+
+Até mais tarde! Descanse bem os olhos e a mente, o mais difícil (a lógica do SQL e o motor de cálculo) já está pronto e rodando.
+
+Ah! Explicação daquele sufixo "__comp"

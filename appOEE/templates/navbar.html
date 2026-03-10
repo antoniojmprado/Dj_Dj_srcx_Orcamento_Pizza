@@ -1,0 +1,83 @@
+{% load static %}
+
+<style>
+    li a.nav-link{
+        color:white;
+    }
+
+    li a.nav-link.hover{
+        color:yellow;
+    }
+
+    .nav-link{
+        font-size: 30px;
+    }
+</style>
+   
+
+<div class="jumbotron  bg-dark">
+
+    <nav class="navbar navbar-expand-lg navbar-dark" id = "acesso_navBar">    
+        <div class="container">   
+            <a class="navbar-brand" style="text-align: center;" href="https://margraphics.com.br/" target="_blank">
+                <img src="{% static 'images/logoatualizada/sem fundo.png' %}" alt="" width='150' >
+            </a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="http://127.0.0.1:8000/admin/">Admin</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'apresentacao' %}">Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'cadastra_ocorrencia' %}">Registrar</a>
+                    </li>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'relatorio_ocorrencias' %}">Listar</a> 
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page"  href="{% url 'detalhe_paralisacoes' %}">Financ</a> 
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link  active" aria-current="page" href="{% url 'dashboard_roce' %}">
+                            <i class="fas fa-chart-line"></i>ROCE
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page"  href="{% url 'simulador' %}">Simular</a> 
+                    </li>
+                    <li class="nav-item">
+                         <a class="nav-link" href="https://evocon.com/oee-software-roi-calculator/" target="_blank">ROI</a>
+                    </li>
+                </ul>
+            </div>   
+            <a class="nav-link" href="{% static  'arquivos\\info_OEE\\Memoria_de_calculo.txt' %}" target="_blank">Abrir TXT</a>     
+        </div> 
+    </nav>  
+            <div class="row" style="text-align: center;"  id="nav_bar_dias"></div>     
+</div>                             
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Ranking OEE</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id = "modal_disp">
+            <canvas id="rankingChart"></canvas>
+        </div>                 
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

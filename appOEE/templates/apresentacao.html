@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}Home{% endblock %}
+
+
+
+{% block body %}
+
+
+<div class="container">
+    <div class="d-flex mt-4" style="justify-content: center;">
+        <h2 ><u>Bem-vindo ao Sistema de Monitoramento OEE</u>
+    </div> 
+    <hr>
+    <h5>
+        <p><strong>OEE</strong> (Overall Equipment Effectiveness, ou Eficiência Global dos Equipamentos) é um indicador-chave de desempenho industrial que mede o aproveitamento total de uma máquina ou linhas de produção, combinando três pilares: </p>
+
+        <p><b>Disponibilidade</b> (tempo de máquina funcionando vs. planejado). </p>
+        <p><b>Performance</b> (velocidade real vs. programada). </p>
+        <p><b>Qualidade</b> (produtos bons vs. total produzido). 
+        <p>Revela desperdícios na produção com paradas, lentidão, defeitos, embasando decisões para tornar a operação mais eficiente e lucrativa.</p>   
+    </h5>
+    <img src="{% static 'images/diagrama_OEE.png' %}" alt="" width="100%" height="40%">
+</div>
+
+<script>
+    window.onload = function(event){ 
+        fetch("{% url 'oee_acum_maquina' %}")
+            .then(res => res.json())
+            .then(resp => {
+                console.log(resp.mensagem);
+            });
+    }    
+</script>
+
+{% endblock %}
+

@@ -75,7 +75,7 @@ class OrcamentoAdmin(admin.ModelAdmin):
             'fields': ('cliente', 'produto_nome', 'quantidade')
         }),
         ('Configuração de Produção', {
-            'fields': ('chapa_ideal', 'chapa_utilizada', 'maquina_impressao', 'maquina_corte', 'margem_real')
+            'fields': ('chapa_ideal', 'chapa_utilizada', 'impressora', 'corte', 'margem_real')
         }),
         ('Valor do frete por unidade ("Frete por Unidade" no calculador de Fretes)', {
             'fields': ('custo_frete_unitario',)

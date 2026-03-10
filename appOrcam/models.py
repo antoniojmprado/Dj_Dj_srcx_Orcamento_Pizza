@@ -1,5 +1,8 @@
 from django.db import models
 from decimal import Decimal 
+from django.core.validators import MinValueValidator
+from django.forms import CharField
+from appOEE.models import Maquina  # Importe o modelo correto
 
 class Chapa(models.Model):
     nome = models.CharField(max_length=100)
@@ -29,11 +32,11 @@ class MaquinaOEE(models.Model):
 
     class Meta:
         db_table = 'maquina'
-        managed = False # Isso diz ao Django para NÃO tentar criar ou alterar essa tabela, apenas ler os dados existentes.
+        # Isso diz ao Django para NÃO tentar criar ou alterar essa tabela, apenas ler os dados existentes.
+        managed = False
 
     def __str__(self):
         return self.nome or "Máquina sem nome"
-
 
 class WaterfallOEE(models.Model):
     """
@@ -57,6 +60,20 @@ class MaquinaFinancasOEE(models.Model):
     # Outros campos caso queira usar no futuro para conferência
     minutos_mes = models.DecimalField(max_digits=12, decimal_places=2)
     horas_mes = models.DecimalField(max_digits=7, decimal_places=2)
+    
+    # velocidade de produção nominal da máquina (unidades por hora), para cálculo do tempo unitário
+    # baseei-me nos vídeos que gravei durante o tempo que estive na fábrica, mas isso pode ser ajustado conforme a realidade de cada máquina
+    producao_nominal_hora = models.PositiveIntegerField(
+        default=0,
+        help_text="Capacidade máxima de produção (unidades/hora)"
+    )
+
+    @property
+    def tempo_unitario_minutos(self):
+        """Calcula quanto tempo (em minutos) cada unidade leva na máquina"""
+        if self.producao_nominal_hora > 0:
+            return 60 / self.producao_nominal_hora
+        return 0
 
     class Meta:
         managed = False
@@ -74,7 +91,7 @@ class ConfiguracaoRateio(models.Model): # participacao da maquina na producao to
     custo_hora_operacional = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
-        return f"Configuração: {self.maquina.nome}"
+        return self.nome
 
 
 class Custo_tinta(models.Model):
@@ -102,135 +119,160 @@ class Custo_frete(models.Model):
     class Meta:
         verbose_name = "Custo Frete" 
 
-
+        
 class Orcamento(models.Model):
+    # ... (seus campos iniciais permanecem iguais)
     cliente = models.CharField(max_length=255, db_index=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
     produto_nome = models.CharField(max_length=100, default="Caixa de Pizza 35")
     quantidade = models.PositiveIntegerField()
-
     chapa_ideal = models.ForeignKey(Chapa, on_delete=models.PROTECT, related_name='ideal_set')
     chapa_utilizada = models.ForeignKey(Chapa, on_delete=models.PROTECT, related_name='real_set')
+    maquina_impressao = models.ForeignKey(Maquina, on_delete=models.PROTECT, related_name='orcamentos_impressao')
+    maquina_corte = models.ForeignKey(Maquina, on_delete=models.SET_NULL, null=True, blank=True, related_name='orcamentos_corte')
 
-    maquina_impressao = models.ForeignKey(MaquinaOEE, on_delete=models.PROTECT, related_name='orcamentos_impressao')
-    usou_corte_externo = models.BooleanField(default=False)
-    maquina_corte = models.ForeignKey(MaquinaOEE, on_delete=models.SET_NULL, null=True, blank=True, related_name='orcamentos_corte')
+    # Campos de Custo (Decimal)
+    custo_impressao = models.DecimalField(max_digits=10, decimal_places=4, default=0)
+    custo_corte = models.DecimalField(max_digits=10, decimal_places=4, default=0)
+    # Novo campo para o total de máquinas
+    custo_maquinas = models.DecimalField( max_digits=10, decimal_places=4, default=0)
 
     preco_final_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     perda_material = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     margem_real = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-
-    def calcular_custo_fixo_maquina(self):
-        try:
-            dados_oee = WaterfallOEE.objects.latest('id')
-            total_cf = dados_oee.cust_fixo
-            rateio = ConfiguracaoRateio.objects.get(maquina=self.maquina_impressao)
-
-            # Soma os percentuais da máquina + extras (Century/Boca Sapo)
-            perc_total = rateio.percentual_producao + rateio.percentual_century + rateio.percentual_boca_sapo
-
-            return (perc_total / 100) * total_cf
-        except:
-            return 0
-        
-    custo_frete_unitario = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0.30,
-        verbose_name="Frete por Unidade"
-    )
-    
+    custo_frete_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0.30, verbose_name="Frete por Unidade")
 
     def save(self, *args, **kwargs):
         # 1. BUSCA PARÂMETROS GLOBAIS
-        # Pega o primeiro registro da tabela. Se não existir, usa 0.20 como padrão.
         params = Custo_tinta.objects.first()
-        custo_tinta_unitario = params.custo_tinta_unitario if params else Decimal('0.20')
-        
+        custo_tinta_unitario = params.custo_tinta_unitario if params else Decimal(
+            '0.20')
+
         param_frete = Custo_frete.objects.first()
-        custo_frete_unitario = param_frete.custo_frete_unitario if param_frete else Decimal('0.30')
+        self.custo_frete_unitario = param_frete.custo_frete_unitario if param_frete else Decimal(
+            '0.30')
 
         # 2. CUSTO DO MATERIAL (Papelão + Tinta)
-        custo_papelao_m2 = Decimal(str(self.chapa_utilizada.custo_m2))
-        custo_material_unitario = self.chapa_utilizada.area_m2 * custo_papelao_m2 + custo_tinta_unitario
-
-        # 3. CUSTO DE MÁQUINAS (Cálculo OEE)
-        custo_maquinas = Decimal('0.00')
-        
-        # 4. PEGAMOS AS ÁREAS (certificando que são Decimais)
         area_utilizada = Decimal(str(self.chapa_utilizada.area_m2))
         area_ideal = Decimal(str(self.chapa_ideal.area_m2))
-        custo_m2 = Decimal(str(self.chapa_utilizada.custo_m2))
+        custo_m2_papelao = Decimal(str(self.chapa_utilizada.custo_m2))
 
-        # 5. PERDA FINANCEIRA NA 'PROMOÇÃO DE CHAPA' (A sobra de papelão que você pagou e não usou)
+        custo_material_unitario = (area_utilizada * custo_m2_papelao) + custo_tinta_unitario
+
+        # 3. PERDA FINANCEIRA
         if area_utilizada > area_ideal:
-            self.perda_material = (area_utilizada - area_ideal) * custo_m2
+            self.perda_material = (area_utilizada - area_ideal) * custo_m2_papelao
         else:
             self.perda_material = Decimal('0.00')
-            
-        print(f"DEBUG PERDA: Utilizada {area_utilizada} - Ideal {area_ideal} = Perda R$ {self.perda_material}")
-        
+
+        # 4. CUSTO DE MÁQUINAS (Cálculo OEE)
+        self.custo_impressao = Decimal('0.0000')
+        self.custo_corte = Decimal('0.0000')
+
         try:
-            config = ConfiguracaoRateio.objects.get(maquina=self.maquina_impressao)
-            velocidade = config.producao_un_hora if config.producao_un_hora > 0 else 1000
-            tempo_unitario = Decimal(60) / Decimal(str(velocidade)) # tempo em minutos para produzir 1 unidade
-
-            # Impressora e Seladora
+            # Impressão + Seladora (ID 11)
             for m_id in [self.maquina_impressao.id, 11]:
-                fin = MaquinaFinancasOEE.objects.filter(maquina_id=m_id).first()
-                if fin:
-                    custo_maquinas += (tempo_unitario * fin.custo_minuto)
+                fin = MaquinaFinancasOEE.objects.filter(
+                    maquina_id=m_id).first()
+                if fin and fin.producao_nominal_hora > 0:
+                    tempo_unit = Decimal(
+                        '60') / Decimal(str(fin.producao_nominal_hora))
+                    self.custo_impressao += tempo_unit * \
+                        Decimal(str(fin.custo_minuto))
 
-            # Máquina de Corte Auxiliar (Century/Boca de Sapo)
+            # Corte
             if self.maquina_corte:
-                fin_corte = MaquinaFinancasOEE.objects.filter(maquina_id=self.maquina_corte.id).first()
-                if fin_corte:
-                    custo_maquinas += (tempo_unitario * fin_corte.custo_minuto)
-        except Exception as e:
-            print(f"Erro no tempo: {e}")
+                fin_corte = MaquinaFinancasOEE.objects.filter(
+                    maquina_id=self.maquina_corte.id).first()
+                if fin_corte and fin_corte.producao_nominal_hora > 0:
+                    tempo_corte = Decimal('60') / Decimal(str(fin_corte.producao_nominal_hora))
+                    self.custo_corte = tempo_corte *  Decimal(str(fin_corte.custo_minuto))
 
-            # 4. PREÇO FINAL E MARGEM
-        custo_total = Decimal(str(custo_material_unitario)) + custo_maquinas + custo_frete_unitario
+            self.custo_maquinas = self.custo_impressao + self.custo_corte
+
+        except Exception as e:
+            print(f"Erro máquinas: {e}")
+
+        # 5. PREÇO FINAL COM MARGEM (Markup Inverso)
+        # IMPORTANTE: Somamos todos os custos reais calculados
+        custo_total_base = custo_material_unitario + self.custo_maquinas + self.custo_frete_unitario
+
         margem = self.margem_real if self.margem_real >= 1 else self.margem_real * 100
-        fator_margem = (Decimal(100) - Decimal(str(margem))) / Decimal(100)
+        fator_margem = (Decimal('100') - Decimal(str(margem))) / Decimal('100')
 
         if fator_margem > 0:
-            self.preco_final_unitario = custo_total / fator_margem
+            self.preco_final_unitario = custo_total_base / fator_margem
         else:
-            self.preco_final_unitario = custo_total * Decimal('1.30')
+            self.preco_final_unitario = custo_total_base * Decimal('1.30')
 
         super().save(*args, **kwargs)
-        
-    def __str__(self):
-        return f"{self.cliente} - {self.produto_nome}"
+    '''
+    Detalhe técnico: variáveis definidas dentro de um método (como papelao) não ficam disponíveis automaticamente no template HTML (PDF). O Django só enxerga o que é um campo do modelo ou um método/propriedade que ele possa chamar.
+
+    Para que você possa usar esse valor no seu orcamento_pdf.html de forma limpa, sem precisar repetir o cálculo na View, a melhor estratégia é transformar esse cálculo em uma @property. Assim, você pode acessar {{ orcamento.custo_papelao_unitario }} diretamente no template, e o Django vai chamar a função para calcular o valor na hora. Isso mantém seu código organizado e evita duplicação de lógica.
+    '''
     
-    # Função para mostrar a composição do preço final no admin
+    @property
+    def custo_papelao_unitario(self):
+        """Calcula o custo base da chapa (área x custo_m2)"""
+        return Decimal(str(self.chapa_utilizada.area_m2)) * Decimal(str(self.chapa_utilizada.custo_m2))
 
+    @property
+    def custo_tinta_padrao(self):
+        """Retorna o custo de tinta para o template"""
+        params = Custo_tinta.objects.first()
+        return params.custo_tinta_unitario if params else Decimal('0.20')
+    
+    @property
+    def custo_total_sem_margem(self):
+        """Soma de todos os custos reais (Material + Máquinas + Frete)"""
+        return (self.custo_papelao_unitario +
+                self.custo_tinta_padrao +
+                self.perda_material +
+                self.custo_maquinas +
+                self.custo_frete_unitario)
 
+    @property
+    def valor_total_pedido(self):
+        """Preço Final Unitário x Quantidade"""
+        return self.preco_final_unitario * self.quantidade
+    
+    @property
+    def subtotal_materiais(self):
+        """Soma: Papelão + Perda + Tinta"""
+        return self.custo_papelao_unitario + self.perda_material + self.custo_tinta_padrao
+
+    @property
+    def subtotal_processos(self):
+        """Soma: Impressão + Corte"""
+        return self.custo_impressao + self.custo_corte
+
+    @property
+    def custo_total_sem_margem(self):
+        """Soma de todos os custos (Materiais + Processos + Logística)"""
+        return self.subtotal_materiais + self.subtotal_processos + self.custo_frete_unitario
+
+    @property
+    def margem_percentual_display(self):
+        """Garante que a margem apareça como 20 em vez de 0.20 no PDF"""
+        return self.margem_real * 100 if self.margem_real < 1 else self.margem_real
+    
     def resumo_composicao(self):
-            if not self.preco_final_unitario:
-                return "Salve o orçamento para gerar o resumo."
-
-            # 1. Valores de custo
-            papelao = Decimal(str(self.chapa_utilizada.area_m2)) * \
-                            Decimal(str(self.chapa_utilizada.custo_m2))
-            frete = self.custo_frete_unitario
-
-            from appOrcam.models import Custo_tinta
-            t_obj = Custo_tinta.objects.first()
-            tinta = t_obj.custo_tinta_unitario if t_obj else Decimal('0.20')
-
-            # 2. Cálculo do que sobra (Máquina + Margem)
-            # Isso ajuda a ver o "peso" do lucro e da operação no preço de R$ 2,75
-            outros_margem = self.preco_final_unitario - (papelao + tinta + frete)
-
-            return (
-                f"📦 Papelão: R$ {papelao:.2f} | "
-                f"🎨 Tinta: R$ {tinta:.2f} | "
-                f"🚚 Frete: R$ {frete:.2f} | "
-                f"💰 Máquina + Margem: R$ {outros_margem:.2f}"
-            )
-    resumo_composicao.short_description = 'Detalhamento de Composição'
-    
-
+        if not self.preco_final_unitario:
+            return "Salve para gerar o resumo."
         
+        papelao = Decimal(str(self.chapa_utilizada.area_m2)) * Decimal(str(self.chapa_utilizada.custo_m2))
+
+        # Ajustei o cálculo da margem para ser o lucro bruto real
+        lucro_bruto = self.preco_final_unitario - (papelao + Decimal('0.20') +
+             self.custo_frete_unitario + self.custo_maquinas)
+
+        return (
+            f"📦 Papelão: R$ {papelao:.2f} | "
+            f"🎨 Tinta: R$ 0.20 | "
+            f"⚙️ Impressão: R$ {self.custo_impressao:.2f} | "
+            f"✂️ Corte: R$ {self.custo_corte:.2f} | "
+            f"🚚 Frete: R$ {self.custo_frete_unitario:.2f} | "
+            f"💰 Margem Bruta: R$ {lucro_bruto:.2f}"
+        )
+    resumo_composicao.short_description = 'Detalhamento de Composição'

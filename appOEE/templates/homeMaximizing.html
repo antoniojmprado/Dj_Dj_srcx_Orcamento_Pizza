@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}OEE Cálculo{% endblock %}
+
+
+
+{% block body %}
+
+
+<div class="container">
+    <section onmouseover="fcaoMouseOver()">
+
+
+            <div class="maxOutput" >
+                <h2><u>Maximizing output</u><br>ROI of OEE software for production machine or <span class="redish">line working at maximum output</span>
+                </h2><hr>
+                <h3> The growth in OEE can have a higher impact than just hourly running costs or the general profit margin applied to the extra volume.</h3>
+            </div>
+    </section>
+
+    <div class="volta"></div>
+
+    <section><!-- OEE CALCULATION -->
+        <div class="row"><br><h1>OEE Calculation</h1>
+            <div class="col">
+                <fieldset>
+                    <legend><h3>Availability</h3></legend>
+                    <div class="col">
+                        <input type="range" id="avail" name="avail" min="0" max="100" ><br>  
+                        <div><h2 id="availValue"></h2></div><br>              
+                    </div>
+                </fieldset>
+            </div>
+            <div class="col">
+                <fieldset>
+                    <div class="col">
+                        <legend><h3>disponibilidade</h3></legend>
+                        <input type="range" id="perform" name="perform" min="0" max="100"  ><br>   
+                        <div><h2 id="performValue"></h2><br></div>              
+                    </div>
+                </fieldset>
+            </div>
+            <div class="col">
+                <fieldset>
+                    <legend><h3>Quality</h3></legend>
+                    <div class="col">
+                        <input type="range" id="quali" name="quali" min="0" max="100"  ><br>
+                        <div><h2 id="qualiValue"></h2><br></div>                 
+                    </div>
+                </fieldset>
+            </div>
+            <div class="col">
+                <fieldset>
+                    <legend><h3>OEE</h3></legend>
+                    <div class="col">
+                        <div><h2 id="oeeValue"></h2><br></div>                 
+                    </div>
+                </fieldset>
+            </div>
+        </div>      
+    </section>
+    <hr>
+    <section><!-- TURNOVER VARIATION -->
+        <fieldset>
+            <legend style="text-align:start"><h1>Turnover variation due to OEE changing</h1></legend>
+            <div class="row">
+                <div class="col">
+                    <fieldset>
+                        <legend><h3>Yearly Turnover</h3><h6>(actual figures)</h6></legend>
+                        <div class="col">
+                            <input type="range" id="turnOver" name="turnOver" min="0" max="200000000"  ><br>  
+                            <div><h2 id="turnOverValue"></h2></div><br>              
+                        </div>
+                    </fieldset>
+                </div>    
+                <div class="col">
+                    <fieldset>
+                        <legend><h3>(Variable Costs/Net Profit) (%)</h3><h6>(material, energy, maintenance/unit in prop. to net sales)</h6></legend>
+                        <div class="col">
+                            <input type="range" id="variableCost" name="variableCost" min="0" max="100"  ><br>  
+                            <div><h2 id="variableCostValue"></h2></div><br>              
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="col">
+                    <fieldset>
+                        <legend><h3>$ Variable Costs</h3><h6>(material, energy, maintenance/unit within the net sales)</h6></legend>
+                        <div class="col">
+                            <input type="range" id="variableTot" name="variableTot" min="0" max="100"  ><br>  
+                            <div><h2 id="variableTotValue"></h2></div><br>              
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+            <div class="row" style="margin-top:15px">
+                <div class="col">
+                    <fieldset>
+                        <legend><h3>OEE Growth %</h3></legend>
+                        <div class="col">
+                            <input type="range" id="oeeGrowth" name="oeeGrowth" min="0" max="50"  ><br>  
+                            <div><h2 id="oeeGrowthValue"></h2><br></div>       
+                        </div>
+                    </fieldset>                        
+                </div>
+                <div class="col">
+                    <fieldset>
+                        <legend><h3>New Yearly $ Turnover</h3><h6>(with the Growth in OEE)</h6></legend><hr>
+                        <div class="col">
+                            <div><h2 id="newTurnOverValue"></h2></div> 
+                        </div>
+                    </fieldset>
+                </div> 
+            </div>
+        </fieldset>
+    </section>
+    <hr>
+    <section><!-- ROI CALCULATION -->
+        <fieldset>
+            <legend style="text-align:start"><h1>Value Created - 1st Year</h1></legend>
+            <div class="row"style="margin-top:15px">
+                <div class="col">
+                    <fieldset>
+                        <legend><h3>$ Additional Variable Costs</h3><h6>(after growth in OEE)</h6></legend>
+                        <div class="col">
+                            <div><h2 id="additionalVarCost"></h2></div><br>              
+                        </div>
+                    </fieldset>
+                </div>   
+                <div class="col">
+                    <fieldset>
+                        <legend><h3>$ Additional Value Created</h3><h6>(New turnover - variable costs updated)</h6></legend>
+                        <div class="col">
+                            <div><h2 id="valueCreated"></h2><br></div>         
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </fieldset>
+    </section>
+    <hr>
+    <section><!-- ROI of investment in OEE growth -->
+        <fieldset>
+            <legend style="text-align:start"><h1>ROI of investment in OEE growth</h1><h5>Return in days = Expenses / ((Value created per year + Expenses) / 365)</h5></legend>
+                        <div class="row"style="margin-top:15px">
+                    <div class="col">
+                        <fieldset>
+                            <legend><h3>$ Investment</h3><h6>(in OEE growth)</h6></legend>
+                            <div class="col">
+                                <input type="range" id="investment" name="investment" min="0" max="100000"  >  
+                                <div><h2 id="investmentValue"></h2></div><br>              
+                            </div>
+                        </fieldset>
+                    </div> 
+                    <div class="col">
+                        <fieldset>
+                            <legend><h3>ROI of investment</h3><h6>(1st Year of OEE gowth)</h6></legend><hr>
+                            <div class="col">
+                                <div><h2 id="roi_Invest"></h2></div><br>        
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="col">
+                        <fieldset>
+                            <legend><h3>$ Additional Profit - 1st Year</h3><h6>(1st Year of OEE gowth)</h6></legend><hr>
+                            <div class="col">
+                                <div><h2 id="profit_Year1"></h2></div><br>              
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+        </fieldset>
+    </section>
+    <section>
+        <h3><div class="maxOutput"id="comments">Comments</div></h3>
+    </section>
+</div>
+
+
+
+{% endblock %}

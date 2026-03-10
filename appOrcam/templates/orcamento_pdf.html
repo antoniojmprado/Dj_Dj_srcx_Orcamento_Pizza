@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_orcam.html' %}
 
 {% block title %}
 {% endblock %}
@@ -11,46 +11,61 @@
     </div>
 
     <div class="d-flex justify-content-between">
-            <div >
+            <div  class="header-secao">
                     <strong>CLIENTE:</strong> {{ orcamento.cliente }}
             </div>
-            <div >
+            <div class="header-secao">
                     <strong>PRODUTO:</strong> {{ orcamento.produto_nome }}
             </div>
-            <div >
+            <div class="header-secao">
                     <strong>QUANTIDADE:</strong> {{ orcamento.quantidade }} caixas
             </div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Descrição do Produto</th>
-                <th>Impressora</th>
-                <th>Valor Unitário</th>
-            </tr>
-        </thead>
+    <table class="tabela-composicao">
         <tbody>
+            <tr class="header-secao"><td colspan="1">📦 MATERIAIS E INSUMOS</td><td class="col-valor">R$ {{ orcamento.subtotal_materiais|floatformat:2 }}</td></tr>
+            <tr><td>Papelão (Chapa Líquida)</td><td class="col-valor">R$ {{ orcamento.custo_papelao_unitario|floatformat:2 }}</td></tr>
+            <tr><td>Perda Técnica / Refugo de Chapa</td><td class="col-valor">R$ {{ orcamento.perda_material|floatformat:2 }}</td></tr>
+            <tr><td>Tinta e Insumos de Impressão</td><td class="col-valor">R$ {{ orcamento.custo_tinta_padrao|floatformat:2 }}</td></tr>
+
+            <tr><td colspan="2">----</td></tr>
+
+            <tr class="header-secao"><td colspan="1">⚙️ PROCESSOS INDUSTRIAIS (TRANSFORMAÇÃO)</td><td class="col-valor">R$ {{ orcamento.subtotal_processos|floatformat:2 }}</td></tr>
+            <tr><td>Impressão e Selagem (OEE)</td><td class="col-valor">R$ {{ orcamento.custo_impressao|floatformat:2 }}</td></tr>
+            <tr><td>Corte e Vinco ({{ orcamento.maquina_corte.nome|default:"Corte Interno" }})</td><td class="col-valor">R$ {{ orcamento.custo_corte|floatformat:2 }}</td></tr>
+
+            <tr><td colspan="2">----</td></tr>
             
-            <tr>
-                <td>Caixa de Pizza (Chapa: {{ orcamento.chapa_utilizada }})</td>
-                <td>{{ orcamento.maquina_impressao }}</td>
-                <td>R$ {{ orcamento.preco_final_unitario|stringformat:".2f" }}</td>
+            <tr class="header-secao"><td colspan="1">🚚 LOGÍSTICA</td><td class="col-valor">R$ {{ orcamento.custo_frete_unitario|floatformat:2 }}</td></tr>
+            <tr><td>Frete Unitário</td><td class="col-valor">R$ {{ orcamento.custo_frete_unitario|floatformat:2 }}</td></tr>
+            
+            <tr><td colspan="2">----</td></tr>
+            
+            <tr class="linha-final-custo">
+                <td>TOTAL CUSTO INDUSTRIAL UNITÁRIO (SEM MARGEM)</td>
+                <td class="col-valor">R$ {{ orcamento.custo_total_sem_margem|floatformat:2 }}</td>
             </tr>
-            <tr>
-                <td><strong>Markup:</strong> {{ orcamento.margem_real|stringformat:".0f" }}%
-                 --------- Frete unitário incluso: R$ {{ orcamento.custo_frete_unitario|stringformat:".2f" }}/caixa</td>
-            </tr>
-            <hr>
-            <tr> 
-                <td>    
-                   <p><strong>Composição do Preço Final:</strong></p>
-                   <p>{{ orcamento.resumo_composicao }}</p>
-                </td>
+            <td colspan="2">----</td>
+            <tr class="linha-final-venda">
+                <td>PREÇO FINAL DE VENDA UNITÁRIO (COM MARGEM)</td>                
+                <td class="col-valor" style="font-size: 23px; font-weight: bold; color: #2e7d32;">R$ {{ orcamento.preco_final_unitario|floatformat:2 }}</td>
             </tr>
         </tbody>
     </table>
-    
+
+    <div class="info-margem">
+        <strong>Nota Técnica:</strong> O preço final foi calculado com base em um Markup Inverso para assegurar uma margem bruta de 
+        <strong>{{ orcamento.margem_percentual_display|floatformat:0 }}%</strong> sobre o faturamento total, cobrindo impostos, custos operacionais e lucro.
+    </div>
+
+    <div style="margin-top: 5px; text-align: right;font-size: 26px; font-weight: bold; color: #2e7d32">
+        
+        <div >
+           <span style="font-size: 23px; color: #2e7d32;">VALOR TOTAL DO PEDIDO :</span> R$ {{ orcamento.valor_total_pedido|floatformat:2 }}
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 

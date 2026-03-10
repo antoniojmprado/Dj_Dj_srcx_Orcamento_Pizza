@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}Lista de Paralisações{% endblock %}
+
+
+{% block body %}
+
+<div class="container">
+    <h2 id = "dist_paralis" style="text-align: center;"></h2>
+    <div class="row">
+        <div class="col graf_paralis"  >
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Horas de Paralisações de Produção por Máquina</h4>
+                     <p class="small text-muted"><strong>(contra o total de horas disponíveis)</strong></p>
+                    <canvas id="Chartmaq_paradas" style="width: 100%;" ></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col graf_paralis"  >
+            <div class="card" >
+                <div class="card-body">
+                    <h4 class="card-title">Acumulado Geral das paralisações em horas</h4>
+                        <p class="small text-muted"><strong>(por categorias)</strong></p>
+                    <canvas id="chartTipos_paradas" style="width: 100%;" ></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col" >
+            <div class="card" >
+                <div class="card-body">
+                    <h4 class="card-title">Motivos de Paradas em horas</h4>
+                    <p class="card-text"></p>
+                    <canvas id="chartMot_paradas" style="width: 100%;" ></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col" >
+            <div class="card" >
+                <div class="card-body">
+                    <h4 class="card-title">OEE por Máquina (%)</h4>
+                    <p class="card-text"></p>
+                    <canvas id="ChartOEE_maquina" style="width: 100%;" ></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

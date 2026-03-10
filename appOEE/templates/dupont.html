@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}Lista de Paralisações{% endblock %}
+
+
+
+{% block body %}
+
+
+<style>
+    .card-sucesso { background-color: #28a745 !important; color: white; border: none; }
+    .card-alerta { background-color: #ffc107 !important; color: black; border: none; }
+    .card-perigo { background-color: #dc3545 !important; color: white; border: none; }
+    .metric-card { transition: transform 0.2s; border-radius: 10px; }
+    .metric-card:hover { transform: scale(1.02); }
+    .text-value { font-weight: bold; color: #2c3e50; }
+</style>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Desempenho Financeiro/Industrial</h1>
+        <span class="badge bg-secondary"><h5>Atualizado em: {{ data_atual|date:"d/m/Y H:i" }}</h5></span>
+    </div>
+
+    <div class="card {% if roce > 15 %}card-sucesso{% elif roce > 8 %}card-alerta{% else %}card-perigo{% endif %} shadow mb-4 metric-card">
+        <div class="card-body text-center py-5">
+            <h4 class="text-uppercase mb-1">Retorno sobre Capital Empregado (ROCE)</h4>
+            <h1 class="display-1 fw-bold">{{ roce|floatformat:1 }}%</h1>
+            <p class="mb-0">Eficiência global do capital investido na operação.</p>
+        </div> 
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-7">
+            <div class="card shadow h-100">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Resumo da Operação Mensal</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item dados_vendas">
+                            <p><strong>{{ quantidade_vendida|floatformat:"0g" }}mil un. x R$ {{ preco_unitario|floatformat:"2g" }}/un. = Fat. Grupo: R$ {{ faturamento_grupo|floatformat:"0g" }}mil</strong></p>
+                        </li>                        
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>Faturamento Potencial no Grupo com OEE = 100%</strong>
+                            <strong class="text-primary">R$ {{ faturamento_potencial|floatformat:"2g"}}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>Faturamento Real (<span style="color:#d00">{{percentual_empresa_estudo|floatformat:"0g" }}%</span> do grupo) com OEE = <span style="color:#d00">{{oee_atual|floatformat:1}}%</span></strong>
+                            <strong class="text-value">R$ {{ faturamento_com_oee|floatformat:"2g"}}</strong>
+                        </li>
+                         <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                            <strong>Custos Variáveis</strong>
+                            <strong class="text-danger">- R$ {{ custos_variaveis|floatformat:"2g" }}</strong>
+                        </li>
+                         <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                            <strong>Custos Fixos</strong>
+                            <strong class="text-danger">- R$ {{ custo_fixo|floatformat:"2g" }}</strong>
+                        </li>
+                        </li>
+                         <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                            <strong>Custos Variáveis + Fixos</strong>
+                            <strong class="text-danger">- R$ {{ total_custo_mensal|floatformat:"2g" }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                            <strong>Lucro Operacional Estimado (EBIT)</strong>
+                            <strong class="text-success">R$ {{ lucro_operacional|floatformat:"2g" }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                            <strong class="text-success">Depreciação</strong>
+                            <strong class="text-success">R$ {{ tot_depreciacao_mensal|floatformat:"2g" }}</strong>
+                        </li>
+                    </ul>
+                    <div class="mt-4">
+                        <h6>Saúde da Margem Operacional:</h6>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar {% if margem > 10 %}bg-success{% else %}bg-warning{% endif %}" 
+                                 role="progressbar" style="width: {{ margem }}%; color:black">
+                                Margem: {{ margem|floatformat:1 }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow h-100">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-industry"></i> Eficiência Industrial</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h6 class="text-muted">OEE da Planta</h6>
+                    <h2 class="display-4 fw-bold {% if oee_atual > 80 %}text-success{% else %}text-danger{% endif %}">
+                        {{ oee_atual|floatformat:1 }}%
+                    </h2>
+                    <hr>
+                    <p class="small text-muted" id ="oee_global_dupont"></p>
+                    <h6 class="card-header bg-dark text-white">Investimento Total</h6> 
+                    <h4>
+                        R$ {{ investimento_total|floatformat:"2g" }}
+                    </h4>                   
+                    <hr>
+                    <h6 class="card-header bg-dark text-white">Custo de Ociosidade (Invisível)</h6>
+                    <h3 class="text-danger"><strong>R$ {{ prejuizo_ociosidade|floatformat:"2g" }}</strong></h3>
+                    <p class="small text-muted"><strong>Custo fixo "pago" sem produção correspondente.</strong></p>
+                    <ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-5">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0" id='impacto'>Impactos dos OEEs desfavoráveis  por Máquina</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle mb-0">
+                        <thead class="table navbar-expand-lg">
+                            <tr>
+                                <th style="text-align:end">Máquina</th>
+                                <th style="text-align:end">R$/min</th>
+                                <th style="text-align:end">R$/h</th>
+                                <th style="text-align:end">Paralis_h</th>
+                                <th>Disponib.</th>
+                                <th>Performance</th>
+                                <th>Qualidade</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for maquina,custominuto, custohora, tempo_parado_horas,pertemp,perpef,perqual,preju_tot in dados_maquinas %}
+                            <tr>
+                                <td class="text-left fw-bold">{{ maquina }}</td>
+                                <td sytle="text-align:end" class="text-danger"> R$ {{ custominuto|floatformat:2 }}/min</td>
+                                <td sytle="text-align:end" class="text-danger"> R$ {{ custohora|floatformat:2 }}/h</td>
+                                <td sytle="text-align:end" class="text-danger"> {{ tempo_parado_horas|floatformat:1 }} h</td>
+                                <td sytle="text-align:end" class="text-danger"> R$ {{ pertemp|floatformat:"2g" }}</td>
+                                <td sytle="text-align:right" class="text-danger"> R$ {{ perpef|floatformat:"2g" }}</td>
+                                <td sytle="text-align:right" class="text-danger"> R$ {{ perqual|floatformat:"2g" }}</td>
+                                <td sytle="text-align:right; color:black"><strong> R$ {{ preju_tot|floatformat:"2g" }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                            <hr>
+                            <tr class="navbar-expand-lg"> 
+                                <td><strong>Total</strong></td>
+                                {% for valor in preju_total %}
+                                     <td><strong>{{ valor }}</strong></td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

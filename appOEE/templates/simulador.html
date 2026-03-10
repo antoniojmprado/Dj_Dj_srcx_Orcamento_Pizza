@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}Simulador{% endblock %}
+
+
+{% block body %}
+
+<!--
+https://www.google.com/search?q=input+range+mostrando+valor+ao+deslizar&rlz=1C1SQJL_pt-BRBR973BR973&oq=input+range+mostrando+valor+ao+deslizar&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRigAdIBCTEwNjYwajBqN6gCALACAA&sourceid=chrome&ie=UTF-8  
+-->
+<div class="container">
+    <div class="row">
+        <div class="col-md-5 border-end">
+            <h5>Simulador Rápido (OEE Direto)</h5>
+            <label for="meuRange">Escolha seu OEE:</label>
+            <input type="range" min="0" max="100" value="50" class="form-range" id="meuRange">
+				<div class="row">
+                    <div class="col alert alert-info mt-0">
+                        <strong>OEE Escolhido: <span id="escolhido">100</span>%</strong>
+                    </div>
+                    <div class="col alert alert-success mt-0">
+                        <strong>OEE Ponto de Equilíbrio: <span id="oee_ponto_equilibrio_direto">100</span>%</strong>
+                    </div>                    
+                </div>
+            <ul id="resultados_simples" class="list-unstyled">
+                <li id="fat_real">Fatur. Real: ---</li>
+                <li id="custoVar">Custo Variav.: ---</li>
+                <li id="custoFix">Custo Fixo: ---</li>
+                <li id="ebit">Res. Contábil: ---</li>
+                <li id="roce">ROCE: ---</li>
+                <li>======</li>
+                <li id="hr_paralis"><strong>HORAS: ---</strong></li> 
+            </ul>
+        </div>
+
+        <div class="col-md-7">
+            <h5>Simulador por Pilares (Composto)</h5>
+            
+            <label>Disponibilidade: <span id="val_disp">100</span>%</label>
+            <input type="range" min="0" max="100" value="100" class="form-range" id="range_disp">
+
+            <label>Performance: <span id="val_perf">100</span>%</label>
+            <input type="range" min="0" max="100" value="100" class="form-range" id="range_perf">
+
+            <label>Qualidade: <span id="val_qual">100</span>%</label>
+            <input type="range" min="0" max="100" value="100" class="form-range" id="range_qual">
+
+                <div class="row">
+                    <div class="col alert alert-info mt-0">
+                        <strong>OEE Calculado: <span id="oee_composto">100</span>%</strong>
+                    </div>
+                    <div id="status_financeiro" class="alert mt-2 text-center" style="font-weight: bold; min-height: 50px;">Calculando viabilidade...
+                    </div>
+                    <div class="col alert alert-success mt-0">
+                        <strong>OEE Ponto de Equilíbrio: <span id="oee_ponto_equilibrio">100</span>%</strong>
+                    </div>                    
+                </div>
+
+            <div class="row mt-o">
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li id="fat_real_comp"><strong>Fat. Real: ---</strong></li>
+                        <li id="custoVar_comp"><strong>Custo Variav.: ---</strong></li>
+                        <li id="custoFix_comp"><strong>Custo Fixo: ---</strong></li>
+                        <li id="ebit_comp"><strong>EBIT: ---</strong></li>
+                        <li id="roce_comp"><strong>ROCE: ---</strong></li>
+                        <li>======</li>
+                        <li id="hr_paralis_comp"><strong>HORAS: ---</strong></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <canvas id="profitMixChart" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+  
+<!--##################################################
+#  SIMULADOR
+###################################################-->
+<script>
+    // --- VARIAVEIS GLOBAIS --- //
+    let profitMixChart; // Deve estar fora das funções!
+    // --- VARIAVEIS GLOBAIS --- //
+
+    // --- Configurações Iniciais e Funções Comuns ---
+    const formatador = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    const parseNum = (val) => parseFloat(String(val).replace(',', '.'));
+
+    const dadosBase = { // vem de views.py def simulador(request):
+        fat_bruto: parseNum("{{ fat_bruto }}"), // trazendo da views.py direto para JS.
+        oa: parseNum("{{ oee_atual }}"),
+        cf: parseNum("{{ cust_fixo }}"),
+        cv: parseNum("{{ cust_var }}"),
+        sc: parseNum("{{ socio }}"), // Sócio parece ser um custo var. fixo ou parte do custo variav.
+        at: parseNum("{{ ativos }}"),
+        hr: parseNum("{{ hr_paralis }}"), // hr = hs paradas na tab waterfall relativas entradas dados
+        mn: parseNum("{{ minutos_mes }}") // minutos_mes  na tab waterfall relativas entradas dados
+    };
+
+    // --- GRÁFICO DE ROSCA ---
+   // let profitMixChart; // Variável global para o gráfico
+
+    function inicializarProfitMixChart() {
+        const ctx = document.getElementById('profitMixChart');
+        if (!ctx) return; // Segurança extra
+
+        // Destruir se já existir para evitar sobreposição
+        if (window.profitMixChart instanceof Chart) {
+            window.profitMixChart.destroy();
+        }
+
+        window.profitMixChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Custo Fixo', 'Custo Variável', 'Lucro (EBIT)'],
+                datasets: [{
+                    data: [0, 0, 0], // Inicia zerado
+                    backgroundColor: ['#E74C3C', '#F39C12', '#2ECC71'],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: { // Nitidez total
+                        color: '#fff',
+                        font: { weight: 'bold' },
+                        formatter: (value, ctx) => {
+                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            return sum > 0 ? ((value * 100) / sum).toFixed(1) + "%" : "";
+                        }
+                    }
+                },
+            },
+            plugins: [ChartDataLabels]
+        });
+    }
+    
+    // Função principal de cálculo e atualização
+    // Defina a meta no topo do script
+    const OEE_PONTO_EQUILIBRIO =
+    (((dadosBase.sc+dadosBase.cf)*(dadosBase.oa/100))/((dadosBase.fat_bruto*dadosBase.oa/100)-dadosBase.cv+dadosBase.sc)) * 100;    
+    
+    document.getElementById('oee_ponto_equilibrio').innerHTML = OEE_PONTO_EQUILIBRIO.toFixed(0)
+    document.getElementById('oee_ponto_equilibrio_direto').innerHTML = OEE_PONTO_EQUILIBRIO.toFixed(0)
+
+     // oee_decimal vem do input range e, após /100, fica c/ o nome oee_percentual
+
+     // vide Listeners dos Sliders mais abaixo ---
+    function calcularEAtualizar(oee_decimal, sufixo = "") {
+        const oee_percentual = oee_decimal * 100;
+        //↓========= IMPORTANTE: SIMULADOR DE RESULTADOS MUDANDO O OEEE =======================↓
+        const fat_real_novo = dadosBase.fat_bruto * oee_decimal;
+        const custoVarNovo = ((oee_percentual / dadosBase.oa) * (dadosBase.cv - dadosBase.sc)) + dadosBase.sc;
+        const custoFixCte = dadosBase.cf; 
+        const ebitNovo = fat_real_novo - custoVarNovo - dadosBase.cf;
+        const roceNovo = (ebitNovo / dadosBase.at) * 100;
+        const hr_paralisNovo = (dadosBase.oa * dadosBase.hr)/oee_percentual;     //REGRA DE 3 INVERDA
+        const valor_recuperado = (dadosBase.mn);
+        console.log(valor_recuperado);
+        //↑ ========= IMPORTANTE: SIMULADOR DE RESULTADOS MUDANDO O OEEE ======================↑ 
+
+        // --- Atualização de Texto ---
+        document.getElementById("fat_real" + sufixo).innerHTML = "<strong>Fat. Real: " + formatador.format(fat_real_novo) + "</strong>";
+        document.getElementById("custoVar" + sufixo).innerHTML = "<strong>Custo Variav.: " + formatador.format(custoVarNovo) + "</strong>";
+        document.getElementById("custoFix" + sufixo).innerHTML = "<strong>Custo Fixo: " + formatador.format(custoFixCte) + "</strong>";
+        document.getElementById("ebit" + sufixo).innerHTML = "<strong>EBIT: " + formatador.format(ebitNovo) + "</strong>";
+        document.getElementById("roce" + sufixo).innerHTML = "<strong>ROCE: " + roceNovo.toFixed(2) + "%</strong>";
+        document.getElementById("hr_paralis" + sufixo).innerHTML = "<strong>Paralisações:<br>" +  dadosBase.hr.toFixed(0) + "h (OEE = " + dadosBase.oa + "%) PARA: " + hr_paralisNovo.toFixed(0) +  "h  (OEE = " + Math.round(oee_percentual) + "%)</strong><br>" + valor_recuperado;
+
+        // --- Lógica de Alerta de Sobrevivência ---
+        const elStatus = document.getElementById("status_financeiro");
+
+        if (elStatus && sufixo === "_comp") {
+            // Resetamos as classes para não acumular
+            elStatus.className = "alert mt-2 text-center"; 
+            
+            if (oee_percentual < OEE_PONTO_EQUILIBRIO) {
+                // AQUI O GATILHO: Adicionamos alert-danger para ativar o CSS pulse-red
+                elStatus.classList.add("alert-danger");
+                elStatus.style.backgroundColor = "#ff0000";
+                elStatus.style.color = "#ffffff";
+                elStatus.innerHTML = `⚠️ ZONA DE PREJUÍZO CRÍTICO: Faltam ${(OEE_PONTO_EQUILIBRIO - oee_percentual).toFixed(1)}% para o Equilíbrio!`;
+
+            } else {
+                // Zona saudável (Verde)
+                elStatus.classList.add("alert-success");
+                elStatus.style.backgroundColor = "#2ecc71";
+                elStatus.style.color = "#fff";
+                elStatus.innerHTML = "✅ OPERAÇÃO RENTÁVEL";
+            }
+        }
+
+            // --- Atualização do Doughnut (Nitidez Total) ---
+        if (sufixo === "_comp" && window.profitMixChart) {
+            let lucroGrafico = ebitNovo > 0 ? ebitNovo : 0;
+            
+            // Atualiza os dados
+            window.profitMixChart.data.datasets[0].data = [
+                dadosBase.cf, 
+                custoVarNovo, 
+                lucroGrafico
+            ];
+            
+            // Muda a cor do lucro se for prejuízo
+            window.profitMixChart.data.datasets[0].backgroundColor[2] = ebitNovo < 0 ? '#943126' : '#2ECC71';
+            
+            // O comando crucial: manda o gráfico redesenhar
+            window.profitMixChart.update();
+        }
+    }
+
+    // --- Listeners dos Sliders ---
+    document.getElementById("meuRange").oninput = function() {
+        document.getElementById("escolhido").innerText = this.value;
+        calcularEAtualizar(this.value / 100, "");
+    };
+
+    const inputsComp = ['range_disp', 'range_perf', 'range_qual'];
+    inputsComp.forEach(id => {
+        document.getElementById(id).oninput = function() {
+            const d = document.getElementById("range_disp").value / 100;
+            const p = document.getElementById("range_perf").value / 100;
+            const q = document.getElementById("range_qual").value / 100;
+            
+            document.getElementById("val_" + id.split('_')[1]).innerText = this.value;
+            
+            const oee_composto = d * p * q;
+            document.getElementById("oee_composto").innerText = (oee_composto * 100).toFixed(0);
+            
+            calcularEAtualizar(oee_composto, "_comp");
+        };
+    });
+
+    // --- Inicialização ao Carregar a Página ---
+    document.addEventListener('DOMContentLoaded', function() {
+        inicializarProfitMixChart(); // Primeiro, inicializa o gráfico
+        document.getElementById("meuRange").dispatchEvent(new Event('input')); // Dispara o simulador simples
+        document.getElementById("range_disp").dispatchEvent(new Event('input')); // Dispara o simulador composto
+    });
+
+</script>
+
+{% endblock %}

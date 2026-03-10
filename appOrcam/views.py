@@ -7,9 +7,10 @@ from .models import Orcamento
 
 # =========================
 # HOME - PÁGINA INICIAL
-# =========================
+# ========================= appOrcam\templates\home.html
 def home(request):
-    return render(request, 'home.html')
+    # return render(request, 'home.html')
+    return render(request, 'appOrcam/templates/home.html')
 
 
 # =========================
@@ -32,7 +33,7 @@ def form_modelForm(request):
         form = OrcamentoForm(request.POST, request.FILES)
 
         if form.is_valid():
-            # salva o orçamento no banco de dados
+            # salva o orçamento no banco de dados appOrcam\templates\home.html  appOrcam\templates\home.html
             form.save()
             
             return redirect('home')

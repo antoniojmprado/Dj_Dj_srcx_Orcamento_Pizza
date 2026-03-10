@@ -1,0 +1,111 @@
+Maravilha! Se você já configurou o TEMPLATES no seu settings.py para apontar para essa pasta, o Django vai encontrar o arquivo num piscar de olhos.
+
+Como você mencionou "Veja o resultado", imagino que a tela tenha carregado. Se os números apareceram, você acaba de realizar a transição completa: do dado bruto da máquina para a inteligência financeira.
+
+Para que a sua apresentação seja um sucesso absoluto, verifique se a "cascata" de valores faz sentido lógico na tela:
+
+O que observar no resultado:
+A Eficiência do Giro: O seu Giro do Ativo (Faturamento / Investimento) deve mostrar quantas vezes o valor das máquinas "voltou" em vendas. Se o OEE estiver baixo, esse número será o primeiro a sofrer.
+
+A Erosão da Margem: O Lucro Operacional deve estar subtraindo o prejuizo_total. Isso prova que as paradas não são apenas "tempo perdido", mas dinheiro saindo do caixa.
+
+O Veredito (ROCE): Se o ROCE estiver abaixo do custo de capital (geralmente abaixo de 10-12% ao ano), o sistema está alertando que o dono ganharia mais dinheiro deixando o capital no banco do que operando a fábrica — um argumento matador para justificar investimentos em manutenção.
+
+
+O custo fixo que colocamos e que está prevalecendo no momento é R$ 440.000,00
+R$ 300.000,00 pagamentos mensais Wonder 1 + Wonder 2
+R$ 140,000,00 aluguel total com imposto IPTU
+
+Já que estamos com a lógica pronta, prefiro colocar mais dados mais que coletei informalmente mas podem ser aceitos:
+#################################################
+# ADICIONAIS NÃO CONSIDERADOS ANTERIORMENTE
+#################################################
+Semana 44 h. Portanto 8,8 h/turno * 2 turno/dia x 5 dia/sem x 4,37 sem/mes = 384,6 h/mês ou 23.074 min/mês
+
+OEE = 33,1% - Faturamento Bruto R$ 4.472.000,00 <=> R$ 2,60/un x 1.720.000 unidades vendidas.
+1) Faturamento Real R$ 4.472.000,00 x 0,6(*) = R$ 2.661.000,00 (Sr Caixa)
+2) Preço médio por unidade vendida = R$ 2,60
+3) Pessoal:
+3a) 65 pessoas
+3b) R$ 2.200,00/pessoa/mês
+3c) Encargos trabalhistas  = 67%
+3d) Benefícios =  10% (estimados)
+3e) % Sr Caixa no faturamento do Grupo = 65%
+3f) Outros custos fixos = 1%
+3g) Retiradas do sócio = 5% do faturamento Real = 5/100 * R$ 4.300.000,00 * 65/100 = R$ 139.750,00
+3h) Faturamento Real = %OEE * Faturamento Bruto = R$ 925.145,00
+3i) Custo Variável = 50% do faturamento Real = R$ 462.572,50 (sem retirada do sócio)
+
+Assim teríamos:
+#########################################################################
+### CUSTOS FIXOS INCLUINDO DEPRECIAÇÃO PARA O CORRETO CÁLCULO DO EBIT ###
+#########################################################################
+
+Funcionarios:  65 x 2200 / (67/100) x (1+10/100) x (1+1/100) = R$ 237.123,88 + 
+Retirada do sócio= 4300000 * (5/100)= R$ 215.000,00/mês de acordo com minhas contas. +
+O preço médio ficou só a título de informação, mas com ele a produção média mensal fica em 1.720.000, dentro da realidade que conheço daquele negócio e daquela empresa. Na verdade são duas empresas do mesmo grupo e os números que estou passando referem-se às duas juntas. Isolando apenas uma delas, que é o nosso objeto de estudo, pelas minhas informações, estamos falando em 65% do total geral. Portanto os custos fixos finalmente seriam distribuídos da seguinte forma:
+
+R$ 300.000,00 pagamentos mensais Wonder 1 + Wonder 2 => apenas a empresa objeto do nosso estudo
++
+R$ 140,000,00 x 0,60 = R$ 84.000,00 => aluguel total com imposto IPTU => apenas a empresa objeto do nosso estudo
++
+R$ 237.123,88 => Funcionarios
++
+R$ 30.000 => manutenções de equipamentos
++
+R$ 30.000 => serviços de informática
+===========================
+(CF sem depreciação)  = R$ 681.123,88/mês
+
+---------------------------------
+-------- Depreciação ------------
+---------------------------------
+8% x R$ 8.300.000,00/12 = R$ 54.666,67 => depreciação mensal (Century=R$ 1 milhão + 2 Wonder = R$ 7 milhões)
+8% X R$ 2.500.000,00 * 10% (reforma Flexo) /12  = R$ 1.666,66
+Total Depreciação = R$ 56.333,33
+---------------------------------
+
+=======================================
+(CF com depreciação)  = R$ 737.457,21/mês
+
+
+#########################
+### CUSTOS VARIÁVEIS: ###
+#########################
+
+Matéria-prima (Papel): Representa a maior fatia, variando entre 50% e 60% do custo total de produção.
+Energia e Combustíveis: Essenciais para os processos de corrugação e transporte.
+Insumos Químicos: Colas (amido) e tintas para impressão.
+Frete e Logística: Frequentemente computados como custos variáveis de vendas, impactando diretamente a margem sobre a receita líquida.
+
+Faturamento Bruto (FB) =  (R$ 4.472.000 * 0,60) * 0.75 = R$ 2.012.400,00
+Retirada do Sócio      =  R$ 4.472.000  * 0.05         = R$   134.160,00
+=========================================================================
+(CV Total)  = R$ 2.146.560,00
+
+
+#####################################
+### DISTRIBUIÇÃO DOS ATIVOS FIXOS ###
+#####################################
+
+id  maqu_id  nome        valor_reposicao     % s/atacaivo  Custo/min
+4	   7    Flexo	     R$  2.500.000,00	   22,73        R$   7,38
+1	   8    Wonder 1	 R$  3.500.000,00	   31,82        R$  10,34
+2	   9    Wonder 2	 R$  3.500.000,00	   31,82        R$  10,34
+3	  10    Century	     R$  1.000.000,00	    9,09        R$   2,95
+6	  11    Seladora	 R$    200.000,00	    1,82        R$   0,59
+5	  12    B. Sapo	     R$    300.000,00 	    2,73        R$   0,89
+            --------     ---------------------------------------------
+            Total        R$ 11.000.000,00      100,00       R$  32,48
+
+=======================
+Custo por minuto:
+=======================
+Exemplo Flexo:
+8.8 h/turno x 2 turno/dia x 5 dia/sem x 4.3 sem/mes = 378.4 h/mes ou 22.704min
+No sistema está 8.8 h/turno x 2 turno/dia x qt de dia já decorridos = .... 23.232 min para 22 dias...
+22,73% => Flexo % partic. no valor total de reposição como parâmetro para rateio do CF
+e para estipular o custo/min por máquina.
+
+Exemplo Flexo Xitian:
+0,2273 * (CF) R$ 737.457,21 / 22.704 min/mês = R$ 7,38/min

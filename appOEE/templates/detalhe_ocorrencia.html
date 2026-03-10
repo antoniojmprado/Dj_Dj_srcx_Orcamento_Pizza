@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<div class="container">
+    <h2>Ocorrência mais recente registrada com sucesso</h2> <hr>
+     <table class="table bordered">
+        <h2><thead>
+            <th> <strong>Início:</strong> {{ ocorrencia.data_inicio }}</th>
+            <th> <strong>Fim:</strong> {{ ocorrencia.data_fim  }}</th>
+            <th> <trong>Tempo Parado:</strong> {{  ocorrencia.tempo_parado_formatado  }}</th>
+        </thead></h2>
+        <tbody>
+            <tr>
+                <td><strong>Empresa:</strong> {{ ocorrencia.empresa }}</td>
+                <td class = "verm"><strong>Máquina: {{ ocorrencia.maquina }}</strong></td>
+                <td><strong>Motivo:</strong> {{ ocorrencia.motivo }}</td>
+            </tr>
+            <tr>
+                <td><strong>Tipo da Paralisação:</strong> {{ ocorrencia.tipo_parada }}</td>
+                <td><strong>Qualidade:</strong> {{ ocorrencia.qualidade }} %</td>
+                <td><strong>Performance:</strong> {{ ocorrencia.performance }} %</td>
+            </tr>
+        </tbody>        
+    </table>
+    <hr> <hr>
+    <h3>Lista das Ocorrências</h3>
+</div>
+
+{% endblock %}

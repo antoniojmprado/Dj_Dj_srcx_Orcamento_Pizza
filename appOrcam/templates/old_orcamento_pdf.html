@@ -1,0 +1,63 @@
+{% extends 'base_orcam.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block body %}
+
+<div class="header">
+        <h1>ORÇAMENTO #{{ orcamento.id }}</h1>
+        <p>Data: {{ orcamento.data_criacao|date:"d/m/Y" }}</p>
+    </div>
+
+    <div class="d-flex justify-content-between">
+            <div >
+                    <strong>CLIENTE:</strong> {{ orcamento.cliente }}
+            </div>
+            <div >
+                    <strong>PRODUTO:</strong> {{ orcamento.produto_nome }}
+            </div>
+            <div >
+                    <strong>QUANTIDADE:</strong> {{ orcamento.quantidade }} caixas
+            </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Chapa Cadastrada:</th>
+                <th>Chapa Utilizada:</th>
+                <th>Impressora</th>
+                <th style="text-align: center;">Valor Unitário<br><h6>com frete</span></h6>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr>
+                <td>{{ orcamento.chapa_ideal }}</td>
+                <td>{{ orcamento.chapa_utilizada }}</td>
+                <td>{{ orcamento.maquina_impressao }}</td>
+                <td style="text-align: center;">R$ {{ orcamento.preco_final_unitario|stringformat:".2f" }}</td>
+            </tr>
+           
+            <tr> 
+                <td><strong>Markup:</strong> {{ orcamento.margem_real|stringformat:".0f" }}%
+            </tr>
+            <hr>
+            <tr> 
+                <td>    
+                   <p><strong>Composição do Preço Final Unitário:</strong></p>
+                   <p>{{ orcamento.resumo_composicao }}</p>
+                </td>
+            </tr>
+            <tr> 
+                <td>    
+                   <p><strong>Perda Material: </strong> R$ {{ orcamento.perda_material|stringformat:".2f" }} /caixa</p>               
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+
+{% endblock %}
+

@@ -1,0 +1,274 @@
+body {
+    background-image: url("../images/background-full (1).png");
+    background-size: cover;
+    /* cobre toda a tela */
+    background-repeat: no-repeat;
+    /* não repete */
+    background-position: center;
+    /* centraliza */
+    background-attachment: fixed;
+    /* efeito "parallax" leve */
+
+}
+
+.backgro{
+    background-image: url("../images/background-full (1).png");
+        background-size: cover;
+        /* cobre toda a tela */
+        background-repeat: no-repeat;
+        /* não repete */
+        background-position: center;
+        /* centraliza */
+        background-attachment: fixed;
+        /* efeito "parallax" leve */
+}
+
+.modal-content {
+    background-image: url("../images/background-full (1).png");
+        background-size: cover;
+        /* cobre toda a tela */
+        background-repeat: no-repeat;
+        /* não repete */
+        background-position: center;
+        /* centraliza */
+        background-attachment: fixed;
+        /* efeito "parallax" leve */
+}
+
+
+canvas.card.col.bg {
+    background-image: url("../images/background-full (1).png");
+        background-size: cover;
+        /* cobre toda a tela */
+        background-repeat: no-repeat;
+        /* não repete */
+        background-position: center;
+        /* centraliza */
+        background-attachment: fixed;
+        /* efeito "parallax" leve */
+}
+
+div.col.graf_paralis {
+    background-image: url("../images/background-full (1).png");
+    background-size: cover;
+    /* cobre toda a tela */
+    background-repeat: no-repeat;
+    /* não repete */
+    background-position: center;
+    /* centraliza */
+    background-attachment: fixed;
+    /* efeito "parallax" leve */
+}
+
+.centro{
+    text-align: center;
+}
+
+
+.dotted_line {
+    border-bottom: 2px dotted #a00;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.fraseOee{
+display: flex;
+    justify-content: center;
+    /* Centraliza horizontalmente */
+    align-items: center;
+    /* Centraliza verticalmente */
+    background-color: #333333;
+    color: yellow;
+   
+}
+
+.maquinaSelect{
+        background-color: #198754;
+            color:#fff;
+}
+
+.navbar-expand-lg {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    background-color: #333333;
+    color : #fff
+}
+
+#nav_bar_dias{
+    color: #61cd19f3;
+    background-color: #333333;   
+}
+
+.dados_vendas{
+    color:#0D6EFD;
+    /*background-color: #333333;*/
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content:center;
+    line-height: 5px;
+}
+
+#oeeGlobal{
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    color: #d00;
+}
+
+#oee_global_maquina
+{
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    color: #141414;
+}
+
+#listagemaioresclientes{
+    text-align: center;
+    font-size: bold;
+}
+
+tr{
+    /*text-align: center;*/
+        font-size: 22px;
+}
+
+thead {
+    font-size: 22px;
+    text-align: center;
+    background-color: #198754; 
+    color:white
+}
+
+tfoot {
+    font-size: 22px;
+    text-align: center;
+    background-color: #198754; 
+    color:white
+}
+
+th.sorting.sorting.dtfc-fixed-left,
+th.sorting.sorting.dtfc-fixed-right{
+    background-color:#198754;
+    text-align: center;
+}
+
+th.sorting {
+    background-color: #198754;
+    text-align: center;
+    color:#fff
+}
+
+.verm{
+    color:Red
+}
+
+table.dataTable tfoot tr>.dtfc-fixed-left,
+table.dataTable tfoot tr>.dtfc-fixed-right,
+th{
+    top: 0;
+    bottom: 0;
+    z-index: 3;
+    background-color: #198754; 
+    /*text-align: center;*/
+    font-size: 22px;
+}
+
+button.dt-button.buttons-copy.buttons-html5 {
+    background-color: #198754;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-excel.buttons-html5 {
+    background-color: #198754;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-csv.buttons-html5 {
+    background-color: #198754;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-csv.buttons-html5 {
+    background-color: #198754;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-pdf.buttons-html5 {
+    background-color: #198754;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-collection.buttons-colvis {
+    background-color: #198754;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+
+}
+
+a.paginate_button.current {
+    background-color: rgb(168, 14, 14);
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.disp, .quali, .perf, .oee{
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    width: 80px;
+    border:1px dotted #198754;
+}                   
+
+.table>:not(caption)>*>* {
+    padding: .5rem .5rem;
+    background-color: var(--bs-table-bg);
+    border-bottom-width: 1px;
+    box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
+    text-align: end;
+}
+
+.btn_paradas{
+        background-color: #198754;
+        color: #fff;
+        border-radius: 6px;
+        font-weight: bold;
+        padding: .5rem .5rem;
+        text-decoration: none;
+}
+
+#nav_bar_dias{
+    color:chartreuse
+}
+
+@keyframes pulse-red {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.alert-danger {
+    animation: pulse-red 2s infinite;
+}

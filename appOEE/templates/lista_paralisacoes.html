@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}Lista de Paralisações{% endblock %}
+
+
+{% block body %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-8">
+             <h2 style=margin-right: '50px' id = ''>Listagem das Paralisações</h2> 
+        </div>
+        <div class="col mr-3">            
+            <a type="button" class = "btn_paradas"  href="{% url 'resumo_paralisacoes' %}">Detalhes Paradas</a> 
+        </div>
+        <div class="col">            
+            <a type="button" class = "btn_paradas"  href="{% url 'detalhe_paralisacoes' %}">Detalhes Prejuízos</a> 
+        </div>
+    </div>
+   
+    <hr>
+    <table id="myTable"
+        class="display nowrap table table-bordered table-striped table-hover align-middle" style="width:100%">
+
+        <thead style="text-align:center;">
+            <tr>
+                <th>Id</th>
+                <th>Início</th>
+                <th>Fim </th>
+                <th>Empresa</th>
+                <th>Máquina</th>
+                <th>Motivo</th>
+                <th>Tipo_Parada</th>
+                <th>Tempo</th>
+            </tr>
+        </thead>
+        <tbody>
+             {% for r in list_ocorrencias %}
+             <tr>
+                <td style="text-align: center;">{{ r.id }}</td>
+                <td>{{ r.data_inicio }}</td>
+                <td>{{ r.data_fim }}</td>
+                <td>{{ r.empresa }}</td>
+                <td>{{ r.maquina }}</td>
+                <td>{{ r.motivo }}</td>
+                <td>{{ r.tipo_parada }}</td>
+                <td style="text-align: center;">{{ r.paralis_h }}</td>
+             </tr>
+             {% endfor %}
+        </tbody>
+        <tfoot>
+                <th>Id</th>
+                <th>Início</th>
+                <th>Fim </th>
+                <th>Empresa</th>
+                <th>Máquina</th>
+                <th>Motivo</th>
+                <th>Tipo_Parada</th>
+                <th>Tempo</th>
+        </tfoot>    
+    </table>
+    <hr>
+
+    <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
+            <label for="maquinaSelect"><strong><h3 class ="maquinaSelect" >Escolha uma opção de máquina:</h3></strong></label>
+      
+            <select  id ="maquinaSelect" onchange="carregarOeePorMaquina(this.value)">
+                <option value="7">Flexo Xitian</option>
+                <option value="8">Wonder 1</option>
+                <option value="9">Wonder 2</option>
+                <option value="10">Century</option>
+                <option value="11">Seladora</option>
+                <option value="12">Boca de Sapo</option>
+            </select>
+    </div>
+
+        <hr> 
+        <div class="card-header bg-success text-white" style="margin:auto" >
+
+            <div class="row">
+                <button type="button" onclick="carregarOeeDiarioParqueMaquinas()" class="btn btn-sm btn-outline-light">Atualizar</button>                    
+            </div>  
+            <hr>
+            
+            <h4 style="text-align: center;" >Comparação OEE Máquina X OEE Parque de Máquinas</h4>
+            <hr>
+            <!--<h5 class="card-text"id = "oee_parque_acumulado"></h5> -->
+            <h5 class="card-text" style="text-align: center;" id = "comparacao_oee"></h5> 
+        </div>
+        <br>
+        <div class="card-body backgro"   style="width: 100%; height: auto; ">
+           
+            <div style="text-align: center;">              
+                <canvas id="oeeChart"></canvas>
+            <div>
+            <hr>
+            <div style="text-align: center;" id="div_grafico_paradas_dia"> <!-- Gráfico de paradas por dia para o parque de máquinas  -->
+                <div id="titulo_grafico_paradas"></div> 
+                
+                <canvas id="chart_paradaspordia"></canvas> 
+            </div>
+
+            <div style="text-align: center;" id="div_grafico_paradas_dia_maquina"> <!-- Gráfico de paradas por dia para máquina  -->
+                <div id="titulo_grafico_paradas_maquina"></div> 
+                
+                <canvas id="chart_paradasporDiaMaquina"></canvas> 
+            </div>
+
+            <div class="row" id="linha_oee_maquina">
+                <div class="col-10" style="text-align: right;" id = ""></div>
+                <div class="col" id = ""></div>
+            </div>  
+        </div>     
+</div>
+
+{% endblock %}

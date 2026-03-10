@@ -2,12 +2,16 @@ body {
     font-family: sans-serif;
     margin: 40px;
     color: #333;
-}
 
-.header {
-    border-bottom: 2px solid #000;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+    background-image: url("../images/background-full (1).png");
+    background-size: cover;
+    /* cobre toda a tela */
+    background-repeat: no-repeat;
+    /* não repete */
+    background-position: center;
+    /* centraliza */
+    background-attachment: fixed;
+    /* efeito "parallax" leve */
 }
 
 .grid {
@@ -22,6 +26,57 @@ table {
     margin-top: 20px;
 }
 
+/* Inicio estilos para a tabela de orçamento */
+.tabela-composicao {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-family: sans-serif;
+}
+
+.tabela-composicao td {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+}
+
+div .header-secao, tr.header-secao td, .linha-final-custo td, .linha-final-venda td {
+    background-color: #f1f8e9;
+    font-size: 20px;
+    font-weight: bold;
+    color: #2e7d32;
+    border-left: 4px solid #2e7d32;
+}
+
+.col-valor {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    width: 120px;
+}
+
+.linha-subtotal {
+    background-color: #fafafa;
+    color: #555;
+}
+
+.linha-final-com-margem {
+    background-color: #2e7d32;
+    color: white;
+    font-size: 15px;
+}
+
+.obs-margem {
+    margin-top: 12px;
+    font-size: 11px;
+    color: #666;
+    font-style: italic;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 4px;
+}
+/* Fim estilos para a tabela de orçamento */
+
 th,
 td {
     border: 1px solid #ddd;
@@ -33,9 +88,12 @@ th {
     background-color: #f4f4f4;
 }
 
-.total {
-    font-size: 1.4em;
-    font-weight: bold;
-    text-align: right;
-    margin-top: 30px;
+input[type="submit"] {
+    background-color: #212529;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
 }
