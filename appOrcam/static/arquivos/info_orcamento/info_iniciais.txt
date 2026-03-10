@@ -188,3 +188,13 @@ Modifiquei o nome da tabela ParametrosOrcamento para apporcam_custo_tinta. Ficou
 
 Incluí a tabela Custo_frete
 
+----------------------------------------------------------------------
+
+##### VELOCIDADES DE OPERACAO ####################################
+
+Flexo         : 1.000 un/hora - observado durante a operação
+Wonder_1      :   600 un/hora - durante a explicação li no painel
+Wonder_2      :   500 un/hora - durante a explicação li no painel
+Century       : 2.500 un/hora - medi assistindo a um vídeo
+Boca de Sapo  :   300 un/hora - observado durante a operação - 
+Seladora      : 5.000 un/hora - medi assistindo a um vídeo - são embalados pacotes com 50 unidades

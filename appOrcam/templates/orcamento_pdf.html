@@ -5,67 +5,84 @@
 
 {% block body %}
 
-<div class="header">
-        <h1>ORÇAMENTO #{{ orcamento.id }}</h1>
-        <p>Data: {{ orcamento.data_criacao|date:"d/m/Y" }}</p>
+<div class="header grid mb-1 mt-10">
+    <div><h2>ORÇAMENTO #{{ orcamento.id }}</h2></div>
+    <div><h4>Data: {{ orcamento.data_criacao|date:"d/m/Y" }}</h4></div>        
+</div>
+
+<div class="grid mb-2">
+    <div  class="header-secao">
+       <h5><strong>CLIENTE:</strong> {{ orcamento.cliente }}</h5>
     </div>
-
-    <div class="d-flex justify-content-between">
-            <div  class="header-secao">
-                    <strong>CLIENTE:</strong> {{ orcamento.cliente }}
-            </div>
-            <div class="header-secao">
-                    <strong>PRODUTO:</strong> {{ orcamento.produto_nome }}
-            </div>
-            <div class="header-secao">
-                    <strong>QUANTIDADE:</strong> {{ orcamento.quantidade }} caixas
-            </div>
+    <div class="header-secao">
+       <h5><strong>PRODUTO:</strong> {{ orcamento.produto_nome }}</h5>
     </div>
-
-    <table class="tabela-composicao">
-        <tbody>
-            <tr class="header-secao"><td colspan="1">📦 MATERIAIS E INSUMOS</td><td class="col-valor">R$ {{ orcamento.subtotal_materiais|floatformat:2 }}</td></tr>
-            <tr><td>Papelão (Chapa Líquida)</td><td class="col-valor">R$ {{ orcamento.custo_papelao_unitario|floatformat:2 }}</td></tr>
-            <tr><td>Perda Técnica / Refugo de Chapa</td><td class="col-valor">R$ {{ orcamento.perda_material|floatformat:2 }}</td></tr>
-            <tr><td>Tinta e Insumos de Impressão</td><td class="col-valor">R$ {{ orcamento.custo_tinta_padrao|floatformat:2 }}</td></tr>
-
-            <tr><td colspan="2">----</td></tr>
-
-            <tr class="header-secao"><td colspan="1">⚙️ PROCESSOS INDUSTRIAIS (TRANSFORMAÇÃO)</td><td class="col-valor">R$ {{ orcamento.subtotal_processos|floatformat:2 }}</td></tr>
-            <tr><td>Impressão e Selagem (OEE)</td><td class="col-valor">R$ {{ orcamento.custo_impressao|floatformat:2 }}</td></tr>
-            <tr><td>Corte e Vinco ({{ orcamento.maquina_corte.nome|default:"Corte Interno" }})</td><td class="col-valor">R$ {{ orcamento.custo_corte|floatformat:2 }}</td></tr>
-
-            <tr><td colspan="2">----</td></tr>
-            
-            <tr class="header-secao"><td colspan="1">🚚 LOGÍSTICA</td><td class="col-valor">R$ {{ orcamento.custo_frete_unitario|floatformat:2 }}</td></tr>
-            <tr><td>Frete Unitário</td><td class="col-valor">R$ {{ orcamento.custo_frete_unitario|floatformat:2 }}</td></tr>
-            
-            <tr><td colspan="2">----</td></tr>
-            
-            <tr class="linha-final-custo">
-                <td>TOTAL CUSTO INDUSTRIAL UNITÁRIO (SEM MARGEM)</td>
-                <td class="col-valor">R$ {{ orcamento.custo_total_sem_margem|floatformat:2 }}</td>
-            </tr>
-            <td colspan="2">----</td>
-            <tr class="linha-final-venda">
-                <td>PREÇO FINAL DE VENDA UNITÁRIO (COM MARGEM)</td>                
-                <td class="col-valor" style="font-size: 23px; font-weight: bold; color: #2e7d32;">R$ {{ orcamento.preco_final_unitario|floatformat:2 }}</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div class="info-margem">
-        <strong>Nota Técnica:</strong> O preço final foi calculado com base em um Markup Inverso para assegurar uma margem bruta de 
-        <strong>{{ orcamento.margem_percentual_display|floatformat:0 }}%</strong> sobre o faturamento total, cobrindo impostos, custos operacionais e lucro.
+    <div class="header-secao">
+       <h5><strong>IMPRESSORA:</strong> {{ orcamento.nome_maquina_impressao }}</h5>
     </div>
-
-    <div style="margin-top: 5px; text-align: right;font-size: 26px; font-weight: bold; color: #2e7d32">
-        
-        <div >
-           <span style="font-size: 23px; color: #2e7d32;">VALOR TOTAL DO PEDIDO :</span> R$ {{ orcamento.valor_total_pedido|floatformat:2 }}
-        </div>
+    <div class="header-secao">
+        <h5><strong>Qt.: {{ orcamento.quantidade|floatformat:"g" }} caixas</strong> </h5>
     </div>
 </div>
+<div class="grid mb-0">
+    <div class="header-secao">
+        <h5><strong>CORTE:</strong> {{ orcamento.nome_maquina_corte }}</h5>
+    </div>
+    <div class="header-secao">
+        <h5><strong>CHAPA IDEAL:</strong> {{ orcamento.chapa_ideal }}</h5>
+    </div>
+    <div class="header-secao">
+        <h5><strong>CHAPA UTILIZADA:</strong> {{ orcamento.chapa_utilizada }}</h5>
+    </div>
+</div>
+
+<table class="tabela-composicao">
+    <tbody>        
+        <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td></tr>
+
+        <tr style="font-size: 22px; font-weight:bold;"><td colspan="1">📦 MATERIAIS E INSUMOS</td><td style="font-size: 22px;text-align: right;">R$ {{ orcamento.subtotal_materiais|floatformat:2 }}</td></tr>
+        <tr><td>Papelão (Chapa Líquida)</td><td class="col-valor">R$ {{ orcamento.custo_papelao_unitario|floatformat:2 }}</td></tr>
+        <tr><td>Perda Técnica / Refugo de Chapa</td><td class="col-valor">R$ {{ orcamento.perda_material|floatformat:2 }}</td></tr>
+        <tr><td>Tinta e Insumos de Impressão</td><td class="col-valor">R$ {{ orcamento.custo_tinta_padrao|floatformat:2 }}</td></tr>
+
+        <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td></tr>
+
+        <tr  style="font-size: 22px; font-weight:bold;"><td colspan="1">⚙️ PROCESSOS INDUSTRIAIS (TRANSFORMAÇÃO)</td><td style="font-size: 22px;text-align: right;">R$ {{ orcamento.subtotal_processos|floatformat:2 }}</td></tr>
+        <tr><td>Impressão e Selagem</td><td  class="col-valor">R$ {{ orcamento.custo_impressao|floatformat:2 }}</td></tr>
+        <tr><td>Corte e Vinco ({{ orcamento.maquina_corte.nome|default:"Corte Interno" }})</td><td class="col-valor">R$ {{ orcamento.custo_corte|floatformat:2 }}</td></tr>
+
+        <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td></tr>
+        
+        <tr  style="font-size: 22px; font-weight:bold;"><td colspan="1">🚚 LOGÍSTICA</td><td style="font-size: 22px;text-align: right;">R$ {{ orcamento.custo_frete_unitario|floatformat:2 }}</td></tr>
+        <tr><td>Frete Unitário</td><td class="col-valor">R$ {{ orcamento.custo_frete_unitario|floatformat:2 }}</td></tr>
+        
+        <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td></tr>
+                
+        <tr class="linha-final-custo">
+            <td>TOTAL CUSTO INDUSTRIAL UNITÁRIO (SEM MARGEM)</td>
+            <td style="font-size: 23px; font-weight: bold; color: #3d1b9b;text-align: right">R$ {{ orcamento.custo_total_sem_margem|floatformat:2 }}</td>
+        </tr>
+        <tr class="linha-final-venda" style="font-size: 25px; font-weight: bold; color: #3d1b9b; background-color: #e3e3e3;">
+            <td>PREÇO FINAL DE VENDA UNITÁRIO (COM MARGEM)</td>                
+            <td style="font-size: 25px;text-align: right;">R$ {{ orcamento.custo_total_com_margem|floatformat:2 }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="info-margem">
+    <strong>Nota Técnica:</strong> O preço final foi calculado com base em um Markup de 
+    <strong>{{ orcamento.margem_percentual_display|floatformat:0 }}%</strong> sobre o custo industrial, sem impostos.
+</div>
+
+<div style="margin-top: 5px; text-align: right;font-size: 26px; font-weight: bold; color: #3c3333">    
+    <div >
+        <span style="font-size: 23px; color: #3d1b9b;background-color: #e3e3e3;padding: 5px;border-radius: 3px; border: solid #212529 2px;">
+            VALOR TOTAL ORÇADO :R$ {{ orcamento.valor_total_pedido|floatformat:"2g" }}
+        </span> 
+    </div>
+</div>
+
+
 
 {% endblock %}
 

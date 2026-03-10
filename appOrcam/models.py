@@ -168,6 +168,9 @@ class Orcamento(models.Model):
         # 4. CUSTO DE MÁQUINAS (Cálculo OEE)
         self.custo_impressao = Decimal('0.0000')
         self.custo_corte = Decimal('0.0000')
+        
+        nome_maquina = self.maquina_impressao.nome if self.maquina_impressao else "N/A"
+        print(f"DEBUG nome_maquina {nome_maquina} ")
 
         try:
             # Impressão + Seladora (ID 11)
@@ -175,10 +178,8 @@ class Orcamento(models.Model):
                 fin = MaquinaFinancasOEE.objects.filter(
                     maquina_id=m_id).first()
                 if fin and fin.producao_nominal_hora > 0:
-                    tempo_unit = Decimal(
-                        '60') / Decimal(str(fin.producao_nominal_hora))
-                    self.custo_impressao += tempo_unit * \
-                        Decimal(str(fin.custo_minuto))
+                    tempo_unit = Decimal('60') / Decimal(str(fin.producao_nominal_hora))
+                    self.custo_impressao += tempo_unit * Decimal(str(fin.custo_minuto))                             
 
             # Corte
             if self.maquina_corte:
@@ -199,7 +200,7 @@ class Orcamento(models.Model):
 
         margem = self.margem_real if self.margem_real >= 1 else self.margem_real * 100
         fator_margem = (Decimal('100') - Decimal(str(margem))) / Decimal('100')
-
+        print(f"DEBUG: margem_real: {self.margem_real}")
         if fator_margem > 0:
             self.preco_final_unitario = custo_total_base / fator_margem
         else:
@@ -212,6 +213,26 @@ class Orcamento(models.Model):
     Para que você possa usar esse valor no seu orcamento_pdf.html de forma limpa, sem precisar repetir o cálculo na View, a melhor estratégia é transformar esse cálculo em uma @property. Assim, você pode acessar {{ orcamento.custo_papelao_unitario }} diretamente no template, e o Django vai chamar a função para calcular o valor na hora. Isso mantém seu código organizado e evita duplicação de lógica.
     '''
     
+    @property
+    def nome_maquina_impressao(self):
+        """Retorna o nome da máquina"""
+        return self.maquina_impressao.nome if self.maquina_impressao else "N/A"
+    
+    @property
+    def nome_maquina_corte(self):
+        """Retorna o nome da máquina de corte"""
+        return self.maquina_corte.nome if self.maquina_corte.nome else ""
+    
+    @property
+    def nome_chapa_ideal(self):
+        """Retorna o nome da máquina de corte"""
+        return self.chapa_ideal if self.chapa_ideal else ""
+    
+    @property
+    def nome_chapa_utilizada(self):
+        """Retorna o nome da máquina de corte"""
+        return self.chapa_utilizada if self.chapa_utilizada else self.chapa_ideal
+
     @property
     def custo_papelao_unitario(self):
         """Calcula o custo base da chapa (área x custo_m2)"""
@@ -256,6 +277,11 @@ class Orcamento(models.Model):
     def margem_percentual_display(self):
         """Garante que a margem apareça como 20 em vez de 0.20 no PDF"""
         return self.margem_real * 100 if self.margem_real < 1 else self.margem_real
+    
+    @property
+    def custo_total_com_margem(self):
+        """Soma de todos os custos (Materiais + Processos + Logística)"""
+        return self.custo_total_sem_margem / (Decimal('1') - (self.margem_real/100 if self.margem_real >= 0 else self.custo_total_sem_margem))
     
     def resumo_composicao(self):
         if not self.preco_final_unitario:

@@ -18,6 +18,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 30px;
+    font-weight: bold;
 }
 
 table {
@@ -40,19 +41,30 @@ table {
     font-size: 13px;
 }
 
-div .header-secao, tr.header-secao td, .linha-final-custo td, .linha-final-venda td {
-    background-color: #f1f8e9;
+div .header-secao,
+tr.header-secao td,
+.linha-final-custo td,
+.linha-final-venda td {
     font-size: 20px;
     font-weight: bold;
-    color: #2e7d32;
-    border-left: 4px solid #2e7d32;
+    /* color: #3c3333; */
+    color: #3d1b9b;
+    line-height: normal;
+    vertical-align: middle;
 }
 
-.col-valor {
+td.col-valor {
     text-align: right;
     font-family: 'Courier New', monospace;
     font-weight: bold;
+    font-size: 18px;
     width: 120px;
+}
+
+.tabela-composicao td {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 18px;
 }
 
 .linha-subtotal {
@@ -61,7 +73,7 @@ div .header-secao, tr.header-secao td, .linha-final-custo td, .linha-final-venda
 }
 
 .linha-final-com-margem {
-    background-color: #2e7d32;
+    background-color: #3c3333;
     color: white;
     font-size: 15px;
 }
@@ -75,6 +87,14 @@ div .header-secao, tr.header-secao td, .linha-final-custo td, .linha-final-venda
     padding: 10px;
     border-radius: 4px;
 }
+
+tr.header-secao td {
+    font-size: 14px;
+}
+
+/* .linha {
+    font-size: 18px;
+} */
 /* Fim estilos para a tabela de orçamento */
 
 th,
