@@ -1,0 +1,54 @@
+{% extends 'base_orcam.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block body %}
+
+<div class="container">
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>Data de Criação</th>
+                <th>Cliente</th>
+                <th>Qt. un.</th>
+                <th>Custo Mater.</th>
+                <th>Custo Perdas</th>
+                <th>Custo Impr.</th>
+                <th>Custo Corte</th>
+                <th>Custo Frete</th>
+                <th>Margem</th>
+                <th>Preco s/ Margem</th>
+                <th>Preco Unit tot</th>
+                <th>Preco c/ Margem</th>
+                <th>Total Orçado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for orcamento in orcamentos %}
+            <tr>
+                <td>{{ orcamento.id }}</td>
+                <td>{{ orcamento.data_criacao|date:"d/m/Y" }}</td>
+                <td>{{ orcamento.cliente}}</td>
+                <td>{{ orcamento.quantidade|floatformat:"g"}}</td>
+                <td>R$ {{ orcamento.custo_material_unitario|floatformat:2}}</td>
+                <td>R$ {{ orcamento.perda_material|floatformat:2}}</td>
+                <td>R$ {{ orcamento.custo_impressao|floatformat:2}}</td>
+                <td>R$ {{ orcamento.custo_corte|floatformat:2}}</td>
+                <td>R$ {{ orcamento.custo_frete_unitario|floatformat:2 }}</td>
+                <td> {{ orcamento.margem_real|floatformat:"g" }} %</td>
+                <td>R$ {{ orcamento.custo_total_sem_margem|floatformat:2 }}</td>
+                <td>R$ {{ orcamento.preco_final_unitario|floatformat:2 }}</td>
+                <td>R$ {{ orcamento.custo_total_com_margem|floatformat:"2g" }}</td>
+                <td>R$ {{ orcamento.valor_total_pedido|floatformat:"2g" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+{% endblock %}
+

@@ -42,3 +42,11 @@ def form_modelForm(request):
         form = OrcamentoForm()
 
         return render(request, 'cotar.html', { 'form': form })
+    
+
+# =========================
+# LISTAR ORÇAMENTOS
+# =========================
+def listar_orcamentos(request):
+    orcamentos = Orcamento.objects.all().order_by('-data_criacao')  # Ordena por data de criação, do mais recente para o mais antigo
+    return render(request, 'listar_orcamentos.html', {'orcamentos': orcamentos})

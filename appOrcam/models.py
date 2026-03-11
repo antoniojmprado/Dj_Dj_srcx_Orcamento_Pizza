@@ -136,6 +136,7 @@ class Orcamento(models.Model):
     custo_corte = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     # Novo campo para o total de máquinas
     custo_maquinas = models.DecimalField( max_digits=10, decimal_places=4, default=0)
+    custo_material_unitario = models.DecimalField(max_digits=10, decimal_places=4, default=0)
 
     preco_final_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     perda_material = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -148,9 +149,12 @@ class Orcamento(models.Model):
         custo_tinta_unitario = params.custo_tinta_unitario if params else Decimal(
             '0.20')
 
-        param_frete = Custo_frete.objects.first()
-        self.custo_frete_unitario = param_frete.custo_frete_unitario if param_frete else Decimal(
-            '0.30')
+        # param_frete = Custo_frete.objects.first()
+        # self.custo_frete_unitario = param_frete.custo_frete_unitario if param_frete else Decimal(
+        #     '0.30')
+        
+        self.custo_frete_unitario = self.custo_frete_unitario if self.custo_frete_unitario > 0 else Decimal('0.30') 
+        
 
         # 2. CUSTO DO MATERIAL (Papelão + Tinta)
         area_utilizada = Decimal(str(self.chapa_utilizada.area_m2))
@@ -158,6 +162,7 @@ class Orcamento(models.Model):
         custo_m2_papelao = Decimal(str(self.chapa_utilizada.custo_m2))
 
         custo_material_unitario = (area_utilizada * custo_m2_papelao) + custo_tinta_unitario
+        self.custo_material_unitario = custo_material_unitario
 
         # 3. PERDA FINANCEIRA
         if area_utilizada > area_ideal:
@@ -189,23 +194,23 @@ class Orcamento(models.Model):
                     tempo_corte = Decimal('60') / Decimal(str(fin_corte.producao_nominal_hora))
                     self.custo_corte = tempo_corte *  Decimal(str(fin_corte.custo_minuto))
 
-            self.custo_maquinas = self.custo_impressao + self.custo_corte
+            self.custo_maquinas = self.custo_impressao  + self.custo_corte
 
         except Exception as e:
             print(f"Erro máquinas: {e}")
 
         # 5. PREÇO FINAL COM MARGEM (Markup Inverso)
         # IMPORTANTE: Somamos todos os custos reais calculados
-        custo_total_base = custo_material_unitario + self.custo_maquinas + self.custo_frete_unitario
-
+        custo_total_base = custo_material_unitario + self.custo_maquinas + self.perda_material + self.custo_frete_unitario
+        print(f"DEBUG: custo_total_base: {custo_total_base}")
         margem = self.margem_real if self.margem_real >= 1 else self.margem_real * 100
         fator_margem = (Decimal('100') - Decimal(str(margem))) / Decimal('100')
-        print(f"DEBUG: margem_real: {self.margem_real}")
-        if fator_margem > 0:
-            self.preco_final_unitario = custo_total_base / fator_margem
-        else:
-            self.preco_final_unitario = custo_total_base * Decimal('1.30')
-
+        # return self.custo_total_sem_margem / (Decimal('1') - (self.margem_real/100 if self.margem_real >= 0 else self.custo_total_sem_margem))
+       
+        self.preco_final_unitario = custo_total_base / \
+                (Decimal('1') - (self.margem_real/100 if self.margem_real >=
+                 0 else self.custo_total_sem_margem))
+                
         super().save(*args, **kwargs)
     '''
     Detalhe técnico: variáveis definidas dentro de um método (como papelao) não ficam disponíveis automaticamente no template HTML (PDF). O Django só enxerga o que é um campo do modelo ou um método/propriedade que ele possa chamar.
@@ -216,12 +221,12 @@ class Orcamento(models.Model):
     @property
     def nome_maquina_impressao(self):
         """Retorna o nome da máquina"""
-        return self.maquina_impressao.nome if self.maquina_impressao else "N/A"
+        return self.maquina_impressao.nome if self.maquina_impressao else ""
     
     @property
     def nome_maquina_corte(self):
         """Retorna o nome da máquina de corte"""
-        return self.maquina_corte.nome if self.maquina_corte.nome else ""
+        return self.maquina_corte.nome if self.maquina_corte else ""
     
     @property
     def nome_chapa_ideal(self):
@@ -269,11 +274,6 @@ class Orcamento(models.Model):
         return self.custo_impressao + self.custo_corte
 
     @property
-    def custo_total_sem_margem(self):
-        """Soma de todos os custos (Materiais + Processos + Logística)"""
-        return self.subtotal_materiais + self.subtotal_processos + self.custo_frete_unitario
-
-    @property
     def margem_percentual_display(self):
         """Garante que a margem apareça como 20 em vez de 0.20 no PDF"""
         return self.margem_real * 100 if self.margem_real < 1 else self.margem_real
@@ -283,7 +283,7 @@ class Orcamento(models.Model):
         """Soma de todos os custos (Materiais + Processos + Logística)"""
         return self.custo_total_sem_margem / (Decimal('1') - (self.margem_real/100 if self.margem_real >= 0 else self.custo_total_sem_margem))
     
-    def resumo_composicao(self):
+    def resumo_composicao(self): 
         if not self.preco_final_unitario:
             return "Salve para gerar o resumo."
         
