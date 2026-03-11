@@ -126,6 +126,7 @@ class Orcamento(models.Model):
     data_criacao = models.DateTimeField(auto_now_add=True)
     produto_nome = models.CharField(max_length=100, default="Caixa de Pizza 35")
     quantidade = models.PositiveIntegerField()
+    unidades_chapa = models.PositiveIntegerField(default=1, verbose_name="Unidades por Chapa")
     chapa_ideal = models.ForeignKey(Chapa, on_delete=models.PROTECT, related_name='ideal_set')
     chapa_utilizada = models.ForeignKey(Chapa, on_delete=models.PROTECT, related_name='real_set')
     maquina_impressao = models.ForeignKey(Maquina, on_delete=models.PROTECT, related_name='orcamentos_impressao')
@@ -144,15 +145,12 @@ class Orcamento(models.Model):
     custo_frete_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0.30, verbose_name="Frete por Unidade")
 
     def save(self, *args, **kwargs):
-        # 1. BUSCA PARÂMETROS GLOBAIS
+        # 0. BUSCA PARÂMETROS GLOBAIS
         params = Custo_tinta.objects.first()
         custo_tinta_unitario = params.custo_tinta_unitario if params else Decimal(
             '0.20')
 
-        # param_frete = Custo_frete.objects.first()
-        # self.custo_frete_unitario = param_frete.custo_frete_unitario if param_frete else Decimal(
-        #     '0.30')
-        
+        # 1. CUSTO FRETE UNITÁRIO
         self.custo_frete_unitario = self.custo_frete_unitario if self.custo_frete_unitario > 0 else Decimal('0.30') 
         
 
@@ -161,8 +159,14 @@ class Orcamento(models.Model):
         area_ideal = Decimal(str(self.chapa_ideal.area_m2))
         custo_m2_papelao = Decimal(str(self.chapa_utilizada.custo_m2))
 
-        custo_material_unitario = (area_utilizada * custo_m2_papelao) + custo_tinta_unitario
-        self.custo_material_unitario = custo_material_unitario
+        # custo_material_unitario = (area_utilizada * custo_m2_papelao) + custo_tinta_unitario
+        # Para o custo de material unitário, consideramos o custo do papelão rateado pela quantidade de unidades por chapa (corte conjugado), ou integral se for corte simples. A tinta é adicionada integralmente por unidade, pois cada unidade leva a mesma quantidade de tinta independentemente do corte.
+        # ADMITIDO QUE FUNDOS E TAMPAS SÃO DE CHAPAS DIFERENTES, ENTÃO O CUSTO DE PAPELÃO É CALCULADO PARA A CHAPA IMPRESSA MAIS UMA CHAPA NÃO IMPRESSA QUE SERÁ CORTADA PARA FAZER OS FUNDOS. SE FOR CORTE CONJUGADO (UNIDADES_CHAPA > 1), O CUSTO DE PAPELÃO É DIVIDIDO PELO NÚMERO DE UNIDADES POR CHAPA PARA OBTER O CUSTO UNITÁRIO DE PAPELÃO, CASO CONTRÁRIO, O CUSTO DE PAPELÃO É INTEGRAL PARA AQUELA UNIDADE.
+        
+        custo_material_unitario_parcial = ((area_utilizada * custo_m2_papelao * 2 )/self.unidades_chapa) if self.unidades_chapa > 1 else (area_utilizada * custo_m2_papelao)
+        
+        print(f"DEBUG: area_utilizada: {area_utilizada}, custo_m2_papelao: {custo_m2_papelao}, unidades_chapa: {self.unidades_chapa}, custo_material_unitario_parcial: {custo_material_unitario_parcial}")
+        self.custo_material_unitario = custo_material_unitario_parcial + custo_tinta_unitario                
 
         # 3. PERDA FINANCEIRA
         if area_utilizada > area_ideal:
@@ -179,12 +183,13 @@ class Orcamento(models.Model):
 
         try:
             # Impressão + Seladora (ID 11)
-            for m_id in [self.maquina_impressao.id, 11]:
+            for m_id in [self.maquina_impressao.id, 11]: # roda todos os ids de máquinas de impressão, incluindo a seladora (ID 11)
                 fin = MaquinaFinancasOEE.objects.filter(
                     maquina_id=m_id).first()
                 if fin and fin.producao_nominal_hora > 0:
                     tempo_unit = Decimal('60') / Decimal(str(fin.producao_nominal_hora))
-                    self.custo_impressao += tempo_unit * Decimal(str(fin.custo_minuto))                             
+                    self.custo_impressao += tempo_unit * Decimal(str(fin.custo_minuto))   
+                    print(f"DEBUG: Máquina ID {m_id} - Tempo Unitário: {tempo_unit} minutos, Custo Minuto: {fin.custo_minuto}, Custo Parcial Impressão: {self.custo_impressao}")
 
             # Corte
             if self.maquina_corte:
@@ -193,15 +198,25 @@ class Orcamento(models.Model):
                 if fin_corte and fin_corte.producao_nominal_hora > 0:
                     tempo_corte = Decimal('60') / Decimal(str(fin_corte.producao_nominal_hora))
                     self.custo_corte = tempo_corte *  Decimal(str(fin_corte.custo_minuto))
-
-            self.custo_maquinas = self.custo_impressao  + self.custo_corte
-
+                    print(f"DEBUG: Máquina Corte ID {self.maquina_corte.id} - Tempo Unitário: {tempo_corte} minutos, Custo Minuto: {fin_corte.custo_minuto}, Custo Parcial Corte: {self.custo_corte}")
+                                    
+            # Custo total de máquinas (impressão + corte) dividido por unidades por chapa, para obter o custo unitário de máquinas
+            # considerando que o custo de máquina é rateado entre as unidades produzidas por chapa. A divisão só acontece se o numero de chapas for maior que 1, corte 'conjugado', caso contrário, o custo de máquina é integral para aquela unidade.
+            
+            # Nestes casos, a maquina de corte será utilizada 2 vezes. Uma para a tampa e outra para o fundo.
+            ######### CORTE CONJUGADO  OU SIMPLES - SEMPRE MÁQUINAS WONDER 1 OU WONDER 2 ##########
+            self.custo_maquinas = (self.custo_impressao / self.unidades_chapa + self.custo_corte * 2 / \
+                self.unidades_chapa) if self.unidades_chapa > 1 else self.custo_impressao + self.custo_corte
+            
+            self.custo_impressao = self.custo_impressao / self.unidades_chapa if self.unidades_chapa > 1 else self.custo_impressao
+            self.custo_corte = (self.custo_corte * 2) / self.unidades_chapa if self.unidades_chapa > 1 else self.custo_corte    
+                
         except Exception as e:
             print(f"Erro máquinas: {e}")
 
         # 5. PREÇO FINAL COM MARGEM (Markup Inverso)
         # IMPORTANTE: Somamos todos os custos reais calculados
-        custo_total_base = custo_material_unitario + self.custo_maquinas + self.perda_material + self.custo_frete_unitario
+        custo_total_base = self.custo_material_unitario + self.custo_maquinas + self.perda_material + self.custo_frete_unitario
         print(f"DEBUG: custo_total_base: {custo_total_base}")
         margem = self.margem_real if self.margem_real >= 1 else self.margem_real * 100
         fator_margem = (Decimal('100') - Decimal(str(margem))) / Decimal('100')
@@ -237,11 +252,26 @@ class Orcamento(models.Model):
     def nome_chapa_utilizada(self):
         """Retorna o nome da máquina de corte"""
         return self.chapa_utilizada if self.chapa_utilizada else self.chapa_ideal
-
+    
+    @property
+    def total_chapas(self):
+        """
+        Calcula o total de chapas necessárias para produzir a quantidade desejada, considerando as unidades por
+        chapas diferentes para tampas e fundos.
+        Se unidades_chapa for 1 ou menos, assume-se que cada chapa é usada para uma unidade (tampa + fundo juntos).
+        Se unidades_chapa for maior que 1, calcula-se o número de chapas considerando o corte conjugado, onde cada chapa pode produzir múltiplas unidades (tampas e fundos juntos ????)."""
+        if self.unidades_chapa > 0 and self.unidades_chapa <= 1:  # 
+            return f"{self.quantidade:,}".replace(',', '.') + " chapas (fundos e tampas)" 
+        qt_chapas = (self.quantidade / self.unidades_chapa) if self.unidades_chapa > 1 else self.quantidade 
+        # observacao = " Admitido que Fundos e Tampas são de chapas diferentes." if self.unidades_chapa > 1 else ""      
+        return f" {qt_chapas:.0f} Tampas + " f"  {qt_chapas:.0f} Fundos - CORTE CONJUGADO: {self.unidades_chapa} unidades por chapa" if self.unidades_chapa > 1 else f"{qt_chapas:.0f} chapas (fundos + tampas)"
+    
     @property
     def custo_papelao_unitario(self):
-        """Calcula o custo base da chapa (área x custo_m2)"""
-        return Decimal(str(self.chapa_utilizada.area_m2)) * Decimal(str(self.chapa_utilizada.custo_m2))
+        """Calcula o custo base da chapa (área x custo_m2)
+        considerando o número de unidades por chapa para ratear o custo do papelão entre as unidades produzidas por chapa. Se for corte conjugado (unidades_chapa > 1), o custo de papelão é dividido pelo número de unidades por chapa, caso contrário, o custo de papelão é integral para aquela unidade.
+        """
+        return self.custo_material_unitario - self.custo_tinta_padrao
 
     @property
     def custo_tinta_padrao(self):
@@ -270,7 +300,7 @@ class Orcamento(models.Model):
 
     @property
     def subtotal_processos(self):
-        """Soma: Impressão + Corte"""
+        """Soma: Impressão+ Seldora + Corte """
         return self.custo_impressao + self.custo_corte
 
     @property

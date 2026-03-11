@@ -5,43 +5,48 @@
 
 {% block body %}
 
-<div class="container">
-    <table>
-        <thead>
+<div class="container"> 
+    <h3>Orçamentos Realizados</h3><br>
+    <table id = "myTable" class="table table-striped table-bordered table caption-top">
+        <thead class = 'centralizado'>
             <tr>
                 <th>id</th>
                 <th>Data de Criação</th>
                 <th>Cliente</th>
                 <th>Qt. un.</th>
+                <th>Impressora</th>
                 <th>Custo Mater.</th>
                 <th>Custo Perdas</th>
                 <th>Custo Impr.</th>
+                <th>Corte/Vinco</th>
                 <th>Custo Corte</th>
+                <th>Unid/ch</th>
                 <th>Custo Frete</th>
+                <th>R$/un - Margem</th>
                 <th>Margem</th>
-                <th>Preco s/ Margem</th>
-                <th>Preco Unit tot</th>
-                <th>Preco c/ Margem</th>
+                <th>R$/un + Margem</th>
                 <th>Total Orçado</th>
             </tr>
         </thead>
         <tbody>
-            {% for orcamento in orcamentos %}
+            {% for orc in orcamentos %}
             <tr>
-                <td>{{ orcamento.id }}</td>
-                <td>{{ orcamento.data_criacao|date:"d/m/Y" }}</td>
-                <td>{{ orcamento.cliente}}</td>
-                <td>{{ orcamento.quantidade|floatformat:"g"}}</td>
-                <td>R$ {{ orcamento.custo_material_unitario|floatformat:2}}</td>
-                <td>R$ {{ orcamento.perda_material|floatformat:2}}</td>
-                <td>R$ {{ orcamento.custo_impressao|floatformat:2}}</td>
-                <td>R$ {{ orcamento.custo_corte|floatformat:2}}</td>
-                <td>R$ {{ orcamento.custo_frete_unitario|floatformat:2 }}</td>
-                <td> {{ orcamento.margem_real|floatformat:"g" }} %</td>
-                <td>R$ {{ orcamento.custo_total_sem_margem|floatformat:2 }}</td>
-                <td>R$ {{ orcamento.preco_final_unitario|floatformat:2 }}</td>
-                <td>R$ {{ orcamento.custo_total_com_margem|floatformat:"2g" }}</td>
-                <td>R$ {{ orcamento.valor_total_pedido|floatformat:"2g" }}</td>
+                <td>{{ orc.id }}</td>
+                <td>{{ orc.data_criacao|date:"d/m/Y" }}</td>
+                <td>{{ orc.cliente}}</td>
+                <td class = 'direita'>{{ orc.quantidade|floatformat:"g"}}</td>
+                <td class = 'direita'>{{ orc.nome_maquina_impressao}}</td>
+                <td class = 'direita'>R$ {{ orc.custo_material_unitario|floatformat:2}}</td>
+                <td class = 'direita'>R$ {{ orc.perda_material|floatformat:2}}</td>
+                <td class = 'direita'>R$ {{ orc.custo_impressao|floatformat:2}}</td>
+                <td class = 'centralizado'>{{ orc.nome_maquina_corte}}</td>
+                <td class = 'direita'>R$ {{ orc.custo_corte|floatformat:2}}</td>
+                <td class = 'centralizado'>{{ orc.unidades_chapa|floatformat:0}}</td>
+                <td class = 'direita'>R$ {{ orc.custo_frete_unitario|floatformat:2 }}</td>
+                <td class = 'direita'>R$ {{ orc.custo_total_sem_margem|floatformat:2 }}</td>
+                <td class = 'direita'> {{ orc.margem_real|floatformat:"g" }} %</td>
+                <td class = 'direita'>R$ {{ orc.custo_total_com_margem|floatformat:"2g" }}</td>
+                <td class = 'direita'>R$ {{ orc.valor_total_pedido|floatformat:"2g" }}</td>
             </tr>
             {% endfor %}
         </tbody>

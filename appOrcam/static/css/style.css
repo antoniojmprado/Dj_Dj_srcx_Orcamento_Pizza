@@ -21,6 +21,14 @@ body {
     font-weight: bold;
 }
 
+.direita{
+    text-align: right;
+}
+
+.centralizado{
+    text-align: center  ;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;

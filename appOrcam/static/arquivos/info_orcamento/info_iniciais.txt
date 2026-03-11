@@ -198,3 +198,16 @@ Wonder_2      :   500 un/hora - durante a explicação li no painel
 Century       : 2.500 un/hora - medi assistindo a um vídeo
 Boca de Sapo  :   300 un/hora - observado durante a operação - 
 Seladora      : 5.000 un/hora - medi assistindo a um vídeo - são embalados pacotes com 50 unidades
+
+######### MEDIDAS CAIXAS DE ESFIHAS #####################
+Principais Medidas de Caixas de Esfiha:
+as caixas de:
+• 13x13x3,5cm (individual ou pequena) => 0.0169 m2
+• 25x25cm a 27x27cm (média),          => 0.0625 m2
+• grandes de 30x30x5cm até 40x40x5cm  => 0.0900 m2
+
+######### MEDIDAS CAIXAS DE KIBES #####################
+As dimensões físicas variam, mas as bandejas de 500g geralmente medem cerca de 
+
+15x10x3cm => 0.0150 m2
+20x15x4cm => 0.0300 m2
