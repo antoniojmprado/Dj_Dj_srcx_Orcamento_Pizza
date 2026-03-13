@@ -36,7 +36,7 @@ def form_modelForm(request):
             # salva o orçamento no banco de dados appOrcam\templates\home.html  appOrcam\templates\home.html
             form.save()
             
-            return redirect('home')
+            return redirect('listar_orcamentos')
 
     else:
         form = OrcamentoForm()

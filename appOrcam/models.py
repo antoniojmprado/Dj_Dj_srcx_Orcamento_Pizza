@@ -16,6 +16,7 @@ class Chapa(models.Model):
     def area_m2(self):
         return (self.largura_cm * self.comprimento_cm) / 10000
 
+
     def __str__(self):
         return self.nome
 
@@ -38,6 +39,7 @@ class MaquinaOEE(models.Model):
     def __str__(self):
         return self.nome or "Máquina sem nome"
 
+
 class WaterfallOEE(models.Model):
     """
     Criada WaterfallOEE para evitar conflito durante as migracoes com a tabela 'waterfall' do MySQL.
@@ -48,7 +50,7 @@ class WaterfallOEE(models.Model):
     class Meta:
         managed = False
         db_table = 'waterfall'
-        
+       
 
 class MaquinaFinancasOEE(models.Model):
     # A PK real da tabela é o campo 'id'
@@ -208,8 +210,27 @@ class Orcamento(models.Model):
             self.custo_maquinas = (self.custo_impressao / self.unidades_chapa + self.custo_corte * 2 / \
                 self.unidades_chapa) if self.unidades_chapa > 1 else self.custo_impressao + self.custo_corte
             
-            self.custo_impressao = self.custo_impressao / self.unidades_chapa if self.unidades_chapa > 1 else self.custo_impressao
-            self.custo_corte = (self.custo_corte * 2) / self.unidades_chapa if self.unidades_chapa > 1 else self.custo_corte    
+            # regra de 3 inversa para considerar a influencia da quantidade na diluicao do custo da maquina que, por sua vez
+            # tras dentro de si o custo fixo embutido no valor do custo_minuto, vide acima, que é resultado da interacao
+            # entre a participacao do ativo no total de ativos da fabrica como exemplo que segue
+            # Exemplo Flexo Xitian:0, 2273 * (CF) R$ 737.457, 21 / 22.704 min/mês = R$ 7, 38/min
+            
+            # no loop acima o ultimo producao_nominal_hora ficou sendo para a maquina de corte. Para a regra de 3
+            # preciso apenas do primeiro que refere-se a impressora somente.
+            
+            obj = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_impressao.id)
+            
+            # regra de 3 inversa
+            self.custo_maquinas = obj.producao_nominal_hora  * self.custo_maquinas / self.quantidade
+            
+            print(f' producao_nominal_hora {obj.producao_nominal_hora}')
+            print(f' self.quantidade {self.quantidade}')
+            print(f"DEBUG: custo_maquinas: {self.custo_maquinas}")
+            
+            self.custo_impressao = (self.custo_impressao / self.unidades_chapa if self.unidades_chapa >
+                                    1 else self.custo_impressao) * obj.producao_nominal_hora / self.quantidade
+            
+            self.custo_corte = ((self.custo_corte * 2) / self.unidades_chapa if self.unidades_chapa > 1 else self.custo_corte)  * obj.producao_nominal_hora / self.quantidade   
                 
         except Exception as e:
             print(f"Erro máquinas: {e}")
@@ -226,7 +247,9 @@ class Orcamento(models.Model):
                 (Decimal('1') - (self.margem_real/100 if self.margem_real >=
                  0 else self.custo_total_sem_margem))
                 
+            
         super().save(*args, **kwargs)
+
     '''
     Detalhe técnico: variáveis definidas dentro de um método (como papelao) não ficam disponíveis automaticamente no template HTML (PDF). O Django só enxerga o que é um campo do modelo ou um método/propriedade que ele possa chamar.
 
@@ -301,8 +324,7 @@ class Orcamento(models.Model):
     @property
     def subtotal_processos(self):
         """Soma: Impressão+ Seldora + Corte """
-        return self.custo_impressao + self.custo_corte
-
+        return self.custo_maquinas
     @property
     def margem_percentual_display(self):
         """Garante que a margem apareça como 20 em vez de 0.20 no PDF"""

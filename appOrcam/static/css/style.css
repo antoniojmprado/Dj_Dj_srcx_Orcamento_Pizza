@@ -29,6 +29,16 @@ body {
     text-align: center  ;
 }
 
+.navbar {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0px;
+    padding-bottom: 0px
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -100,20 +110,10 @@ tr.header-secao td {
     font-size: 14px;
 }
 
-/* .linha {
-    font-size: 18px;
-} */
-/* Fim estilos para a tabela de orçamento */
-
 th,
 td {
     border: 1px solid #ddd;
-    padding: 12px;
     text-align: left;
-}
-
-th {
-    background-color: #f4f4f4;
 }
 
 input[type="submit"] {
@@ -124,4 +124,114 @@ input[type="submit"] {
     padding: 10px 20px;
     cursor: pointer;
     font-size: 16px;
+}
+
+tr{
+    /*text-align: center;*/
+        font-size: 18px;
+}
+
+thead{
+    font-size: 16px;
+    text-align: center;
+    background-color: #040714; 
+    color:white
+}
+
+tfoot {
+    font-size: 14px;
+    text-align: center;
+    background-color: #040714; 
+    color:white
+}
+
+th.sorting.sorting.dtfc-fixed-left,
+th.sorting.sorting.dtfc-fixed-right{
+    background-color:#040714;
+    text-align: center;
+}
+
+th.sorting {
+    background-color: #040714;
+    text-align: center;
+    color:#fff;
+    font-size: 16px;
+}
+
+.verm{
+    color:Red
+}
+
+table.dataTable tfoot tr>.dtfc-fixed-left,
+table.dataTable tfoot tr>.dtfc-fixed-right,
+th{
+    top: 0;
+    bottom: 0;
+    z-index: 3;
+    background-color: #040714; 
+    /*text-align: center;*/
+    font-size: 16px;
+}
+
+
+
+table.form_cotar th {
+    top: 0;
+    bottom: 0;
+    z-index: 3;
+    /*text-align: center;*/
+    background-color: white;
+    font-size: 22px;
+    font-weight: normal;
+}
+
+button.dt-button.buttons-copy.buttons-html5 {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-excel.buttons-html5 {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-csv.buttons-html5 {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-csv.buttons-html5 {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-pdf.buttons-html5 {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-collection.buttons-colvis {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+
+}
+
+
+.page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: #040714;
+    border-color: #040714;
 }

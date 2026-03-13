@@ -7,49 +7,80 @@
 
 <div class="container"> 
     <h3>Orçamentos Realizados</h3><br>
-    <table id = "myTable" class="table table-striped table-bordered table caption-top">
+    <table id = "myTable" class="table table-striped table-bordered table caption-top table-hover">
         <thead class = 'centralizado'>
             <tr>
-                <th>id</th>
+                <th id = "getId">id</th>
                 <th>Data de Criação</th>
                 <th>Cliente</th>
                 <th>Qt. un.</th>
                 <th>Impressora</th>
-                <th>Custo Mater.</th>
-                <th>Custo Perdas</th>
-                <th>Custo Impr.</th>
-                <th>Corte/Vinco</th>
-                <th>Custo Corte</th>
+                <th>Custo Mater. R$</th>
+                <th>Custo Perdas R$</th>
+                <th>Custo Impr. R$</th>
+                <th>Corte/Vinco </th>
+                <th>Custo Corte R$</th>
                 <th>Unid/ch</th>
-                <th>Custo Frete</th>
-                <th>R$/un - Margem</th>
+                <th>Custo Frete R$</th>
+                <th>/un - Margem</th>
                 <th>Margem</th>
-                <th>R$/un + Margem</th>
-                <th>Total Orçado</th>
+                <th>/un + Margem</th>
+                <th>Total Orçado R$</th>
+                <th>Ação</th>
             </tr>
         </thead>
         <tbody>
             {% for orc in orcamentos %}
             <tr>
-                <td>{{ orc.id }}</td>
+                <td id = "getId">{{ orc.id }}</td>
                 <td>{{ orc.data_criacao|date:"d/m/Y" }}</td>
                 <td>{{ orc.cliente}}</td>
                 <td class = 'direita'>{{ orc.quantidade|floatformat:"g"}}</td>
                 <td class = 'direita'>{{ orc.nome_maquina_impressao}}</td>
-                <td class = 'direita'>R$ {{ orc.custo_material_unitario|floatformat:2}}</td>
-                <td class = 'direita'>R$ {{ orc.perda_material|floatformat:2}}</td>
-                <td class = 'direita'>R$ {{ orc.custo_impressao|floatformat:2}}</td>
+                <td class = 'direita'> {{ orc.custo_material_unitario|floatformat:2}}</td>
+                <td class = 'direita'> 
+                    {% if orc.perda_material > 0 %}
+                        {{ orc.perda_material|floatformat:2}}
+                        {% else %} -
+                    {% endif %}    
+                </td>
+                <td class = 'direita'> {{ orc.custo_impressao|floatformat:2}}</td>
                 <td class = 'centralizado'>{{ orc.nome_maquina_corte}}</td>
-                <td class = 'direita'>R$ {{ orc.custo_corte|floatformat:2}}</td>
+                <td class = 'direita'>
+                    {% if orc.custo_corte > 0 %}
+                        {{ orc.custo_corte|floatformat:2}}
+                        {% else %} -
+                    {% endif %}    
+                </td>
                 <td class = 'centralizado'>{{ orc.unidades_chapa|floatformat:0}}</td>
-                <td class = 'direita'>R$ {{ orc.custo_frete_unitario|floatformat:2 }}</td>
-                <td class = 'direita'>R$ {{ orc.custo_total_sem_margem|floatformat:2 }}</td>
+                <td class = 'direita'>{{ orc.custo_frete_unitario|floatformat:2 }}</td>
+                <td class = 'direita'> {{ orc.custo_total_sem_margem|floatformat:2 }}</td>
                 <td class = 'direita'> {{ orc.margem_real|floatformat:"g" }} %</td>
-                <td class = 'direita'>R$ {{ orc.custo_total_com_margem|floatformat:"2g" }}</td>
-                <td class = 'direita'>R$ {{ orc.valor_total_pedido|floatformat:"2g" }}</td>
+                <td class = 'direita'> {{ orc.custo_total_com_margem|floatformat:"2g" }}</td>
+                <td class = 'direita'> {{ orc.valor_total_pedido|floatformat:"2g" }}</td>
+                <td><button class="btn btn-outline-secondary" name = "orcam_id"><strong>Abrir</strong></button></td>
             </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <th>id</th>
+            <th>Data de Criação</th>
+            <th>Cliente</th>
+            <th>Qt. un.</th>
+            <th>Impressora</th>
+            <th>Custo Mater.</th>
+            <th>Custo Perdas</th>
+            <th>Custo Impr.</th>
+            <th>Corte/Vinco</th>
+            <th>Custo Corte</th>
+            <th>Unid/ch</th>
+            <th>Custo Frete</th>
+            <th>/un - Margem</th>
+            <th>Margem</th>
+            <th>/un + Margem</th>
+            <th>Total Orçado</th>
+            <th></th>
+        </tfoot>  
     </table>
 </div>
 
