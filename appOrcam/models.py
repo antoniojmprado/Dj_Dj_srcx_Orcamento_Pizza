@@ -37,7 +37,11 @@ class MaquinaOEE(models.Model):
         managed = False
 
     def __str__(self):
-        return self.nome or "Máquina sem nome"
+        if self.nome:
+            return str(self.nome)
+        return self.nome
+# How to Fix __str__ Returned Non-String Error in Django Models
+# https://www.youtube.com/watch?v=uDli4npnUk8
 
 
 class WaterfallOEE(models.Model):
@@ -93,7 +97,7 @@ class ConfiguracaoRateio(models.Model): # participacao da maquina na producao to
     custo_hora_operacional = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
-        return self.nome
+        return str(self.maquina)
 
 
 class Custo_tinta(models.Model):
@@ -145,6 +149,14 @@ class Orcamento(models.Model):
     perda_material = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     margem_real = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     custo_frete_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0.30, verbose_name="Frete por Unidade")
+
+    @property
+    def capac_corte_nominal_hora(self):
+        if self.maquina_corte:
+            fin_corte = MaquinaFinancasOEE.objects.filter(
+                maquina_id=self.maquina_corte.id).first()
+            if fin_corte and fin_corte.producao_nominal_hora > 0:
+                return fin_corte.producao_nominal_hora if fin_corte.producao_nominal_hora else ""
 
     def save(self, *args, **kwargs):
         # 0. BUSCA PARÂMETROS GLOBAIS
@@ -231,21 +243,25 @@ class Orcamento(models.Model):
                                     1 else self.custo_impressao) * obj.producao_nominal_hora / self.quantidade
             
             self.custo_corte = ((self.custo_corte * 2) / self.unidades_chapa if self.unidades_chapa > 1 else self.custo_corte)  * obj.producao_nominal_hora / self.quantidade   
-                
+
+
+            
+                            
         except Exception as e:
             print(f"Erro máquinas: {e}")
 
         # 5. PREÇO FINAL COM MARGEM (Markup Inverso)
         # IMPORTANTE: Somamos todos os custos reais calculados
         custo_total_base = self.custo_material_unitario + self.custo_maquinas + self.perda_material + self.custo_frete_unitario
+        
+        print(f"DEBUG: capacidade_nominal_hora: {obj.producao_nominal_hora}")
         print(f"DEBUG: custo_total_base: {custo_total_base}")
-        margem = self.margem_real if self.margem_real >= 1 else self.margem_real * 100
-        fator_margem = (Decimal('100') - Decimal(str(margem))) / Decimal('100')
-        # return self.custo_total_sem_margem / (Decimal('1') - (self.margem_real/100 if self.margem_real >= 0 else self.custo_total_sem_margem))
-       
-        self.preco_final_unitario = custo_total_base / \
-                (Decimal('1') - (self.margem_real/100 if self.margem_real >=
+        print(f"DEBUG: self.margem_real: {self.margem_real}")
+              
+        self.preco_final_unitario = custo_total_base * (Decimal('1') + (self.margem_real/100 if self.margem_real >
                  0 else self.custo_total_sem_margem))
+        
+        print(f"DEBUG: self.preco_final_unitario: {self.preco_final_unitario}")
                 
             
         super().save(*args, **kwargs)
@@ -260,6 +276,13 @@ class Orcamento(models.Model):
     def nome_maquina_impressao(self):
         """Retorna o nome da máquina"""
         return self.maquina_impressao.nome if self.maquina_impressao else ""
+    
+    @property
+    def capac_impressao_nominal_hora(self):
+        obj = MaquinaFinancasOEE.objects.get(
+            maquina_id=self.maquina_impressao.id)
+        return obj.producao_nominal_hora if obj.producao_nominal_hora else Decimal('0.20')    
+
     
     @property
     def nome_maquina_corte(self):
@@ -325,6 +348,7 @@ class Orcamento(models.Model):
     def subtotal_processos(self):
         """Soma: Impressão+ Seldora + Corte """
         return self.custo_maquinas
+    
     @property
     def margem_percentual_display(self):
         """Garante que a margem apareça como 20 em vez de 0.20 no PDF"""
@@ -333,7 +357,7 @@ class Orcamento(models.Model):
     @property
     def custo_total_com_margem(self):
         """Soma de todos os custos (Materiais + Processos + Logística)"""
-        return self.custo_total_sem_margem / (Decimal('1') - (self.margem_real/100 if self.margem_real >= 0 else self.custo_total_sem_margem))
+        return self.custo_total_sem_margem * (Decimal('1') + (self.margem_real/100 if self.margem_real >= 0 else self.custo_total_sem_margem))
     
     def resumo_composicao(self): 
         if not self.preco_final_unitario:

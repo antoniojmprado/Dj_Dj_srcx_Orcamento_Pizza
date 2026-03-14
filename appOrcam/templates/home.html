@@ -3,10 +3,140 @@
 {% block title %}
 {% endblock %}
 
-
 {% block body %}
+<strong><h3><strong>Premissas Senhor Caixa:</h3></strong>
 
-<h1>antonio</h1>
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            <p><strong><h4><u>Custos agrupados:</h4></u></strong>
+                <ul>
+                    <li>Materiais e Insumos: Papel, Perdas, Tinta</li>
+                    <li>Fabricação: Impressora + Seladora + Corte Vinco</li>
+                    <li>Logística / Frete</li>
+                    <li>Markup sobre custos</li>
+                    <li>Preço sem Margem</li>
+                    <li>Preço final</li>
+                </ul>
+            <hr>    
+            <p><strong><h4><u>Custos Variáveis:</h4></u></strong>
+                <ul>
+                    <li>Papelão: R$ 2,92/m2 - frutos de pesquisas com fornecedores.</li>
+                    <li>R$ 0,20/caixa - conforme informações obtidas na Sr. Caixa</li>        
+                </ul>
+            </p>
+            <hr>
+            <p><strong><h4><u>Dados Custos Fixos e  Produção:</h4></u></strong>
+                <table>
+                    <thead>
+                        <th>Máquina</th>
+                        <th>R$ Repos.</th>
+                        <th>% s/ Ativo</th>
+                        <th>Custo/min</th>
+                        <th>Cap.Nom/un./h</th>
+                        <th>% prod</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Flexo</td>
+                            <td class = "direita">R$ 2.500.000,00</td>
+                            <td class = "direita">22,73</td>
+                            <td class = "direita">R$ 7,38</td>
+                            <td class = "direita">1.000</td>
+                            <td class = "direita">70</td>
+                        </tr>
+                        <tr>
+                            <td>Wonder 1</td>
+                            <td class = "direita">R$ 3.500.000,00</td>
+                            <td class = "direita">31,82</td>
+                            <td class = "direita">R$ 10,34</td>
+                            <td class = "direita">600</td>
+                            <td class = "direita">25</td>
+                        </tr>
+                        <tr>
+                            <td>Wonder 2</td>
+                            <td class = "direita">R$ 3.500.000,00</td>
+                            <td class = "direita">31,82</td>
+                            <td class = "direita">R$ 10,34</td>
+                            <td class = "direita">600</td>
+                            <td class = "direita">5</td>
+                        </tr>
+                        <tr>
+                            <td>Century</td>
+                            <td class = "direita">R$  1.000.000,00</td>
+                            <td class = "direita"> 9,09</td>
+                            <td class = "direita">R$  2,95</td>
+                            <td class = "direita">2.500</td>
+                            <td class = "direita">-</td>
+                        </tr>
+                        <tr>
+                            <td>Seladora</td>
+                            <td class = "direita">R$  200.000,00</td>
+                            <td class = "direita"> 1,82</td>
+                            <td class = "direita">R$  0,59</td>
+                            <td class = "direita">5.000</td>
+                            <td class = "direita">-</td>
+                        </tr>
+                        <tr>
+                            <td>Boca de Sapo</td>
+                            <td class = "direita">R$  1.000.000,00</td>
+                            <td class = "direita"> 2,73</td>
+                            <td class = "direita">R$  0,89</td>
+                            <td class = "direita">300</td>
+                            <td class = "direita">-</td>
+                        </tr>
+                    </tbody>
+                </table>                        
+        </div>
+        <div class="col-6">
+            <p><strong><h4><u>Cálculo dos Custos/minuto:</h4><u></strong>
+            <p><strong></h5>Exemplo Flexo:</h5></strong>
+                <ul>
+                    <li>8.8 h/turno x 2 turno/dia x 5 dia/sem x 4.3 sem/mes = 378.4 h/mes ou 22.704min</li>
+                    <li>No sistema está 8.8 h/turno x 2 turno/dia x qt de dia já decorridos = .... 23.232 min para 22 dias...</li>
+                    <li>22,73% => Flexo % partic. no valor total de reposição como parâmetro para rateio do CF e para estipular o custo/min por máquina.</li>
+                <hr>
+                    <li><u>Calculando:0,2273 * (CF) R$ 737.457,21 / 22.704 min/mês = R$ 7,38/min</u></li>                
+                </ul>
+            </p>
+            <hr>  
+            <ul>
+                <p><strong><h4><u>Dados passíveis de ajustes dinâmicamente:</h4></u></strong></p>
+                <li><strong></h5>Dimensões das Chapas</h5></strong></li>
+                <li><strong></h5>Custo m2 de chapa</h5></strong></li>                
+                <li><strong></h5>Custo tinta por unidade</h5></strong></li>                
+                <li><strong></h5>Custo/min/máquina</h5></strong></li>                
+                <li><strong></h5>% Máquina na produção</h5></strong></li>
+                <li><strong></h5>Capac. produção/maquina/hora</h5></strong></li>
+                <li><strong></h5>Valor frete por unidade</h5></strong></li>                
+            </ul>
+            <hr>
+            <ul>
+                <p><strong><h4><u>Dados de entrada para orçar preço sugerido<u></strong></h4></u></p>
+                <div class="row">
+                    <div class="col-6 entradas">
+                        <li>Cliente</li>
+                        <li>Produto nome</li>
+                        <li>Quantidade</li>
+                        <li>Unidades por chapa</li>
+                        <li>Máquina de Impressão</li>
+                    </div>
+                    <div class="col-6 entradas">
+                        <li>Máquina de Corte</li>
+                        <li>Chapa ideal</li>
+                        <li>Chapa utilizada</li>
+                        <li>Margem (Markup)</li>
+                        <li>Frete por unidade</li>                        
+                    </div>
+                </div>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+
+
 
 {% endblock %}
 

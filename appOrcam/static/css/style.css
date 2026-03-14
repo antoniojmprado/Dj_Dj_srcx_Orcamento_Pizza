@@ -29,6 +29,12 @@ body {
     text-align: center  ;
 }
 
+.col-6 {
+    flex: 0 0 auto;
+    width: 50%;
+    border: 1px solid #000;
+}
+
 .navbar {
     position: relative;
     display: flex;
@@ -234,4 +240,17 @@ button.dt-button.buttons-collection.buttons-colvis {
     color: #fff;
     background-color: #040714;
     border-color: #040714;
+}
+
+ul div.row div.col-6.entradas li {
+    /* list-style-type: none; */
+    border: 1px solid white
+}
+
+div.col-6.entradas{
+    border: none
+}
+
+td.direita{
+    text-align: right;
 }

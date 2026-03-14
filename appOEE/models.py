@@ -24,10 +24,9 @@ class Maquina(models.Model):
         db_table = 'maquina'
 
     def __str__(self):
+        if self.nome:
+            return str(self.nome)
         return self.nome
-       
-    
-
 
 #################
 # IMPACTO FINANCEIRO
