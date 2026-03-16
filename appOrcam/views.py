@@ -1,12 +1,17 @@
-from pyexpat.errors import messages
-
+from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
-
 from appOrcam.forms import OrcamentoForm
 from .models import Orcamento
 
 # =========================
-# HOME - PÁGINA INICIAL
+# INICIAL - PÁGINA INICIAL
+# ========================= appOrcam\templates\home.html
+def inicial(request):
+    return render(request, 'inicial.html')
+    # return render(request, 'appOrcam/templates/home.html')
+    
+# =========================
+# HOME
 # ========================= appOrcam\templates\home.html
 def home(request):
     # return render(request, 'home.html')
@@ -33,16 +38,21 @@ def form_modelForm(request):
         form = OrcamentoForm(request.POST, request.FILES)
 
         if form.is_valid():
-            # salva o orçamento no banco de dados appOrcam\templates\home.html  appOrcam\templates\home.html
             form.save()
-            
+            messages.success(request, 'Dados inseridos com sucesso!')
             return redirect('listar_orcamentos')
+        else:
+            # O POST aconteceu, mas o formulário tem erros (ex: campo vazio)
+            messages.error(
+                request, "Os dados não foram salvos. Verifique os campos.")
 
     else:
+        # Se o método for GET (primeira vez entrando na página),
+        # apenas criamos o formulário vazio, SEM mensagem de erro.
         form = OrcamentoForm()
 
-        return render(request, 'cotar.html', { 'form': form })
-    
+    # Este render serve tanto para o erro no POST quanto para o GET inicial
+    return render(request, 'cotar.html', {'form': form})
 
 # =========================
 # LISTAR ORÇAMENTOS

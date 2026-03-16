@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+from django.contrib.messages import constants as messages
 import os
 import sys
 from pathlib import Path
@@ -56,6 +57,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+}
+
 ROOT_URLCONF = 'prj_orcam.urls'
 
 TEMPLATES = [
@@ -68,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'appOrcam.context_processors.estatisticas_orcamentos',
             ],
         },
     },

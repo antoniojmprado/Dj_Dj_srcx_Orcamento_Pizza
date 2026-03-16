@@ -63,3 +63,48 @@ $('#myTable').on('click', 'button[name=orcam_id]', function (e) {
         }
     });
 });    
+
+// Aguarda 3 segundos (3000 milissegundos)
+setTimeout(function () {
+    // Seleciona as mensagens do Django (assumindo classe .alert)
+    var messages = document.querySelectorAll('.alert');
+
+    messages.forEach(function (message) {
+        // Aplica a transição CSS de fade
+        message.style.transition = 'opacity 0.5s ease';
+        message.style.opacity = '0';
+
+        // Remove o elemento após a transição
+        setTimeout(function () {
+            message.remove();
+        }, 500); // tempo da transição
+    });
+}, 3000);
+
+document.addEventListener("DOMContentLoaded", function() {
+        // Verifica se existe algum alerta na página
+        const alerts = document.querySelectorAll('.alert');
+        
+        if (alerts.length > 0) {
+            // Cria o contexto de áudio
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            // Configuração do "Bip" discreto
+            oscillator.type = 'sine'; // Som suave
+            oscillator.frequency.setValueAtTime(1900, audioCtx.currentTime); // Nota Lá (A5)
+
+            // Controle de volume (muito baixo para não sustar)
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+
+            // Duração curta (150ms) com um "fade out" para não estalar
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+            oscillator.stop(audioCtx.currentTime + 0.2);
+        }
+        
+});

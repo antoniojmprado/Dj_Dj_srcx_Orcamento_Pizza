@@ -1,9 +1,10 @@
 body {
     font-family: sans-serif;
-    margin: 40px;
+    /* margin: 40px; */
     color: #333;
 
-    background-image: url("../images/background-full (1).png");
+    background-image: url("../images/background-full (1).png"); 
+    /* background-image: url("../images/joinvia/marca dagua.png"); */
     background-size: cover;
     /* cobre toda a tela */
     background-repeat: no-repeat;
@@ -186,7 +187,7 @@ table.form_cotar th {
     bottom: 0;
     z-index: 3;
     /*text-align: center;*/
-    background-color: white;
+    background-color: transparent;
     font-size: 22px;
     font-weight: normal;
 }
@@ -253,4 +254,8 @@ div.col-6.entradas{
 
 td.direita{
     text-align: right;
+}
+
+div.pad {
+    padding: 0px 8px 0px 8px;
 }

@@ -137,12 +137,10 @@ class Orcamento(models.Model):
     chapa_utilizada = models.ForeignKey(Chapa, on_delete=models.PROTECT, related_name='real_set')
     maquina_impressao = models.ForeignKey(Maquina, on_delete=models.PROTECT, related_name='orcamentos_impressao')
     maquina_corte = models.ForeignKey(Maquina, on_delete=models.SET_NULL, null=True, blank=True, related_name='orcamentos_corte')
-    maquina_seladora = models.ForeignKey(Maquina, on_delete=models.SET_NULL,  null=True, blank=True, related_name='orcamentos_seladora')
 
     # Campos de Custo (Decimal)
     custo_impressao = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     custo_corte = models.DecimalField(max_digits=10, decimal_places=4, default=0)
-    custo_seladora = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     # Novo campo para o total de máquinas
     custo_maquinas = models.DecimalField( max_digits=10, decimal_places=4, default=0)
     custo_material_unitario = models.DecimalField(max_digits=10, decimal_places=4, default=0)
@@ -155,7 +153,8 @@ class Orcamento(models.Model):
     @property
     def capac_corte_nominal_hora(self):
         if self.maquina_corte:
-            fin_corte = MaquinaFinancasOEE.objects.filter(maquina_id=self.maquina_corte.id).first()
+            fin_corte = MaquinaFinancasOEE.objects.filter(
+                maquina_id=self.maquina_corte.id).first()
             if fin_corte and fin_corte.producao_nominal_hora > 0:
                 return fin_corte.producao_nominal_hora if fin_corte.producao_nominal_hora else ""
 
@@ -166,7 +165,8 @@ class Orcamento(models.Model):
             '0.20')
 
         # 1. CUSTO FRETE UNITÁRIO
-        self.custo_frete_unitario = self.custo_frete_unitario if self.custo_frete_unitario > 0 else Decimal('0.30')         
+        self.custo_frete_unitario = self.custo_frete_unitario if self.custo_frete_unitario > 0 else Decimal('0.30') 
+        
 
         # 2. CUSTO DO MATERIAL (Papelão + Tinta)
         area_utilizada = Decimal(str(self.chapa_utilizada.area_m2))
@@ -180,7 +180,6 @@ class Orcamento(models.Model):
         custo_material_unitario_parcial = ((area_utilizada * custo_m2_papelao * 2 )/self.unidades_chapa) if self.unidades_chapa > 1 else (area_utilizada * custo_m2_papelao)
         
         print(f"DEBUG: area_utilizada: {area_utilizada}, custo_m2_papelao: {custo_m2_papelao}, unidades_chapa: {self.unidades_chapa}, custo_material_unitario_parcial: {custo_material_unitario_parcial}")
-        
         self.custo_material_unitario = custo_material_unitario_parcial + custo_tinta_unitario                
 
         # 3. PERDA FINANCEIRA
@@ -197,34 +196,41 @@ class Orcamento(models.Model):
         print(f"DEBUG nome_maquina {nome_maquina} ")
 
         try:
-        #     # Impressão + Seladora (ID 11)
-        #     for m_id in [self.maquina_impressao.id, 11]: # roda todos os ids de máquinas de impressão, incluindo a seladora (ID 11)
-        #         fin = MaquinaFinancasOEE.objects.filter(maquina_id=m_id).first()
-        #         if fin and fin.producao_nominal_hora > 0:
-        #             tempo_unit = Decimal('60') / Decimal(str(fin.producao_nominal_hora))
-        #             self.custo_impressao += tempo_unit * Decimal(str(fin.custo_minuto))   
-        #             # print(f"DEBUG: Máquina ID {m_id} - Tempo Unitário: {tempo_unit} minutos, Custo Minuto: {fin.custo_minuto}, Custo Parcial Impressão: {self.custo_impressao}")
-                    
-            # Impressão
-            for m_id in [self.maquina_impressao.id]: # roda todos os ids de máquinas de impressão, incluindo a seladora (ID 11)
-                fin = MaquinaFinancasOEE.objects.filter(maquina_id=m_id).first()
+            # Impressão + Seladora (ID 11)
+            for m_id in [self.maquina_impressao.id, 11]: # roda todos os ids de máquinas de impressão, incluindo a seladora (ID 11)
+                fin = MaquinaFinancasOEE.objects.filter(
+                    maquina_id=m_id).first()
                 if fin and fin.producao_nominal_hora > 0:
-                    tempo_unit_impressao = Decimal('60') / Decimal(str(fin.producao_nominal_hora))
-                    self.custo_impressao = tempo_unit_impressao * Decimal(str(fin.custo_minuto))   
+                    tempo_unit = Decimal('60') / Decimal(str(fin.producao_nominal_hora))
+                    self.custo_impressao += tempo_unit * Decimal(str(fin.custo_minuto))   
+                    print(f"DEBUG: Máquina ID {m_id} - Tempo Unitário: {tempo_unit} minutos, Custo Minuto: {fin.custo_minuto}, Custo Parcial Impressão: {self.custo_impressao}")
+                    
+            # Impressão Real
+            for m_id in [self.maquina_impressao.id]: # roda todos os ids de máquinas de impressão, incluindo a seladora (ID 11)
+                fin = MaquinaFinancasOEE.objects.filter(
+                    maquina_id=m_id).first()
+                if fin and fin.producao_nominal_hora > 0:
+                    tempo_unit = Decimal('60') / Decimal(str(fin.producao_nominal_hora))
+                    self.custo_impressao_Real = tempo_unit * Decimal(str(fin.custo_minuto))   
+                    print(f"DEBUG: Máquina ID {m_id} - Tempo Unitário: {tempo_unit} minutos, Custo Minuto: {fin.custo_minuto}, Custo Parcial Impressão: {self.custo_impressao}")
 
             # Corte
-            fin_corte = MaquinaFinancasOEE.objects.filter(maquina_id=self.maquina_corte.id).first()
-            if fin_corte and fin_corte.producao_nominal_hora > 0:
-                tempo_unit_corte = Decimal('60') / Decimal(str(fin_corte.producao_nominal_hora))
-                self.custo_corte = tempo_unit_corte * Decimal(str(fin_corte.custo_minuto))
-
+            if self.maquina_corte:
+                fin_corte = MaquinaFinancasOEE.objects.filter(
+                    maquina_id=self.maquina_corte.id).first()
+                if fin_corte and fin_corte.producao_nominal_hora > 0:
+                    tempo_corte = Decimal('60') / Decimal(str(fin_corte.producao_nominal_hora))
+                    self.custo_corte = tempo_corte *  Decimal(str(fin_corte.custo_minuto))
+                    print(f"DEBUG: Máquina Corte ID {self.maquina_corte.id} - Tempo Unitário: {tempo_corte} minutos, Custo Minuto: {fin_corte.custo_minuto}, Custo Parcial Corte: {self.custo_corte}")
+                    
             # Seladora (ID 11)
-            fin_seladora = MaquinaFinancasOEE.objects.filter(maquina_id=11).first()
-            if fin_seladora and fin_seladora.producao_nominal_hora > 0:
-                tempo_unit_seladora = Decimal('60') / Decimal(str(fin_seladora.producao_nominal_hora))
-                self.custo_seladora = tempo_unit_seladora * Decimal(str(fin_seladora.custo_minuto))
-                print(
-                    f"DEBUG: Seladora - Tempo Unitário: {tempo_unit_seladora} minutos, Custo Minuto: {fin_seladora.custo_minuto}, Custo Parcial Seladora: {self.custo_seladora}")
+            # roda todos os ids de máquinas de impressão, incluindo a seladora (ID 11)
+                fin = MaquinaFinancasOEE.objects.filter(maquina_id=11).first()
+                if fin and fin.producao_nominal_hora > 0:
+                    tempo_unit = Decimal('60') / Decimal(str(fin.producao_nominal_hora))
+                    self.custo_seladora = tempo_unit * Decimal(str(fin.custo_minuto))
+                    print(
+                        f"DEBUG: Máquina ID {m_id} - Tempo Unitário: {tempo_unit} minutos, Custo Minuto: {fin.custo_minuto}, Custo Parcial Impressão: {self.custo_impressao}")
 
                                     
             # Custo total de máquinas (impressão + corte) dividido por unidades por chapa, para obter o custo unitário de máquinas
@@ -232,7 +238,8 @@ class Orcamento(models.Model):
             
             # Nestes casos, a maquina de corte será utilizada 2 vezes. Uma para a tampa e outra para o fundo.
             ######### CORTE CONJUGADO  OU SIMPLES - SEMPRE MÁQUINAS WONDER 1 OU WONDER 2 ##########
-            self.custo_maquinas = 0
+            self.custo_maquinas = (self.custo_impressao / self.unidades_chapa + self.custo_corte * 2 / \
+                self.unidades_chapa) if self.unidades_chapa > 1 else self.custo_impressao + self.custo_corte
             
             # regra de 3 inversa para considerar a influencia da quantidade na diluicao do custo da maquina que, por sua vez
             # traz dentro de si o custo fixo embutido no valor do custo_minuto, vide acima, que é resultado da interacao
@@ -242,37 +249,43 @@ class Orcamento(models.Model):
             # no loop acima o ultimo producao_nominal_hora ficou sendo para a maquina de corte. Para a regra de 3
             # preciso apenas do primeiro que refere-se a impressora somente.
             
-            obj_impr     = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_impressao.id)
-            obj_corte    = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_corte.id)
-            # regras de 3 inversa para que a quantidade seja considerada nos custos diluíndo ou não os custos fixos. Ganho de escala ou nao...
-           
-            self.custo_impressao = (self.custo_impressao / self.unidades_chapa if self.unidades_chapa > 1 else self.custo_impressao) * obj_impr.producao_nominal_hora / self.quantidade
-                        
-            self.custo_corte = ((self.custo_corte * 2) / self.unidades_chapa if self.unidades_chapa > 1 else self.custo_corte) * obj_corte.producao_nominal_hora / self.quantidade
+            obj = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_impressao.id)
             
-            self.custo_seladora = ((self.custo_seladora) / self.unidades_chapa if self.unidades_chapa > 1 else self.custo_seladora) * fin_seladora.producao_nominal_hora / self.quantidade
+            # regra de 3 inversa
+            self.custo_maquinas = obj.producao_nominal_hora  * self.custo_maquinas / self.quantidade
+            
+            print(f' producao_nominal_hora {obj.producao_nominal_hora}')
+            print(f' self.self.custo_impressao {self.custo_impressao}')
+            print(f' self.self.custo_impressao_Real {self.custo_impressao}')
+            print(f' self.self.custo_corte {self.custo_corte}')
+            print(f' self.self.custo_seladora {self.custo_seladora}')
+            print(f' self.quantidade {self.quantidade}')
+            # print(f"DEBUG: custo_maquinas: {self.custo_maquinas}")
+            
+            self.custo_impressao = (self.custo_impressao / self.unidades_chapa if self.unidades_chapa >
+                                    1 else self.custo_impressao) * obj.producao_nominal_hora / self.quantidade
+            
+            self.custo_corte = ((self.custo_corte * 2) / self.unidades_chapa if self.unidades_chapa > 1 else self.custo_corte)  * obj.producao_nominal_hora / self.quantidade   
+
 
             
-            print(f' producao_nominal_hora_impressora {obj_impr.producao_nominal_hora}')
-            print(f' producao_nominal_hora_corte {obj_corte.producao_nominal_hora}')
-            print(f' producao_nominal_hora_seladora {fin_seladora.producao_nominal_hora}')
-            print(f' self.custo_impressao {self.custo_impressao}')
-            print(f' self.custo_corte {self.custo_corte}')
-            print(f' self.custo_seladora {self.custo_seladora}')
-            print(f' self.quantidade {self.quantidade}')
-         
-                                        
+                            
         except Exception as e:
             print(f"Erro máquinas: {e}")
 
         # 5. PREÇO FINAL COM MARGEM (Markup Inverso)
         # IMPORTANTE: Somamos todos os custos reais calculados
-        custo_total_sem_margem = self.custo_material_unitario + self.perda_material  + self.custo_impressao + self.custo_corte + self.custo_seladora + self.custo_frete_unitario
-
-        self.preco_final_unitario = custo_total_sem_margem * (Decimal('1') + (self.margem_real/100 if self.margem_real >
+        custo_total_base = self.custo_material_unitario + self.custo_maquinas + self.perda_material + self.custo_frete_unitario
+        
+        print(f"DEBUG: capacidade_nominal_hora: {obj.producao_nominal_hora}")
+        print(f"DEBUG: custo_total_base: {custo_total_base}")
+        print(f"DEBUG: self.margem_real: {self.margem_real}")
+              
+        self.preco_final_unitario = custo_total_base * (Decimal('1') + (self.margem_real/100 if self.margem_real >
                  0 else self.custo_total_sem_margem))
         
-
+        print(f"DEBUG: self.preco_final_unitario: {self.preco_final_unitario}")
+                
             
         super().save(*args, **kwargs)
 
@@ -292,21 +305,12 @@ class Orcamento(models.Model):
         obj = MaquinaFinancasOEE.objects.get(
             maquina_id=self.maquina_impressao.id)
         return obj.producao_nominal_hora if obj.producao_nominal_hora else Decimal('0.20')    
-    
-    @property
-    def capac_seladora_nominal_hora(self):
-        obj_seladora = MaquinaFinancasOEE.objects.get(maquina_id=11)
-        return obj_seladora.producao_nominal_hora if obj_seladora.producao_nominal_hora else Decimal('5000')
+
     
     @property
     def nome_maquina_corte(self):
         """Retorna o nome da máquina de corte"""
         return self.maquina_corte.nome if self.maquina_corte else ""
-    
-    @property
-    def nome_maquina_seladora(self):
-        """Retorna o nome da máquina de corte"""
-        return 'Seladora' 
     
     @property
     def nome_chapa_ideal(self):
@@ -350,9 +354,7 @@ class Orcamento(models.Model):
         return (self.custo_papelao_unitario +
                 self.custo_tinta_padrao +
                 self.perda_material +
-                self.custo_impressao +
-                self.custo_corte +
-                self.custo_seladora +
+                self.custo_maquinas +
                 self.custo_frete_unitario)
 
     @property
@@ -368,7 +370,7 @@ class Orcamento(models.Model):
     @property
     def subtotal_processos(self):
         """Soma: Impressão+ Seldora + Corte """
-        return self.custo_impressao + self.custo_corte + self.custo_seladora 
+        return self.custo_maquinas
     
     @property
     def margem_percentual_display(self):

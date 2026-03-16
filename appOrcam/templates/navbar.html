@@ -40,7 +40,18 @@
                         <a class="nav-link" aria-current="page" href="{% url 'listar_orcamentos' %}">Listar Orçamentos</a>
                     </li>
                 </ul>
-            </div>   
+            </div>  
+
+            <div class="navbar-text d-flex gap-3 ms-auto">
+                <span class="badge bg-primary">
+                    Total: {{ total_geral }}
+                </span>
+                <span class="badge bg-success">
+                    Hoje: {{ total_hoje }}
+                </span>
+                <span class="badge bg-warning text-dark">Semana Passada (2ª-Sáb): {{ total_semana_passada }}</span>
+            </div> 
+            
             <a class="nav-link" href="{% static  'arquivos\\info_orcamento\\info_iniciais.txt' %}" target="_blank">Info</a>     
         </div> 
     </nav>  
