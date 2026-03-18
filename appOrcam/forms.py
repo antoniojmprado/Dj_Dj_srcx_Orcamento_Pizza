@@ -9,7 +9,7 @@ class OrcamentoForm(forms.ModelForm):
         fields = [
             'cliente', 'produto_nome', 'quantidade',
             'unidades_chapa', 'maquina_impressao', 'maquina_corte',
-            'chapa_ideal', 'chapa_utilizada', 
+            'chapa_projeto', 'chapa_utilizada',
             'margem_real','custo_frete_unitario'
         ]
 

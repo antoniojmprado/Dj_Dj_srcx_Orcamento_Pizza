@@ -29,7 +29,7 @@
         <h5><strong>CORTE:</strong> {{ orcamento.nome_maquina_corte }}</h5>
     </div>
     <div class="header-secao">
-        <h5><strong>CHAPA IDEAL:</strong> {{ orcamento.chapa_ideal }}</h5>
+        <h5><strong>CHAPA IDEAL:</strong> {{ orcamento.chapa_projeto }}</h5>
     </div>
     <div class="header-secao">
         <h5><strong>CHAPA UTILIZADA:</strong> {{ orcamento.chapa_utilizada }}</h5>
@@ -43,7 +43,14 @@
             <td>Papelão: <span class='bg-warning p-1'><strong>{{ orcamento.total_chapas }}</strong></td><span>
             <td class="col-valor">R$ {{ orcamento.custo_papelao_unitario|floatformat:2 }}</td>
         </tr>
-        <tr><td>Perda de chapa por "Promoção"</td><td class="col-valor">R$ {{ orcamento.perda_material|floatformat:2 }}</td></tr>
+        <tr><td>Perda de chapa por "Promoção" =>  
+            {% if orcamento.custo_perda_excedente > 0 %}
+              Perda Projeto = R$ {{ orcamento.custo_perda_projeto|floatformat:2 }}  + Perda Excedente = R$ {{ orcamento.custo_perda_excedente|floatformat:2 }} 
+            {% else %}    
+                Perda Projeto = R$ {{ orcamento.custo_perda_projeto|floatformat:2 }} 
+            {% endif %}    
+        </td>
+        <td class="col-valor">R$ {{ orcamento.custo_perda_total|floatformat:2 }}</td></tr>
         <tr><td>Tinta e Insumos de Impressão</td><td class="col-valor">R$ {{ orcamento.custo_tinta_padrao|floatformat:2 }}</td></tr>
 
         <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td></tr>
@@ -53,15 +60,22 @@
             <td style="font-size: 22px;text-align: right;">R$ {{ orcamento.subtotal_processos|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td>Impressão -  Cap. Nominal:  {{ orcamento.capac_impressao_nominal_hora|floatformat:"g" }} un./h ({{ orcamento.nome_maquina_impressao |default:"Impressora" }})</td>
-            <td class="col-valor">R$ {{ orcamento.custo_impressao|floatformat:2 }}</td>
+            <td>Impressão -  Cap. Nominal:  {{ orcamento.capac_impressao_nominal_hora|floatformat:"g" }} un./h ({{ orcamento.nome_maquina_impressao |default:"Impressora" }})
+                 - Custo Padrão: {{ orcamento.custo_minuto_impressora|floatformat:2 }} /min
+            </td>
+            <td class="col-valor">R$ {{ orcamento.custo_impressao|floatformat:2 }} </td>
         </tr>
         <tr>
-            <td>Corte e Vinco - Cap. Nominal: {{ orcamento.capac_corte_nominal_hora|floatformat:"g"  | default:""  }} un./h ({{ orcamento.maquina_corte.nome|default:"Corte Interno" }})</td>
+            <td>Corte e Vinco - Cap. Nominal: {{ orcamento.capac_corte_nominal_hora|floatformat:"g"  | default:""  }} un./h ({{ orcamento.maquina_corte.nome|default:"Corte Interno" }})
+                  - Custo Padrão: {{ orcamento.custo_minuto_corte|floatformat:2 }} /min
+            </td>
             <td class="col-valor">R$ {{ orcamento.custo_corte|floatformat:2 }}</td>
         </tr>
         <tr>
-            <td>Seladora - Cap. Nominal:  {{ orcamento.capac_seladora_nominal_hora|floatformat:"g" }} un./h ({{ orcamento.nome_maquina_seladora |default:"Seladora" }})</td>
+            <td>Seladora - Cap. Nominal:  {{ orcamento.capac_seladora_nominal_hora|floatformat:"g" }} un./h 
+                ({{ orcamento.nome_maquina_seladora |default:"Seladora" }}) 
+                - Custo Padrão: {{ orcamento.custo_minuto_seladora|floatformat:2  }} /min
+            </td>
             <td class="col-valor">R$ {{ orcamento.custo_seladora|floatformat:2 }}</td>
         </tr>
 
@@ -76,10 +90,21 @@
             <td>TOTAL CUSTO INDUSTRIAL UNITÁRIO (SEM MARGEM)</td>
             <td style="font-size: 23px; font-weight: bold; color: #3d1b9b;text-align: right">R$ {{ orcamento.custo_total_sem_margem|floatformat:2 }}</td>
         </tr>
-        <tr class="linha-final-venda" style="font-size: 25px; font-weight: bold; color: #3d1b9b; background-color: #e3e3e3;">
-            <td>PREÇO UNITÁRIO SUGERIDO (COM MARGEM)</td>                
-            <td  class='bg-warning p-1' style="font-size: 25px;text-align: right;">R$ {{ orcamento.preco_final_unitario|floatformat:2 }}</td>
-        </tr>
+
+            <tr class="linha-final-venda" style="font-size: 25px; font-weight: bold; color: #055934; background-color: #e3e3e3;">
+      
+                <td style="border: 2px solid #181616">LUCRO BRUTO</td>                
+                <td  class='bg-secondary' style="font-size: 23px;text-align: right;color:#fff;border: 2px solid #181616">R$ {{ orcamento.margem_de_lucro|floatformat:"2g" }}</td>
+            </tr>
+            
+            <tr class="linha-final-venda" style="font-size: 25px; font-weight: bold; color: #3d1b9b; background-color: #e3e3e3;">
+                <td>PREÇO UNITÁRIO SUGERIDO (COM MARGEM)</td>                
+                <td  class='bg-warning p-1' style="font-size: 25px;text-align: right;">R$ {{ orcamento.preco_final_unitario|floatformat:2 }}</td>         
+        </div>
+            </tr>   
+
+
+
     </tbody>
 </table>
 

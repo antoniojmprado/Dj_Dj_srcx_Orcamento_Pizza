@@ -7,10 +7,12 @@ from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, Orcame
 
 @admin.register(Chapa)
 class ChapaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nome', 'largura_cm', 'comprimento_cm','tipo_papelao', 'custo_m2')
+    list_display = ('id', 'nome', 'largura_cm', 'comprimento_cm',
+                    'tipo_papelao', 'custo_m2', 'gramatura_kg_m2', 
+                    'larg_apara_m', 'preco_apara_kg')
     
-    list_editable = ('nome', 'largura_cm', 'comprimento_cm',
-                     'tipo_papelao', 'custo_m2')
+    list_editable = ('nome', 'largura_cm', 'comprimento_cm','tipo_papelao',
+                     'custo_m2', 'gramatura_kg_m2', 'larg_apara_m', 'preco_apara_kg')
     search_fields = ('nome',)
 
 
@@ -47,7 +49,7 @@ class OrcamentoAdmin(admin.ModelAdmin):
     
     
     # 1. Trava os campos para o formulário não sobrescrever o cálculo do Python
-    readonly_fields = ('preco_final_unitario', 'perda_material',
+    readonly_fields = ('preco_final_unitario', 
                        'data_criacao', 'resumo_composicao', 'imprimir_orcamento_btn')  # Adicione o campo do botão aqui
 
     # 2. Configura o que aparece na 'vitrine' (lista de orçamentos)
@@ -79,7 +81,7 @@ class OrcamentoAdmin(admin.ModelAdmin):
             'fields': ('cliente', 'produto_nome', 'quantidade')
         }),
         ('Configuração de Produção', {
-            'fields': ('chapa_ideal', 'chapa_utilizada', 'unidades_chapa', 'maquina_impressao', 'maquina_corte', 'margem_real')
+            'fields': ('chapa_projeto', 'chapa_utilizada', 'unidades_chapa', 'maquina_impressao', 'maquina_corte', 'margem_real')
         }),
         ('Valor do frete por unidade ("Frete por Unidade" no calculador de Fretes)', {
             'fields': ('custo_frete_unitario',)

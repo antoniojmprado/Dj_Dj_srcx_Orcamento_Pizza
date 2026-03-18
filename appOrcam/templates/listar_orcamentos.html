@@ -22,7 +22,7 @@
                 <th>Custo Corte R$</th>
                 <th>Unid/ch</th>
                 <th>Custo Frete R$</th>
-                <th>/un - Margem</th>
+                <th>R$/un - Margem</th>
                 <th>Margem</th>
                 <th>R$/un + Margem</th>
                 <th>Total Orçado R$</th>
@@ -39,8 +39,8 @@
                 <td class = 'direita'>{{ orc.nome_maquina_impressao}}</td>
                 <td class = 'direita'> {{ orc.custo_material_unitario|floatformat:2}}</td>
                 <td class = 'direita'> 
-                    {% if orc.perda_material > 0 %}
-                        {{ orc.perda_material|floatformat:2}}
+                    {% if orc.custo_perda_total > 0 %}
+                        {{ orc.custo_perda_total|floatformat:2}}
                         {% else %} -
                     {% endif %}    
                 </td>
@@ -75,7 +75,7 @@
             <th>Custo Corte</th>
             <th>Unid/ch</th>
             <th>Custo Frete</th>
-            <th>/un - Margem</th>
+            <th>R$/un/un - Margem</th>
             <th>Margem</th>
             <th>R$/un + Margem</th>
             <th>Total Orçado</th>

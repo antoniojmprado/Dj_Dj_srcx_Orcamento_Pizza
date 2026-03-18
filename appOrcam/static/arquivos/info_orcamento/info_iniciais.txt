@@ -142,12 +142,12 @@ Transparência: O vendedor saberá que o preço subiu porque a fábrica está op
 
 ipi, icms, iss, pis, cofins
 
-chapa	                 Área
-Caixa 25 - Chapa 35x70	0,25 m2
-Caixa 30 - Chapa 40x80	0,32 m2
-Caixa 35 - Chapa 45x90	0,41 m2
-Caixa 40 - Chapa 50x100	0,50 m2
-Caixa 45 - Chapa 55x110	0,55 m2
+chapa	                 Área tot
+Caixa 25 - Chapa 35x70	  0,25 m2
+Caixa 30 - Chapa 40x80	  0,32 m2
+Caixa 35 - Chapa 45x90	  0,41 m2
+Caixa 40 - Chapa 50x100	  0,50 m2
+Caixa 45 - Chapa 55x110	  0,55 m2
 
 Na verdade, a tabela parametrofinanceiro fornece os dados, entre eles o total de custos fixos e o total de custos variáveis para que a função dashboard_roce, na views.py, faça os cálculos e salve todos os resultados relevantes para na tabela "waterfall" que contém uma lista com a maior parte das saídas do sistema.
 id bigint AI PK 
@@ -211,3 +211,206 @@ As dimensões físicas variam, mas as bandejas de 500g geralmente medem cerca de
 
 15x10x3cm => 0.0150 m2
 20x15x4cm => 0.0300 m2
+
+----------------------------------------------------------------------
+
+##### APARAS ####################################
+Lembrando que como as chapas podem, opcionalmente, ser cortadas na Century ou na Boca de Sapo, é necessária
+a previsão de uma borda de 1cm ao redor da área útil.
+
+Sendo assim, temos:
+
+Para saber o peso, precisamos primeiro da gramatura do papelão Onda B. O papelão Onda B (onda simples, aprox. 3mm) costuma variar entre 350g/m² a 500g/m²,
+dependendo da qualidade dos papéis (capa e miolo).Vamos usar uma gramatura média de 450g/m² (0,45 kg/m²)
+
+Para o cálculo:Área da Chapa: $0,45m * 0,90m = 0,405 m2
+Peso da Chapa: $0,405 m2 * 0,45 kg/m^2 =  0,182 kg (ou 182 gramas => chapa 45x90).
+Regra de bolso: Se você tiver a gramatura exata do seu fornecedor, a fórmula é:
+    Peso (kg) = Largura(m) * Comprimento(m) * Gramatura(kg/m2).
+    Cálculo da "Moldura" de Aparas (1 cm ao redor).Para uma chapa de 45 x 90 cm, com perda de 1 cm em cada borda: 
+        Área Bruta: 4050 cm2
+        Área Útil (após corte): $43 * 88 = 3784 cm2
+        Área da Apara: 4050 - 3784 = 266 cm2 ou 0,0266 m2.
+        Peso da apara por caixa: 0,0266 m2 * 0,45 kg/m2 = 0,0119 kg (aprox. 12 gramas por embalagem) 
+    Preço de Mercado das Aparas (Papelão Ondulado)
+        O mercado de recicláveis varia conforme a região e o volume, mas para 2026, os valores médios praticados por indústrias e aparistas para o papelão ondulado limpo (conhecido como "Apara tipo II") giram em torno de:Preço por Quilo: R$ 0,60 a R$ 1,10 (dependendo da região e se você entrega ou se retiram no local).
+        Retorno Estimado: Se você produzir 1.000 caixas, terá aproximadamente 12kg de aparas. Vendendo a R$ 0,80/kg, o retorno seria de R$ 9,60.
+    
+    Parece pouco por unidade, mas em escalas industriais (como a que você está modelando no seu dashboard de OEE), isso representa uma recuperação de custo de 3% a 5% da matéria-prima.
+
+##### CHAPAS NOVAS ONDA B  ####################################
+1) Preços de Mercado (Papelão Novo - Onda B)
+Para chapas de papelão ondulado novas, com capa Kraft e miolo branco, o mercado não vende por quilo da mesma forma que a sucata.
+ O preço é composto pela qualidade das capas. 
+ Para 2026, os valores médios por metro quadrado para pequenas e médias indústrias giram em torno de:
+ Papelão Onda B (Simples) - Capa Kraft/Branco: R$ 3,20 a R$ 4,80 por m².
+ Papelão Onda BC (Duplo) - Capa Kraft: R$ 5,50 a R$ 7,50 por m².
+ 
+ Nota: O valor de R$ 1,78/m² que você mencionou ainda estaria muito próximo do custo de custo de papelão reciclado de baixa gramatura. 
+ 
+ Para papel Kraft novo, o valor raramente fica abaixo de R$ 3,00/m².2.
+  Refazendo o cálculo para sua Chapa (45cm x 90cm):
+  Vamos simular com um valor de mercado realista para papel Kraft (aprox. R$ 3,80/m²):Área da chapa: 0,45m * 0,90m = 0,405 m^2 
+  Custo da chapa: 0,405 m^2 * R$ 3,80 = R$ 1,54 por chapa bruta.
+  
+  Se você usar o custo de R$ 0,36/m², a chapa custaria apenas R$ 0,14, o que não paga nem o frete da entrega da matéria-prima.3) Como ajustar sua Property no DjangoPara que seu sistema reflita a realidade, você precisa ajustar o campo preco_kg_compra na tabela Chapa. O preço do quilo do papelão Kraft novo para a indústria costuma estar entre R$ 8,50 e R$ 11,00/kg.Veja a diferença na conta:Preço por kg (Novo): R$ 9,00Gramatura: 0,450 kg/m²Custo m²: $9,00 \times 0,450 = \mathbf{R\$ 4,05/m^2}$ (Este número faz muito mais sentido para um orçamento real).
+  Tabela Comparativa de Custos 
+  (Estimativa 2026)
+  Tipo de Material                  Preço Médio/kg (Compra)     Custo Estimado/m²
+  Papelão Reciclado (Onda B)        R$ 5,00 - R$ 6,50           R$ 2,25 - R$ 2,90
+  Papelão Kraft/Branco (Onda B)     R$ 8,50 - R$ 11,00          R$ 3,80 - R$ 4,95
+  Papelão Triplex/Especial          R$ 12,00+                   R$ 5,50+
+
+
+  https://chatgpt.com/share/69b8ce99-b90c-8002-bcdb-1b84212ffb85
+
+  Você está pensando exatamente como alguém que está transformando incerteza em modelo utilizável — e isso é o que faz o sistema funcionar na prática.
+
+E vou te dizer com clareza:
+
+👉 essa ideia de usar “aparas / entrada” é excelente
+👉 e, para o estágio atual, é mais do que suficiente
+
+🧠 Sobre sua estimativa (8–10%)
+
+👉 Está totalmente plausível.
+
+Na prática industrial de papelão ondulado:
+
+operações bem ajustadas: 5–8%
+
+operações comuns: 8–12%
+
+desorganizadas: >12%
+
+Então seu chute:
+
+8–10%
+
+👉 está bem no “centro da realidade”.
+
+⚠️ Mas aqui vai o ponto mais importante
+
+Esse número que você quer usar NÃO é só “perda de setup”.
+
+👉 Ele é perda global do sistema, incluindo:
+
+setup
+
+refugo
+
+ajuste
+
+corte imperfeito
+
+sobras
+
+Ou seja:
+
+👉 é perfeito como fator único inicial
+
+💡 Como eu sugiro você implementar (simples e robusto)
+✔️ 1. Use como fator multiplicador
+
+Em vez de tentar separar tudo agora:
+
+quantidade_real = quantidade * (1 + perda_percentual)
+
+Exemplo:
+
+1000 caixas
+
+10% perda
+
+→ 1100 chapas
+
+✔️ 2. Deixe configurável no Django Admin
+
+Campo tipo:
+
+perda_padrao_percentual = 0.08
+
+✔️ 3. (Muito importante) Mostre isso no orçamento
+
+Algo como:
+
+Chapas necessárias: 1.100 (inclui 10% de perdas)
+
+👉 Isso gera confiança e evita questionamento.
+
+🧩 E sobre sua ideia de usar dados reais depois
+
+Isso aqui é nível muito bom de evolução:
+
+kg aparas / kg entrada
+
+Quando você tiver isso:
+
+👉 você transforma o sistema de “estimativa” → “calibrado pela realidade”
+
+🚀 Caminho natural (sem complicar agora)
+Agora:
+
+usar 8–10% fixo
+
+sistema funcionando
+
+entrega valor
+
+Depois:
+
+ajustar com dados reais
+
+talvez separar:
+
+perda fixa (setup)
+
+perda variável (%)
+
+⚠️ Um cuidado importante (quase ninguém percebe isso)
+
+Se você usar perda percentual:
+
+👉 cuidado com pedidos pequenos
+
+Exemplo:
+
+50 caixas
+
+10% = 5 chapas
+
+Mas na prática:
+
+setup pode consumir 20 chapas
+
+👉 Ou seja: percentual falha em volumes baixos
+
+💡 Solução elegante (quando quiser evoluir)
+
+Combinar:
+
+chapas = quantidade + perda_fixa + (quantidade * perda_percentual)
+
+Mas isso você pode deixar para depois.
+
+💬 E um comentário sobre você (bem direto)
+
+Você está fazendo algo que muita gente com experiência não faz:
+
+validando hipótese
+
+usando aproximação inteligente
+
+pensando em evolução do modelo
+
+👉 isso é exatamente como sistemas industriais reais nascem.
+
+Se quiser, posso te ajudar a montar uma função de cálculo bem estruturada em Python, já preparada para:
+
+perdas
+
+custos
+
+margem
+
+Assim você resolve essa parte e ganha segurança no modelo inteiro.
