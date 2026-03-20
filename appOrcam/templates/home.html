@@ -5,13 +5,9 @@
 
 {% block body %}
 
-
-
-<div class="container">
-    <div class="row" style="margin-top: 2px; margin-bottom: 1px;"><strong><h3><strong>Premissas Senhor Caixa:</h3></strong></div>
-    <div class="row">
-        <div class="col-6 pad">
-            <p><strong><h4><u>Custos agrupados:</h4></u></strong>
+<div class="container row"><h4><strong>Premissas Senhor Caixa:</strong></h4>
+        <div class="col-6">
+            <p><strong><h5><u>Custos agrupados:</h5></u></strong>
                 <ul>
                     <li>Materiais e Insumos: Papel, Perdas, Tinta</li>
                     <li>Fabricação: Impressora + Seladora + Corte Vinco</li>
@@ -20,15 +16,33 @@
                     <li>Preço sem Margem</li>
                     <li>Preço final</li>
                 </ul>
-            <hr>    
-            <p><strong><h4><u>Custos Variáveis:</h4></u></strong>
+            <p><strong><h5><u>Custos Variáveis:</h5></u></strong>
                 <ul>
                     <li>Papelão: R$ 2,92/m2 - frutos de pesquisas com fornecedores.</li>
                     <li>R$ 0,20/caixa - conforme informações obtidas na Sr. Caixa</li>        
                 </ul>
             </p>
-            <hr>
-            <p><strong><h4><u>Dados Custos Fixos e  Produção:</h4></u></strong>
+            <p><strong><h5><u>Dados Custos Fixos e  Produção: R$ 737.457,21/mês</h5></u></strong>
+                <table>
+                    <thead>
+                        <th>Funcion. R$ </th>
+                        <th>W1 + W2 R$ </th>
+                        <th>Aluguel R$ </th>
+                        <th>Manut. R$ </th>
+                        <th>Serv.Info R$ </th>
+                        <th>Deprec. R$ </th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: right;"> 237.123,88</td>
+                            <td style="text-align: right;"> 300.000,00</td>
+                            <td style="text-align: right;"> 84.000,00</td>
+                            <td style="text-align: right;"> 30.000,00</td>
+                            <td style="text-align: right;"> 30.000,00</td>
+                            <td style="text-align: right;"> 56.333,33</td>
+                        </tr>
+                    </tbody>
+                </table>
                 <table>
                     <thead>
                         <th>Máquina</th>
@@ -88,10 +102,17 @@
                             <td class = "direita">-</td>
                         </tr>
                     </tbody>
-                </table>                        
+                </table>
+                <ul style="align: left;"><h5 style="background-color: black; padding:2px 2px 0px 2px; color:white;text-align: left;"><strong>Depreciação</strong></h5> 
+                    <li class="decoration_none">8% x R$ 8.300.000,00/12 = R$ 54.666,67</li>
+                    <li class="decoration_none">Depreciação mensal (Century=R$ 1 milhão + 2 Wonder = R$ 7 milhões)</li>
+                    <li class="decoration_none">8% X R$ 2.500.000,00 * 10% (reforma Flexo) /12  = R$ 1.666,66</li>
+                    <h5><strong>Total R$ 56.333,33</strong></h5>
+                </ul>                
         </div>
+
         <div class="col-6 pad">
-            <p><strong><h4><u>Cálculo dos Custos/minuto:</h4><u></strong>
+            <p><strong><h5><u>Cálculo dos Custos/minuto:</h5><u></strong>
             <p><strong></h5>Exemplo Flexo:</h5></strong>
                 <ul>
                     <li>8.8 h/turno x 2 turno/dia x 5 dia/sem x 4.3 sem/mes = 378.4 h/mes ou 22.704min</li>
@@ -101,9 +122,8 @@
                     <li><u>Calculando:0,2273 * (CF) R$ 737.457,21 / 22.704 min/mês = R$ 7,38/min</u></li>                
                 </ul>
             </p>
-            <hr>  
             <ul>
-                <p><strong><h4><u>Dados passíveis de ajustes dinâmicamente:</h4></u></strong></p>
+                <p><strong><h5><u>Dados passíveis de ajustes dinâmicamente:</h5></u></strong></p>
                 <li><strong></h5>Dimensões das Chapas</h5></strong></li>
                 <li><strong></h5>Custo m2 de chapa</h5></strong></li>                
                 <li><strong></h5>Custo tinta por unidade</h5></strong></li>                
@@ -112,9 +132,8 @@
                 <li><strong></h5>Capac. produção/maquina/hora</h5></strong></li>
                 <li><strong></h5>Valor frete por unidade</h5></strong></li>                
             </ul>
-            <hr>
             <ul>
-                <p><strong><h4><u>Dados de entrada para orçar preço sugerido<u></strong></h4></u></p>
+                <p><strong><h5><u>Dados de entrada para orçar preço sugerido<u></strong></h5></u></p>
                 <div class="row">
                     <div class="col-6 entradas">
                         <li>Cliente</li>
@@ -133,7 +152,6 @@
                 </div>
             </ul>
         </div>
-    </div>
 </div>
 {% endblock %}
 

@@ -472,6 +472,54 @@ class Orcamento(models.Model):
         """Soma de todos os custos (Materiais + Processos + Logística)"""
         return self.custo_total_sem_margem * (Decimal('1') + (self.margem_real/100 if self.margem_real >= 0 else self.custo_total_sem_margem))
     
+    # PORCENTAGENS SOBRE CUSTO SEM MARGEM
+
+    @property   
+    def custo_papelao_unitario_porc(self): # Porcentagen custo do papelao sobre o custo sem margem
+        params = Custo_tinta.objects.first()
+        return self.custo_papelao_unitario*100/self.custo_total_sem_margem if params else Decimal('0.20')
+
+    @property
+    def custo_perda_projeto_porc(self): # Porcentagen da perda do projeto sobre o custo sem margem
+        return (self.custo_perda_projeto + self.custo_perda_excedente) * 100/self.custo_total_sem_margem if self.custo_perda_projeto else Decimal('0.20')
+
+    @property
+    def custo_tinta_padrao_porc(self):# Porcentagen custo da tinta sobre o custo sem margem
+        """Retorna o custo de tinta para o template"""
+        params = Custo_tinta.objects.first()
+        return params.custo_tinta_unitario*100/self.custo_total_sem_margem if params else Decimal('0.20')
+    @property  
+    def custo_impressao_porc(self):  # Porcentagen do custo de impressao sobre o custo sem margem
+        return self.custo_impressao/self.custo_total_sem_margem * 100 if self.custo_impressao else Decimal('0.20')
+
+    @property    
+    def custo_corte_vinco_porc(self): # Porcentagen do custo do corte e vinco sobre o custo sem margem
+        return self.custo_corte/self.custo_total_sem_margem * 100 if self.custo_corte else Decimal('0.20')
+
+    @property    
+    def custo_seladora_porc(self): # Porcentagen do custo da seladora sobre o custo sem margem
+        return self.custo_seladora/self.custo_total_sem_margem * 100 if self.custo_seladora else Decimal('0.20')
+
+    @property       
+    def custo_frete_unitario_porc(self): # Porcentagen do custo_frete_unitario sobre o custo sem margem
+        return self.custo_frete_unitario/self.custo_total_sem_margem * 100 if self.custo_frete_unitario else Decimal('0.20')
+
+    @property       
+    def subtotal_proc_industriais_porc(self):    # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem
+        return (self.custo_impressao_porc + self.custo_corte_vinco_porc + self.custo_seladora_porc) 
+
+    @property       
+    def subtotal_materiais_insumos_porc(self):    # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem
+        return (self.custo_papelao_unitario_porc + self.custo_perda_projeto_porc + self.custo_tinta_padrao_porc)
+
+    @property       
+    # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem
+    def custo_total_sem_margem_porc(self):
+        return (self.custo_total_sem_margem / self.custo_total_sem_margem) *100
+    
+    
+    
+    
     def resumo_composicao(self): 
         if not self.preco_final_unitario:
             return "Salve para gerar o resumo."

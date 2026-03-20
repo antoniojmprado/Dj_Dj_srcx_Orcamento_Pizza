@@ -259,3 +259,33 @@ td.direita{
 div.pad {
     padding: 0px 8px 0px 8px;
 }
+
+.decoration_none{
+    list-style-type: none;
+    /* Remove os pontos */
+    padding: 0;
+    /* Remove o recuo padrão */
+    margin: 0;
+    /* Remove a margem padrão */
+}
+
+td.td_sutotal {
+    font-size: 24px;
+    font-weight: bold;
+    color: #3d1b9b;
+    text-align: right;
+}
+
+.linha-final-venda{
+    font-size: 25px;
+    font-weight: bold; 
+    color: #055934; 
+    background-color: #e3e3e3;
+}
+
+.linha-final-custo{
+    font-size: 23px;
+    font-weight: bold;
+    color: #3d1b9b;
+    text-align: right"
+}
