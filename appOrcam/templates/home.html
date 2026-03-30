@@ -1,13 +1,15 @@
 {% extends 'base_orcam.html' %}
 
 {% block title %}
+               
 {% endblock %}
 
 {% block body %}
 
-<div class="container row"><h4><strong>Premissas Senhor Caixa:</strong></h4>
+<div class="container mt-0">
+    <div class="row">
         <div class="col-6">
-            <p><strong><h5><u>Custos agrupados:</h5></u></strong>
+            <p><strong><h5><u>Custos agrupados:</h5></u></strong></p> 
                 <ul>
                     <li>Materiais e Insumos: Papel, Perdas, Tinta</li>
                     <li>Fabricação: Impressora + Seladora + Corte Vinco</li>
@@ -16,6 +18,7 @@
                     <li>Preço sem Margem</li>
                     <li>Preço final</li>
                 </ul>
+            </p>    
             <p><strong><h5><u>Custos Variáveis:</h5></u></strong>
                 <ul>
                     <li>Papelão: R$ 2,92/m2 - frutos de pesquisas com fornecedores.</li>
@@ -108,32 +111,35 @@
                     <li class="decoration_none">Depreciação mensal (Century=R$ 1 milhão + 2 Wonder = R$ 7 milhões)</li>
                     <li class="decoration_none">8% X R$ 2.500.000,00 * 10% (reforma Flexo) /12  = R$ 1.666,66</li>
                     <h5><strong>Total R$ 56.333,33</strong></h5>
-                </ul>                
+                </ul>   
+            </p>                 
         </div>
-
-        <div class="col-6 pad">
-            <p><strong><h5><u>Cálculo dos Custos/minuto:</h5><u></strong>
-            <p><strong></h5>Exemplo Flexo:</h5></strong>
+        <div class="col-6">
+            <p><strong><h5><u>Cálculo dos Custos/minuto:</h5></u></strong></p>
                 <ul>
-                    <li>8.8 h/turno x 2 turno/dia x 5 dia/sem x 4.3 sem/mes = 378.4 h/mes ou 22.704min</li>
-                    <li>No sistema está 8.8 h/turno x 2 turno/dia x qt de dia já decorridos = .... 23.232 min para 22 dias...</li>
-                    <li>22,73% => Flexo % partic. no valor total de reposição como parâmetro para rateio do CF e para estipular o custo/min por máquina.</li>
-                <hr>
-                    <li><u>Calculando:0,2273 * (CF) R$ 737.457,21 / 22.704 min/mês = R$ 7,38/min</u></li>                
+                    <li>
+                        8.8 h/turno x 2 turno/dia x 5 dia/sem x 4.3 sem/mes = 378.4 h/mes ou 22.704min.
+                    </li>
+                    <li>
+                        No sistema está 8.8 h/turno x 2 turno/dia x qt de dia já decorridos = .... 23.232 min para 22 dias...
+                    </li>
+                    <li>
+                        22,73% => Flexo % partic. no valor total de reposição como parâmetro para rateio do CF e para estipular o custo/min por máquina.
+                    </li>
+                    <li>
+                        <b>Calculando:</b> 0,2273 * (CF) R$ 737.457,21 / 22.704 min/mês = R$ 7,38/min.
+                    </li>                
                 </ul>
-            </p>
-            <ul>
-                <p><strong><h5><u>Dados passíveis de ajustes dinâmicamente:</h5></u></strong></p>
-                <li><strong></h5>Dimensões das Chapas</h5></strong></li>
-                <li><strong></h5>Custo m2 de chapa</h5></strong></li>                
-                <li><strong></h5>Custo tinta por unidade</h5></strong></li>                
-                <li><strong></h5>Custo/min/máquina</h5></strong></li>                
-                <li><strong></h5>% Máquina na produção</h5></strong></li>
-                <li><strong></h5>Capac. produção/maquina/hora</h5></strong></li>
-                <li><strong></h5>Valor frete por unidade</h5></strong></li>                
+            <ul><h5><u><strong>Dados passíveis de ajustes dinâmicamente:</strong></u></h5>
+                <li><strong><h6>Dimensões das Chapas</h6></strong></li>
+                <li><strong><h6>Custo m2 de chapa</h6></strong></li>                
+                <li><strong><h6>Custo tinta por unidade</h6></strong></li>                
+                <li><strong><h6>Custo/min/máquina</h6></strong></li>                
+                <li><strong><h6>% Máquina na produção</h6></strong></li>
+                <li><strong><h6>Capac. produção/maquina/hora</h6></strong></li>
+                <li><strong><h6>Valor frete por unidade</h6></strong></li>                
             </ul>
-            <ul>
-                <p><strong><h5><u>Dados de entrada para orçar preço sugerido<u></strong></h5></u></p>
+            <ul><strong><h5><u>Dados de entrada para orçar preço sugerido<u></strong></h5></u>
                 <div class="row">
                     <div class="col-6 entradas">
                         <li>Cliente</li>
@@ -150,8 +156,10 @@
                         <li>Frete por unidade</li>                        
                     </div>
                 </div>
-            </ul>
+            </ul>    
         </div>
+    </div>
 </div>
+
 {% endblock %}
 

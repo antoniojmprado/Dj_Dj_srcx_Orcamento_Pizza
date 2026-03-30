@@ -82,7 +82,7 @@ td.col-valor {
     text-align: right;
     font-family: 'Courier New', monospace;
     font-weight: bold;
-    font-size: 18px;
+   
     width: 120px;
 }
 
@@ -288,4 +288,33 @@ td.td_sutotal {
     font-weight: bold;
     color: #3d1b9b;
     text-align: right"
+}
+
+td.total_margem_lucro{
+    font-size: 22px; 
+    font-weight: bold; 
+    color: #3d1b9b;
+    text-align: right
+}
+
+.preco_compra{
+    font-size: 20px;
+    font-weight: bold;
+    color: #d00;
+}
+
+.bg-info{
+    background-color: #05444eb3 !important;
+    color: #fff !important;
+    border-radius: 5px;
+}
+
+.orc_quantidade{
+    background-color: #05444eb3 !important;
+    color: #fff !important;
+    border-radius: 5px;
+    padding: 4px;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: normal;
 }

@@ -414,3 +414,69 @@ custos
 margem
 
 Assim você resolve essa parte e ganha segurança no modelo inteiro.
+------------------------------------------------------------------
+Com Gemini em 22/03/2025
+Eu:
+Para incrementar um pouco mais e para colocar um pouco de opções de produtos, eu gostaria de saber o tamanho médio de uma caixa aberta (cortada mas plana) para bolos de 1 kg e esfiha média, esfiha pequena e sanduíche de metro. Estas embalagens são feitas com papelão onda E Branco-miolo-branco ou kraft-miolo-branco.
+
+
+Gemini:
+Produto	                       Medida da Caixa Montada (cm)	 Medida da Chapa Aberta (cm)*	Área m²   (Aprox.) unidades/chapa
+Bolo 1 kg	                         25 x 25 x 10	                45 x 65                 0,29 m²             1
+Esfiha Média (6-8 unid)	             24 x 24 x  4	                32 x 54	                0,17 m²             4
+Esfiha Pequena (Individual)	         12 x 12 x  4	                20 x 28	                0,06 m²            10
+Sanduíche de Metro	                100 x 15 x 10	               120 x 45	                0,54 m²             1 
+Kibe de Forma (P)                     20 x 14 x 4                   28 x 22                                     9
+Kibe de Forma (M)                     25 x 18 x 5                   35 x 28                                     6       
+Kibe de Forma (G)                     35 x 25 x 5                   45 x 35                                     4
+
+------------------------------------------------------------------
+
+######### MEDIDAS CAIXAS DE ESFIHAS #####################
+Principais Medidas de Caixas de Esfiha:
+as caixas de:
+• 13x13x3,5cm (individual ou pequena) => 0.0169 m2
+• 25x25cm a 27x27cm (média),          => 0.0625 m2
+• grandes de 30x30x5cm até 40x40x5cm  => 0.0900 m2
+
+######### MEDIDAS CAIXAS DE KIBES #####################
+As dimensões físicas variam, mas as bandejas de 500g geralmente medem cerca de 
+
+15x10x3cm => 0.0150 m2
+20x15x4cm => 0.0300 m2
+
+Gemini:
+Produto	                       Explicação Técnica       
+Bolo 1 kg	                   A caixa aberta ocupa quase toda a área. É um corte simples. 
+Esfiha Média (6-8 unid)	       Você coloca 4 caixas abertas (32x50) em uma chapa grande de 65x100.  
+Esfiha Pequena (Individual)	   Por ser pequena (20x28), você consegue um excelente aproveitamento em chapas padrão.  
+Sanduíche de Metro	           Devido ao comprimento (1 metro), ela exige uma chapa longa e exclusiva.        
+
+------------------------------------------------------
+Como você está usando o Onda E, aqui estão alguns pontos para considerar nos seus cálculos de custo:
+.
+Custo do m²: O papelão Branco-Miolo-Branco costuma ser cerca de 15% a 25% mais caro que o Kraft-Miolo-Branco devido ao processo de branqueamento das fibras.
+.
+Otimização de Chapa: Para o Sanduíche de Metro, como a embalagem é muito longa (1 metro), você terá uma perda de área maior se a largura da sua bobina/chapa original não for bem aproveitada.
+.
+Peso e Frete: O Micro-ondulado Onda E é leve. No seu campo custo_frete_unitario, essas caixas menores (esfiha e individual) provavelmente terão um custo de frete por unidade bem menor que a de bolo ou a de sanduíche de metro.
+
+-------------------------------------------
+
+########### CUSTOS ONDA E #######################
+O custo por metro quadrado ($m^2$) e o custo por quilo ($kg$) são grandezas proporcionais, mas você não deve multiplicá-las entre si para validar o preço. Você deve dividir uma pela outra.
+A Lógica Correta
+Pense assim: se 1 m2 pesa $0,400 kg, então o preço de 1 m2 deve ser igual ao preço de 0,400  kg de papelão.
+A fórmula de conversão correta é:
+Custo por   m2 = Preço por kg x Gramatura kg/m^2
+Fazendo a conta com os valores que sugeri:
+•	Preço por kg: R$ 9,25
+•	Gramatura: 0,400 kg/m2
+•	Cálculo: R$ 9,25 x 0,400 =  R$ 3,70/ m^2
+Perceba que o valor de R$ 3,70 faz todo o sentido com a faixa de R$ 3,20 a R$ 3,80 que calculamos para o Onda E.
+
+Item	                Valor Sugerido (Médio)	     Observação Técnica
+Custo m²	            R$ 3,20 a R$ 3,80	         O Onda E é mais caro que o Onda B por m² devido ao processamento das ondas menores.
+Gramatura (kg/m²)	    0,380 a 0,420 kg/m²	         Geralmente composto por capas de 120g a 140g.
+Preço kg Compra	        R$ 8,50 a R$ 10,00	         O preço por quilo do micro-ondulado é mais elevado que o papelão pardo comum.
+

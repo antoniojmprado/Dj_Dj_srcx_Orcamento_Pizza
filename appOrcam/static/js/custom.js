@@ -35,6 +35,57 @@ $(document).ready(function () {
         });
         if ($.fn.DataTable.isDataTable('#myTable')) table.columns.adjust().draw();
     }
+
+    // 1. MÁSCARAS VISUAIS
+    // Para inteiros (Ex: 1.500)
+    $('.mask-inteiro').mask('#.##0', { reverse: true });
+
+    // Para decimais/moeda (Ex: 1.250,50)
+    $('.mask-decimal, .mask-money').mask('#.##0,00', { reverse: true });
+
+    // 2. LIMPEZA ANTES DO ENVIO (Crucial para o Django não dar erro)
+    $('form').submit(function () {
+        // Limpar inteiros (remover todos os pontos)
+        $('.mask-inteiro').each(function () {
+            var val = $(this).val().replace(/\./g, '');
+            $(this).val(val);
+        });
+
+        // Limpar decimais (remover pontos e trocar vírgula por ponto)
+        $('.mask-decimal, .mask-money').each(function () {
+            var val = $(this).val().replace(/\./g, '').replace(',', '.');
+            $(this).val(val);
+        });
+    });
+            // Escuta a mudança no campo de seleção de produto/chapa
+        $('#id_selecionar_produto_padrao').change(function () {
+            var chapaId = $(this).val();
+
+            if (chapaId) {
+                $.ajax({
+                    url: '/get-chapa-detalhes/' + chapaId + '/',
+                    type: 'GET',
+                    success: function (data) {
+                        // 1. Preenche o Nome do Produto (descrição para o orçamento)
+                        $('#id_produto_nome').val(data.nome);
+
+                        // 2. Preenche as Unidades por Chapa (Rendimento)
+                        $('#id_unidades_chapa').val(data.unidades_chapa).trigger('input');
+
+                        // 3. Seleciona a chapa automaticamente nos campos de FK
+                        // Isso garante que o cálculo use os custos da chapa correta
+                        $('#id_chapa_projeto').val(chapaId);
+                        $('#id_chapa_utilizada').val(chapaId);
+
+                        console.log("Configurações da chapa aplicadas!");
+                    },
+                    error: function () {
+                        console.error("Erro ao buscar detalhes da chapa.");
+                    }
+                });
+            }
+        });
+
 });
 
 

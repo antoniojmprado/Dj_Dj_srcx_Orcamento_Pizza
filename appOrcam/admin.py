@@ -1,18 +1,16 @@
-import django
 from django.urls import reverse
 from django.contrib import admin
 from django.utils.html import format_html
-from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, Orcamento, Chapa
-
+from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, Orcamento, Chapa, CategoriaProduto
 
 @admin.register(Chapa)
 class ChapaAdmin(admin.ModelAdmin):
     list_display = ('id', 'nome', 'largura_cm', 'comprimento_cm',
                     'tipo_papelao', 'custo_m2', 'gramatura_kg_m2', 
-                    'larg_apara_m', 'preco_apara_kg')
+                    'larg_apara_m', 'preco_apara_kg', 'explicacao_tecnica')
     
     list_editable = ('nome', 'largura_cm', 'comprimento_cm','tipo_papelao',
-                     'custo_m2', 'gramatura_kg_m2', 'larg_apara_m', 'preco_apara_kg')
+                     'custo_m2', 'gramatura_kg_m2', 'larg_apara_m', 'preco_apara_kg', 'explicacao_tecnica')
     search_fields = ('nome',)
 
 
@@ -37,7 +35,13 @@ class Custo_freteAdmin(admin.ModelAdmin):
     # Isso impede que você crie vários registros; você só edita um.
     def has_add_permission(self, request):
         return not Custo_frete.objects.exists()
+    
 
+@admin.register(CategoriaProduto)
+class CategoriaProdutoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nome')
+    search_fields = ('nome',)
+    
 
 @admin.register(Orcamento)
 class OrcamentoAdmin(admin.ModelAdmin):
@@ -50,19 +54,39 @@ class OrcamentoAdmin(admin.ModelAdmin):
     
     # 1. Trava os campos para o formulário não sobrescrever o cálculo do Python
     readonly_fields = ('preco_final_unitario', 
-                       'data_criacao', 'resumo_composicao', 'imprimir_orcamento_btn')  # Adicione o campo do botão aqui
+                       'data_criacao', 
+                       'resumo_composicao', 'area_total',
+                       'area_projeto_liquida',
+                       'area_perda_projeto',
+                       'perda_area_total',
+                       'perda_area_excedente',
+                       'custo_perda_total',
+                       'custo_perda_projeto',
+                       'custo_perda_excedente',
+                       'imprimir_orcamento_btn')  # Adicione o campo do botão aqui
 
     # 2. Configura o que aparece na 'vitrine' (lista de orçamentos)
     list_display = (
         'id',
         'cliente',
         'produto_nome',
+        'categoria_produto',
         'quantidade',
         'unidades_chapa',
         'maquina_impressao',
+        'maquina_corte',
+        'maquina_seladora',
         'preco_final_unitario',
-        'perda_material_formatada',  # Usando sua função de formatação aqui
         'resumo_composicao',
+        # perdas
+        'area_total',
+        'area_projeto_liquida',
+        'area_perda_projeto',
+        'perda_area_total',
+        'perda_area_excedente',
+        'custo_perda_total',
+        'custo_perda_projeto',
+        'custo_perda_excedente',
         'imprimir_orcamento_btn',  # Botão para imprimir o orçamento em PDF
     )
 
@@ -70,15 +94,15 @@ class OrcamentoAdmin(admin.ModelAdmin):
     list_filter = ('maquina_impressao', 'data_criacao')
     search_fields = ('cliente', 'produto_nome')
 
-    # 4. Sua função de formatação (mantida conforme seu código)
-    def perda_material_formatada(self, obj):
-        return f"R$ {obj.perda_material:.2f}"
-    perda_material_formatada.short_description = 'Perda de Papelão'
+    # # 4. Sua função de formatação (mantida conforme seu código)
+    # def perda_material_formatada(self, obj):
+    #     return f"R$ {obj.perda_material:.2f}"
+    # perda_material_formatada.short_description = 'Perda de Papelão'
 
     # 5. Organização visual do formulário de preenchimento
     fieldsets = (
         ('Dados do Cliente', {
-            'fields': ('cliente', 'produto_nome', 'quantidade')
+            'fields': ('cliente', 'produto_nome', 'categoria_produto', 'quantidade')
         }),
         ('Configuração de Produção', {
             'fields': ('chapa_projeto', 'chapa_utilizada', 'unidades_chapa', 'maquina_impressao', 'maquina_corte', 'margem_real')
@@ -87,15 +111,10 @@ class OrcamentoAdmin(admin.ModelAdmin):
             'fields': ('custo_frete_unitario',)
         }),
         ('Resultados (Calculados Automaticamente)', {
-            'fields': ('preco_final_unitario', 'perda_material', 'resumo_composicao')
+            'fields': ('preco_final_unitario', 'resumo_composicao')
         }),
     )
 
     list_filter = ('maquina_impressao', 'data_criacao')
     search_fields = ('cliente', 'produto_nome')
-
-    def perda_material_formatada(self, obj):
-        return f"R$ {obj.perda_material:.2f}"
-    perda_material_formatada.short_description = 'Perda de Papelão'
-    
          

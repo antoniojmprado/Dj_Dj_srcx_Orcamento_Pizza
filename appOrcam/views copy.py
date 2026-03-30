@@ -1,25 +1,8 @@
 from django.contrib import messages
-from django.http import JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from appOrcam.forms import OrcamentoForm
-from .models import Chapa, Orcamento
+from .models import Orcamento
 
-# =========================
-# LISTAR PRODUTOS-CHAPAS-PADRÃO
-# ========================= 
-def get_chapa_detalhes(request, chapa_id):
-    try:
-        chapa = Chapa.objects.get(pk=chapa_id)
-        data = {
-            'nome': chapa.nome,
-            'unidades_chapa': chapa.unidades_chapa,
-            'largura': float(chapa.largura_cm),
-            'comprimento': float(chapa.comprimento_cm),
-            'custo_m2': float(chapa.custo_m2),
-        }
-        return JsonResponse(data)
-    except Chapa.DoesNotExist:
-        return JsonResponse({'error': 'Chapa não encontrada'}, status=404)
 # =========================
 # INICIAL - PÁGINA INICIAL
 # ========================= appOrcam\templates\home.html

@@ -13,6 +13,7 @@
                 <th id = "getId">id</th>
                 <th>Data de Criação</th>
                 <th>Cliente</th>
+                <th>Produto</th>
                 <th>Qt. un.</th>
                 <th>Impressora</th>
                 <th>Custo Mater. R$</th>
@@ -35,6 +36,7 @@
                 <td id = "getId">{{ orc.id }}</td>
                 <td>{{ orc.data_criacao|date:"d/m/Y" }}</td>
                 <td>{{ orc.cliente}}</td>
+                <td>{{ orc.produto_nome}}</td>
                 <td class = 'direita'>{{ orc.quantidade|floatformat:"g"}}</td>
                 <td class = 'direita'>{{ orc.nome_maquina_impressao}}</td>
                 <td class = 'direita'> {{ orc.custo_material_unitario|floatformat:2}}</td>
@@ -66,6 +68,7 @@
             <th>id</th>
             <th>Data de Criação</th>
             <th>Cliente</th>
+            <th>Produto</th>
             <th>Qt. un.</th>
             <th>Impressora</th>
             <th>Custo Mater.</th>

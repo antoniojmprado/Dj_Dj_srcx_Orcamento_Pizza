@@ -6,8 +6,9 @@ urlpatterns = [
     path('orcamento/<int:pk>/', views.imprimir_orcamento,name='imprimir_orcamento'),
     path('modelForm/', views.form_modelForm, name='form_modelForm'),
     path('listar_orcamentos/', views.listar_orcamentos, name='listar_orcamentos'),
+    path('get-chapa-detalhes/<int:chapa_id>/',
+         views.get_chapa_detalhes, name='get_chapa_detalhes'),
     # path('home/', views.home, name='home'),
     # Exemplo: http://127.0.0.1:8000/orcamento/27/
     # path('', views.form_modelForm, name='form_modelForm'),
-
 ]
