@@ -319,7 +319,10 @@ class Orcamento(models.Model):
             fin_impr = MaquinaFinancasOEE.objects.filter(maquina_id=self.maquina_impressao.id).first()
             if fin_impr and fin_impr.producao_nominal_hora > 0:
                 tempo_unit = Decimal('60') / Decimal(str(fin_impr.producao_nominal_hora))
+                print(
+                    f'fin_impr.producao_nominal_hora {fin_impr.producao_nominal_hora}')
                 custo_base = tempo_unit * Decimal(str(fin_impr.custo_minuto))
+                print(f'custo_base {custo_base}')
                 # Impressão é sempre 1x (só a tampa é impressa), mas rateada por unidades_chapa
                 self.custo_impressao = (custo_base / Decimal(str(self.unidades_chapa)) if self.unidades_chapa > 1 else custo_base)
                 # Regra de 3 inversa (diluição pela quantidade do pedido)
@@ -339,8 +342,7 @@ class Orcamento(models.Model):
                 if fin_corte and fin_corte.producao_nominal_hora > 0:
                     tempo_unit = Decimal('60') / Decimal(str(fin_corte.producao_nominal_hora))
                     custo_base = tempo_unit * Decimal(str(fin_corte.custo_minuto))
-                    # Aplica o multiplicador (2x se for pizza conjugada)
-                    # self.custo_corte = (custo_base * multiplicador / Decimal(str(self.unidades_chapa)) if self.unidades_chapa > 1 else custo_base * multiplicador)
+
                     self.custo_corte = custo_base * multiplicador
                     self.custo_corte = self.custo_corte * fin_corte.producao_nominal_hora / self.quantidade
 
@@ -349,8 +351,7 @@ class Orcamento(models.Model):
             if fin_seladora and fin_seladora.producao_nominal_hora > 0:
                 tempo_unit = Decimal('60') / Decimal(str(fin_seladora.producao_nominal_hora))
                 custo_base = tempo_unit * Decimal(str(fin_seladora.custo_minuto))
-                # Aplica o multiplicador (2x se for pizza conjugada)
-                # self.custo_seladora = (custo_base * multiplicador / Decimal(str(self.unidades_chapa)) if self.unidades_chapa > 1 else custo_base * multiplicador)
+
                 self.custo_seladora = custo_base * multiplicador 
                 self.custo_seladora = self.custo_seladora * fin_seladora.producao_nominal_hora / self.quantidade
 
@@ -375,19 +376,7 @@ class Orcamento(models.Model):
             obj_impr     = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_impressao.id)
             obj_corte    = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_corte.id)
             # regras de 3 inversa para que a quantidade seja considerada nos custos diluíndo ou não os custos fixos. Ganho de escala ou nao...
-           
-            self.custo_impressao = (self.custo_impressao / self.chapa_utilizada.unidades_chapa if self.chapa_utilizada.unidades_chapa > 1 else self.custo_impressao) * obj_impr.producao_nominal_hora / self.quantidade
 
-
-            # --- CÁLCULO DO CORTE E SELADORA ---
-            # Aplicamos o mesmo multiplicador para os processos industriais
-            custo_base_corte = (self.custo_corte / Decimal(str(self.unidades_chapa)) if self.unidades_chapa > 1 else self.custo_corte)
-            self.custo_corte = (custo_base_corte * multiplicador) * obj_corte.producao_nominal_hora / self.quantidade
-
-            # O mesmo para a seladora...
-            custo_base_seladora = (self.custo_seladora / Decimal(str(self.unidades_chapa)) if self.unidades_chapa > 1 else self.custo_seladora)
-            self.custo_seladora = (custo_base_seladora * multiplicador) * fin_seladora.producao_nominal_hora / self.quantidade
-                                   
             print(f' producao_nominal_hora_impressora {obj_impr.producao_nominal_hora}')
             print(f' producao_nominal_hora_corte {obj_corte.producao_nominal_hora}')
             print(f' producao_nominal_hora_seladora {fin_seladora.producao_nominal_hora}')
@@ -402,8 +391,7 @@ class Orcamento(models.Model):
 
         # 5. PREÇO FINAL COM MARGEM (Markup Inverso)
         # IMPORTANTE: Somamos todos os custos reais calculados
-        custo_total_sem_margem = self.custo_material_unitario + self.custo_perda_total + self.custo_impressao + self.custo_corte + \
-            self.custo_seladora + self.custo_frete_unitario
+        custo_total_sem_margem = self.custo_material_unitario + self.custo_perda_total + self.custo_impressao + self.custo_corte + self.custo_seladora + self.custo_frete_unitario
 
         self.preco_final_unitario = custo_total_sem_margem * (Decimal('1') + (self.margem_real/100 if self.margem_real > 0 else self.custo_total_sem_margem))        
             
