@@ -27,7 +27,8 @@
                 <th>Margem</th>
                 <th>R$/un + Margem</th>
                 <th>Total Orçado R$</th>
-                <th>Ação</th>
+                <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -61,6 +62,7 @@
                 <td class = 'direita'> {{ orc.custo_total_com_margem|floatformat:"2g" }}</td>
                 <td class = 'direita'> {{ orc.valor_total_pedido|floatformat:"2g" }}</td>
                 <td><button class="btn btn-outline-secondary" name = "orcam_id"><strong>Abrir</strong></button></td>
+                <td><a class="btn btn-outline-secondary" href="{% url 'listar_roteiros_producao' orc.id %}" ><strong>Roteiros</strong></a></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -82,6 +84,7 @@
             <th>Margem</th>
             <th>R$/un + Margem</th>
             <th>Total Orçado</th>
+            <th></th>
             <th></th>
         </tfoot>  
     </table>

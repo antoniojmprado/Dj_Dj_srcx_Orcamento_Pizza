@@ -329,10 +329,8 @@ class Orcamento(models.Model):
             fin_impr = MaquinaFinancasOEE.objects.filter(maquina_id=self.maquina_impressao.id).first()
             if fin_impr and fin_impr.producao_nominal_hora > 0:
                 tempo_unit = Decimal('60') / Decimal(str(fin_impr.producao_nominal_hora))
-                print(f'fin_impr.producao_nominal_hora {fin_impr.producao_nominal_hora}')
                 
                 custo_base = tempo_unit * Decimal(str(fin_impr.custo_minuto))
-                print(f'custo_base {custo_base}')
                 # Impressão é sempre 1x (só a tampa é impressa), mas rateada por unidades_chapa
                 self.custo_impressao = (custo_base / Decimal(str(self.unidades_chapa)) if self.unidades_chapa > 1 else custo_base)
                 # Regra de 3 inversa (diluição pela quantidade do pedido)
@@ -383,11 +381,9 @@ class Orcamento(models.Model):
                 obj_impr     = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_impressao.id)
                 obj_corte    = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_corte.id)
           
-            maquina_nome = []
-            custo = []
-            tempo_liquido = []
             ############ FLUXOS DE OPERAÇÃO############
             fabrica = MaquinaFinancasOEE.objects.all()
+            maquinas_dict = {}
                             
             for maq in fabrica:
                 tempo_unit = Decimal('60') / Decimal(str(maq.producao_nominal_hora))
@@ -395,15 +391,34 @@ class Orcamento(models.Model):
                 custo_orcado = custo_base * Decimal(str(maq.producao_nominal_hora)) / self.quantidade
                 tempo_producao_liquido = tempo_unit * self.quantidade
                 
-                # maquina_nome.append(maq.maquina.nome)
-                # custo.append(custo_orcado)
-                # tempo_liquido.append(tempo_producao_liquido)            
-
+                # Criamos um "atalho" fácil para cada máquina
+                maquinas_dict[maq.maquina.nome.lower().replace(" ", "_")] = {
+                    # 'nome': maq.maquina.nome,
+                    'custo': custo_orcado,
+                    'tempo': tempo_producao_liquido
+                }
+                
                 print(f'__' * 50)
                 print(
                     f'Máquina: {maq.maquina.nome} | custo_orcado: {custo_orcado:.4f} | tempo_producao_liquido (min): {tempo_producao_liquido:.4f}')                                     
                 print(f'__' * 50)
-        
+                
+            print('D I C I O N Á R I O')
+            print(f'maquinas_dict: {maquinas_dict}')        
+                
+            print('roteiro de operação: ')
+            
+            tipo_maquina = MaquinaOEE.objects.all()
+            
+            for tipo in tipo_maquina:
+                nome_tipo = tipo.nome.lower().replace(" ", "_")
+                if nome_tipo in maquinas_dict:
+                    print(
+                        f'Passa pela máquina {nome_tipo} com custo unitário de {maquinas_dict[nome_tipo]["custo"]:.4f} e tempo total de produção de {maquinas_dict[nome_tipo]["tempo"]:.4f} minutos')
+                else:
+                    print(f'Não passa pela máquina {tipo.nome}')        
+            
+            
         except Exception as e:
             print(f"Erro máquinas: {e}")
 

@@ -1,0 +1,36 @@
+{% extends 'base_orcam.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block body %}
+
+<div class="container"> 
+
+    {% for r in roteiros %}
+    
+        <div class="card">
+            <h2>{{ r.nome }}</h2>
+            
+            <div class="fluxo">
+                <strong>Matéria-Prima</strong>
+                {% for p in r.passos %}
+                    <span> ➔ </span>
+                    <span class="badge">{{ p.nome }} (R$ {{ p.custo|floatformat:4 }})</span>
+                {% endfor %}
+            </div>
+            
+            <p><strong>Custo Total: R$ {{ r.total|floatformat:4 }}</strong></p>
+        </div>
+
+    <hr>
+    {% empty %}
+        <p>Nenhum roteiro configurado.</p>
+    {% endfor %}
+
+</div>
+
+
+
+{% endblock %}
+
