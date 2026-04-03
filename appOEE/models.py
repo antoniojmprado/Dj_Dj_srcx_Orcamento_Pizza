@@ -33,7 +33,7 @@ class Maquina(models.Model):
 ###############################################
 class MaquinaFinancas(models.Model):
     # Relaciona com sua Maquina já existente
-    maquina = models.OneToOneField('Maquina', on_delete=models.CASCADE, related_name='financas')
+    maquina = models.OneToOneField('Maquina', on_delete=models.CASCADE, related_name='financas_oee')
     valor_reposicao = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     perc_ativo = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     custo_minuto = models.DecimalField(max_digits=16, decimal_places=6, null=True, blank=True)

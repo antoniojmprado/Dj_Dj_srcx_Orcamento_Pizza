@@ -1,8 +1,11 @@
-from django.db import models
+from django.db import connection, models
 from decimal import Decimal 
 from django.core.validators import MinValueValidator
 from django.forms import CharField
+from django.shortcuts import render
+import appOEE
 from appOEE.models import Maquina
+
 
     
 class Chapa(models.Model):
@@ -62,8 +65,9 @@ class MaquinaOEE(models.Model):
         if self.nome:
             return str(self.nome)
         return self.nome
-# How to Fix __str__ Returned Non-String Error in Django Models
-# https://www.youtube.com/watch?v=uDli4npnUk8
+    
+    # How to Fix __str__ Returned Non-String Error in Django Models
+    # https://www.youtube.com/watch?v=uDli4npnUk8
 
 
 class WaterfallOEE(models.Model):
@@ -80,8 +84,16 @@ class WaterfallOEE(models.Model):
 
 class MaquinaFinancasOEE(models.Model):
     # A PK real da tabela é o campo 'id'
-    id = models.BigIntegerField(primary_key=True)
-    maquina_id = models.BigIntegerField()
+    # id = models.BigIntegerField(primary_key=True)
+    
+    # maquina_id = models.BigIntegerField()
+    maquina = models.ForeignKey(
+        'appOEE.Maquina',
+        on_delete=models.CASCADE,
+        related_name='financas_orcamento',
+        db_column='maquina_id'  # Isso resolve o conflito de nomes
+    )
+    
     valor_reposicao = models.DecimalField(max_digits=12, decimal_places=2)
     custo_minuto = models.DecimalField(max_digits=16, decimal_places=6)
 
@@ -239,7 +251,6 @@ class Orcamento(models.Model):
         custo_m2_papelao = Decimal(str(self.chapa_utilizada.custo_m2))  # custo_m2 na classe Chapa acima
 
         # 3. CALCULOS DAS PERDAS
-   
         
         ############ CORTE CONJUGADO (UNIDADES_CHAPA > 1) ############################
         # ADMITIDO QUE FUNDOS E TAMPAS SÃO DE CHAPAS DIFERENTES, ENTÃO O CUSTO DE PAPELÃO É CALCULADO PARA A CHAPA IMPRESSA MAIS UMA CHAPA NÃO IMPRESSA QUE SERÁ CORTADA PARA FAZER OS FUNDOS. , O CUSTO DE PAPELÃO É DIVIDIDO PELO NÚMERO DE UNIDADES POR CHAPA PARA OBTER O CUSTO UNITÁRIO DE PAPELÃO, CASO CONTRÁRIO, O CUSTO DE PAPELÃO É INTEGRAL PARA AQUELA UNIDADE.
@@ -306,7 +317,6 @@ class Orcamento(models.Model):
             self.custo_corte = Decimal('0.0000')
         
         nome_maquina = self.maquina_impressao.nome if self.maquina_impressao else "N/A"
-        print(f"DEBUG nome_maquina {nome_maquina} ")
 
         try: 
             # --- CÁLCULO DE MÁQUINAS ---
@@ -319,8 +329,8 @@ class Orcamento(models.Model):
             fin_impr = MaquinaFinancasOEE.objects.filter(maquina_id=self.maquina_impressao.id).first()
             if fin_impr and fin_impr.producao_nominal_hora > 0:
                 tempo_unit = Decimal('60') / Decimal(str(fin_impr.producao_nominal_hora))
-                print(
-                    f'fin_impr.producao_nominal_hora {fin_impr.producao_nominal_hora}')
+                print(f'fin_impr.producao_nominal_hora {fin_impr.producao_nominal_hora}')
+                
                 custo_base = tempo_unit * Decimal(str(fin_impr.custo_minuto))
                 print(f'custo_base {custo_base}')
                 # Impressão é sempre 1x (só a tampa é impressa), mas rateada por unidades_chapa
@@ -328,15 +338,13 @@ class Orcamento(models.Model):
                 # Regra de 3 inversa (diluição pela quantidade do pedido)
                 self.custo_impressao = self.custo_impressao * fin_impr.producao_nominal_hora / self.quantidade
 
-            # 2. CORTE (Só calcula se houver máquina de corte selecionada)
-            
+            # 2. CORTE (Só calcula se houver máquina de corte selecionada)            
             if self.categoria_produto_id == 1 and self.unidades_chapa > 1:
                 multiplicador = Decimal('2')
             else:
                 # Para Kibe, Esfiha ou Pizza de chapa única (tampa+fundo na mesma folha)
                 multiplicador = Decimal('1')
-                
-            
+                                
             if self.maquina_corte:
                 fin_corte = MaquinaFinancasOEE.objects.filter(maquina_id=self.maquina_corte.id).first()
                 if fin_corte and fin_corte.producao_nominal_hora > 0:
@@ -356,36 +364,46 @@ class Orcamento(models.Model):
                 self.custo_seladora = self.custo_seladora * fin_seladora.producao_nominal_hora / self.quantidade
 
             self.custo_maquinas = self.custo_impressao + self.custo_corte + self.custo_seladora
-
                                     
             # Custo total de máquinas (impressão + corte) dividido por unidades por chapa, para obter o custo unitário de máquinas
             # considerando que o custo de máquina é rateado entre as unidades produzidas por chapa. A divisão só acontece se o numero de chapas for maior que 1, corte 'conjugado', caso contrário, o custo de máquina é integral para aquela unidade.
             
-            # Nestes casos, a maquina de corte será utilizada 2 vezes. Uma para a tampa e outra para o fundo.
-            ######### CORTE CONJUGADO  OU SIMPLES - SEMPRE MÁQUINAS WONDER 1 OU WONDER 2 ##########
-            # self.custo_maquinas = 0
-            
+            # Nestes casos, a maquina de corte será utilizada 2 vezes. Uma para a tampa e outra para o fundo.  
+                      
+            ######### CORTE CONJUGADO  OU SIMPLES - SEMPRE MÁQUINAS WONDER 1 OU WONDER 2 ##########            
             # regra de 3 inversa para considerar a influencia da quantidade na diluicao do custo da maquina que, por sua vez
             # traz dentro de si o custo fixo embutido no valor do custo_minuto, vide acima, que é resultado da interacao
             # entre a participacao do ativo no total de ativos da fabrica como exemplo que segue:
-            # Flexo Xitian:0, 2273 * (CF) R$ 737.457, 21 / 22.704 min/mês = R$ 7, 38/min
+            # Flexo Xitian: 0,2273 * (CF) R$ 737.457, 21 / 22.704 min/mês = R$ 7, 38/min
             
             # no loop acima o ultimo producao_nominal_hora ficou sendo para a maquina de corte. Para a regra de 3
             # preciso apenas do primeiro que refere-se a impressora somente.
             
-            obj_impr     = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_impressao.id)
-            obj_corte    = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_corte.id)
-            # regras de 3 inversa para que a quantidade seja considerada nos custos diluíndo ou não os custos fixos. Ganho de escala ou nao...
+            if self.maquina_impressao and self.maquina_corte:
+                obj_impr     = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_impressao.id)
+                obj_corte    = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_corte.id)
+          
+            maquina_nome = []
+            custo = []
+            tempo_liquido = []
+            ############ FLUXOS DE OPERAÇÃO############
+            fabrica = MaquinaFinancasOEE.objects.all()
+                            
+            for maq in fabrica:
+                tempo_unit = Decimal('60') / Decimal(str(maq.producao_nominal_hora))
+                custo_base = tempo_unit * Decimal(str(maq.custo_minuto))
+                custo_orcado = custo_base * Decimal(str(maq.producao_nominal_hora)) / self.quantidade
+                tempo_producao_liquido = tempo_unit * self.quantidade
+                
+                # maquina_nome.append(maq.maquina.nome)
+                # custo.append(custo_orcado)
+                # tempo_liquido.append(tempo_producao_liquido)            
 
-            print(f' producao_nominal_hora_impressora {obj_impr.producao_nominal_hora}')
-            print(f' producao_nominal_hora_corte {obj_corte.producao_nominal_hora}')
-            print(f' producao_nominal_hora_seladora {fin_seladora.producao_nominal_hora}')
-            print(f' self.custo_impressao {self.custo_impressao}')
-            print(f' self.custo_corte {self.custo_corte}')
-            print(f' self.custo_seladora {self.custo_seladora}')
-            print(f' self.quantidade {self.quantidade}')
-         
-                                        
+                print(f'__' * 50)
+                print(
+                    f'Máquina: {maq.maquina.nome} | custo_orcado: {custo_orcado:.4f} | tempo_producao_liquido (min): {tempo_producao_liquido:.4f}')                                     
+                print(f'__' * 50)
+        
         except Exception as e:
             print(f"Erro máquinas: {e}")
 
@@ -394,6 +412,7 @@ class Orcamento(models.Model):
         custo_total_sem_margem = self.custo_material_unitario + self.custo_perda_total + self.custo_impressao + self.custo_corte + self.custo_seladora + self.custo_frete_unitario
 
         self.preco_final_unitario = custo_total_sem_margem * (Decimal('1') + (self.margem_real/100 if self.margem_real > 0 else self.custo_total_sem_margem))        
+           
             
         super().save(*args, **kwargs)
         # Propriedades para uso no PDF (ajustadas para não conflitar)
@@ -589,8 +608,7 @@ class Orcamento(models.Model):
     def custo_total_sem_margem_porc(self):
         return (self.custo_total_sem_margem / self.custo_total_sem_margem) *100
     
-    
-    
+
     
     def resumo_composicao(self): 
         if not self.preco_final_unitario:
