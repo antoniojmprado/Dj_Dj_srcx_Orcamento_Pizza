@@ -28,8 +28,7 @@
         <h5><strong>CORTE:</strong> {{ orcamento.nome_maquina_corte }}</h5>
     </div>
     <div class="header-secao">
-        <h5><strong>CHAPA IDEAL:</strong> {{ orcamento.chapa_projeto }} - 
-            <span class = "preco_compra"><strong>{{ orcamento.get_tipo_papelao }}</strong></span>
+        <h5><strong>CHAPA IDEAL:</strong> {{ orcamento.chapa_projeto }} 
         </h5>
     </div>
     <div class="header-secao">
@@ -85,7 +84,7 @@
         <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td></tr>
 
         <tr style="font-size: 22px; font-weight:bold;">
-            <td colspan="1">⚙️ PROCESSOS INDUSTRIAIS - FABRICAÇÃO</td>
+            <td colspan="1">⚙️ PROCESSOS INDUSTRIAIS</td>
             <td style="font-size: 22px;text-align: right;">R$ {{ orcamento.subtotal_processos|floatformat:2 }}</td>
             <!-- subtotal -->
             <td class="td_sutotal col-valor">{{ orcamento.subtotal_proc_industriais_porc|floatformat:0 }} %</td>
@@ -114,6 +113,12 @@
         </tr>
 
         <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td></tr>
+            <tr  style="font-size: 22px; font-weight:bold;">
+                <td colspan="1">🚚 SUBTOTAL - CUSTO DE FABRICAÇÃO</td><td style="font-size: 22px;text-align: right;">R$ {{ orcamento.custo_total_fabricacao|floatformat:2 }}</td>   
+                <!-- subtotal         
+                <td class= "td_sutotal col-valor">{{ orcamento.custo_frete_unitario_porc|floatformat:0 }} %</td> -->        
+            </tr>        
+        <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td></tr>
         
         <tr  style="font-size: 22px; font-weight:bold;">
             <td colspan="1">🚚 LOGÍSTICA</td><td style="font-size: 22px;text-align: right;">R$ {{ orcamento.custo_frete_unitario|floatformat:2 }}</td>   
@@ -128,7 +133,7 @@
         <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td></tr>
                 
         <tr class="linha-final-custo">
-            <td>TOTAL CUSTO INDUSTRIAL UNITÁRIO (SEM MARGEM)</td>
+            <td>TOTAL CUSTO INDUSTRIAL UNITÁRIO + FRETE (SEM MARGEM)</td>
             <td class = "total_margem_lucro">R$ {{ orcamento.custo_total_sem_margem|floatformat:2 }}</td>
             <!-- subtotal -->         
             <td class= "td_sutotal col-valor">{{ orcamento.custo_total_sem_margem_porc|floatformat:0 }} %</td>        

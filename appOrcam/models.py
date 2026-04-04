@@ -43,7 +43,7 @@ class Chapa(models.Model):
         return (self.area_m2 - self.area_projeto_m2)
 
     def __str__(self):
-        return self.nome
+        return f"{self.nome} - chapa: {self.largura_cm} x {self.comprimento_cm} - Onda {self.tipo_papelao}"
 
 
 class MaquinaOEE(models.Model):
@@ -536,6 +536,16 @@ class Orcamento(models.Model):
         """Retorna o custo de tinta para o template"""
         params = Custo_tinta.objects.first()
         return params.custo_tinta_unitario if params else Decimal('0.20')
+    
+    @property
+    def custo_total_fabricacao(self):
+        """Soma de todos os custos reais (Material + Máquinas"""
+        return (self.custo_papelao_unitario +
+                self.custo_tinta_padrao +
+                self.custo_perda_total +
+                self.custo_impressao +
+                self.custo_corte +
+                self.custo_seladora )
     
     @property
     def custo_total_sem_margem(self):

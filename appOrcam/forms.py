@@ -8,7 +8,7 @@ class OrcamentoForm(forms.ModelForm):
     selecionar_produto_padrao = forms.ModelChoiceField(
         queryset=Chapa.objects.all(),
         required=False,
-        label="Usar Configuração de Produto",
+        label="Características do Produto",
         empty_label="--- Selecione um produto para preencher automático ---",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -40,9 +40,10 @@ class OrcamentoForm(forms.ModelForm):
         # Lógica de filtros das máquinas (OEE)
         try:
             Maquina = apps.get_model('appOEE', 'Maquina')
-            self.fields['maquina_impressao'].queryset = Maquina.objects.filter(
-                impressora=True)
-            self.fields['maquina_corte'].queryset = Maquina.objects.filter(
-                corte=True)
+            self.fields['maquina_impressao'].queryset = Maquina.objects.filter(impressora=True)
+            self.fields['maquina_corte'].queryset = Maquina.objects.filter(corte=True)
+            # o campo 'chapa_projeto' pareça desabilitado e o usuário não consiga clicar nele, mas como ele tecnicamente não está com o atributo disabled, o navegador enviará o ID para o Django normalmente.
+            self.fields['chapa_projeto'].widget.attrs['style'] = 'pointer-events: none; background-color: #e9ecef;'
+            self.fields['chapa_projeto'].widget.attrs['tabindex'] = '-1'
         except Exception:
             pass
