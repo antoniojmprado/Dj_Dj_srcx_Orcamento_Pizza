@@ -41,7 +41,7 @@ class Custo_freteAdmin(admin.ModelAdmin):
 class CategoriaProdutoAdmin(admin.ModelAdmin):
     list_display = ('id', 'nome')
     search_fields = ('nome',)
-    
+
 
 @admin.register(Orcamento)
 class OrcamentoAdmin(admin.ModelAdmin):

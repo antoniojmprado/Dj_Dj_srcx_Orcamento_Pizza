@@ -1,18 +1,21 @@
-body {
+.fotofabrica{
+    background-image: url("../images/entrada.jpg"); 
+    background-size: cover;        /* Faz a imagem cobrir toda a área */
+    background-position: center;        /* Centraliza */
+    background-repeat: no-repeat;        /* Evita repetição */
+}
+
+
+body  {
     font-family: sans-serif;
     /* margin: 40px; */
     color: #333;
 
-    background-image: url("../images/background-full (1).png"); 
-    /* background-image: url("../images/joinvia/marca dagua.png"); */
-    background-size: cover;
-    /* cobre toda a tela */
-    background-repeat: no-repeat;
-    /* não repete */
-    background-position: center;
-    /* centraliza */
-    background-attachment: fixed;
-    /* efeito "parallax" leve */
+    background-image: url("../images/background-full (1).png");     /* background-image: url("../images/joinvia/marca dagua.png"); */
+    background-size: cover;    /* cobre toda a tela */
+    background-repeat: no-repeat;    /* não repete */
+    background-position: center;    /* centraliza */
+    background-attachment: fixed;    /* efeito "parallax" leve */
 }
 
 .grid {

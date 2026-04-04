@@ -165,6 +165,7 @@ class CategoriaProduto(models.Model):
     def __str__(self):
         return self.nome
         
+
 class Orcamento(models.Model):
     cliente = models.CharField(max_length=255, db_index=True)
     data_criacao = models.DateTimeField(auto_now_add=True)
@@ -180,6 +181,7 @@ class Orcamento(models.Model):
     maquina_seladora = models.ForeignKey(Maquina, on_delete=models.SET_NULL,  null=True, blank=True, related_name='orcamentos_seladora')
 
     # Campos de Custo (Decimal)
+    custo_tinta_unitario = models.DecimalField(max_digits=10, decimal_places=4, default=0.20)
     custo_impressao = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     custo_corte = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     custo_seladora = models.DecimalField(max_digits=10, decimal_places=4, default=0)
@@ -240,6 +242,9 @@ class Orcamento(models.Model):
         # 0. BUSCA PARÂMETROS GLOBAIS
         params = Custo_tinta.objects.first()
         custo_tinta_unitario = params.custo_tinta_unitario if params else Decimal('0.20')
+        
+        # Armazenamos o custo da tinta para referência futura, se necessário
+        self.custo_tinta_unitario = custo_tinta_unitario
 
         # 1. CUSTO FRETE UNITÁRIO
         self.custo_frete_unitario = self.custo_frete_unitario if self.custo_frete_unitario > 0 else Decimal('0.30')         
@@ -269,7 +274,7 @@ class Orcamento(models.Model):
 
         # --- CÁLCULO DO MATERIAL ---
         # Adiciona a tinta (que é sempre por unidade final)
-        self.custo_material_unitario += custo_tinta_unitario
+        self.custo_material_unitario += self.custo_tinta_unitario
         
         # 2.1 CÁLCULO DINÂMICO DE PERDAS (Ajustado para os seus campos reais)
         if self.chapa_utilizada:

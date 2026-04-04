@@ -84,8 +84,20 @@ def listar_orcamentos(request):
 # LISTAR ORÇAMENTOS x ROTEIROS DE PRODUÇÃO
 # ==========================================
 def listar_roteiros_producao(request, pk):
-    # 1. Busca o orçamento específico para obter a quantidade
+    # 1. Busca o orçamento específico para obter a quantidade  custo_perda_total
     orcamento = get_object_or_404(Orcamento, pk=pk)
+    custo_materiais = Decimal(str(orcamento.custo_material_unitario or '0.0000'))
+    
+    # Excluímos o custo da tinta para o cálculo dos roteiros, pois ela é um custo fixo por unidade e não varia entre os roteiros.
+    custo_materiais_parcial = custo_materiais - Decimal(str(orcamento.custo_tinta_unitario or '0.0000'))  
+    
+    # Custo material por unidade, sem a tinta
+    custo_materiais_parcial = custo_materiais_parcial / orcamento.unidades_chapa if orcamento.unidades_chapa > 1 else custo_materiais_parcial
+    
+    custo_materiais = custo_materiais_parcial + orcamento.custo_tinta_unitario  
+        
+    custo_perda_total = Decimal(str(orcamento.custo_perda_total or '0.0000'))
+    # custo_materiais += custo_perda_total  # Somamos o custo da perda ao
     quantidade_solicitada = Decimal(str(orcamento.quantidade))
 
     # 2. Busca os dados das máquinas
@@ -97,39 +109,72 @@ def listar_roteiros_producao(request, pk):
         tempo_unit = Decimal('60') / Decimal(str(maq.producao_nominal_hora))
         custo_base = tempo_unit * Decimal(str(maq.custo_minuto))
 
-        # Aplicando sua fórmula: (Custo Base * Prod. Nominal) / Quantidade do Orçamento
         # Nota: Se a intenção é ratear o custo fixo pela quantidade, a lógica é esta:
-        custo_orcado = (
-            custo_base * Decimal(str(maq.producao_nominal_hora))) / quantidade_solicitada
+        custo_orcado = (custo_base * Decimal(str(maq.producao_nominal_hora))) / quantidade_solicitada
+        
 
+        # Definimos uma variável segura para a divisão
+        divisor = Decimal(str(orcamento.unidades_chapa or '1'))
+        if divisor < 1:
+            divisor = Decimal('1')
+            
+        # Caso do corte conjugado: o custo de impressão é o corte normal dividido pela quantidade de unidades por chapa.
+        if maq.maquina.impressora == 1:
+            custo_orcado = custo_orcado / divisor if divisor > 1 else custo_orcado
+        
+        # Caso da máquina de corte: se for corte conjugado, o custo é o mesmo do corte normal dividido pela quantidade de unidades por chapa multiplicada por 2 porque os fundos são produzidos em lote separado, mas se for corte simples, o custo é o mesmo do corte normal (sem divisão).    
+        if maq.maquina.corte == 1:
+            custo_orcado = ((custo_orcado / divisor) * 2) if divisor > 1 else custo_orcado
+            
+        # Caso da seladora: se for seladora, o custo é o mesmo do corte normal multiplicado por 2 porque os fundos são produzidos em lote separado, mas se for corte simples, o custo é o mesmo do corte normal (sem multiplicação).                
+        if maq.maquina.seladora == 1:
+            custo_orcado = custo_orcado * 2 if divisor > 1 else custo_orcado            
+                        
+               
         dados_maquinas[maq.maquina.nome] = {
+            'nome_maquina': maq.maquina.nome,   
             'tempo_total': tempo_unit * quantidade_solicitada,
             'custo': custo_orcado
         }
 
     # 4. Roteiros (mantém sua lógica de sequências)
     roteiros_possiveis = {
-        "Produção Flexo_Seladora": ["Flexo Xitian", "Seladora"],
-        "Produção Flexo_Century_Seladora": ["Flexo Xitian",  "Century", "Seladora"],
-        "Produção Flexo_Boca_de_Sapo_Seladora": ["Flexo Xitian",  "Boca de Sapo", "Seladora"],
-        "Produção Wonder 1_Century_Seladora": ["Wonder 1", "Century", "Seladora"],
-        "Produção Wonder 1_Boca_de_Sapo_Seladora": ["Wonder 1", "Boca de Sapo", "Seladora"],
+        "Flexo ► Seladora": ["Flexo Xitian", "Seladora"],
+        "Flexo ► Century ► Seladora": ["Flexo Xitian",  "Century", "Seladora"],
+        "Flexo ► Boca de Sapo ► Seladora": ["Flexo Xitian",  "Boca de Sapo", "Seladora"],
+        "Wonder 1 ► Century ► Seladora": ["Wonder 1", "Century", "Seladora"],
+        "Wonder 1 ► Boca de Sapo ► Seladora": ["Wonder 1", "Boca de Sapo", "Seladora"],
     }
 
-    # 5. Processamento Final
+    # 5. Processamento Final (Corrigido)
     listagem_final = []
     for nome_roteiro, sequencia in roteiros_possiveis.items():
         custo_total = Decimal('0.0000')
+        # Iniciamos o custo do roteiro já com o valor dos materiais
+        custo_acumulado = custo_materiais + custo_perda_total
         passos = []
+
         for nome_m in sequencia:
-            info = dados_maquinas.get(nome_m, {'custo': Decimal('0')})
-            custo_total += info['custo']
-            passos.append({'nome': nome_m, 'custo': info['custo']})
+            # Buscamos os dados da máquina. Se não achar, o custo é zero.
+            # Não precisamos buscar o nome dentro do 'info', pois já temos o 'nome_m'
+            info = dados_maquinas.get(nome_m, {'custo': Decimal('0.0000')})
+
+            custo_maquina = info['custo']
+            custo_acumulado += custo_maquina
+
+            # Montamos o dicionário do passo com informações claras
+            passos.append({
+                'nome': nome_m,
+                'custo': custo_maquina,
+            })
 
         listagem_final.append({
-            'nome': nome_roteiro,
-            'passos': passos,
-            'total': custo_total
+            'nome_roteiro': nome_roteiro,            
+            'custo_materiais': custo_materiais,
+            'passos': passos,  # Lista de dicionários com nome e custo
+            # Atribuímos o custo da perda apenas no último passo
+            'total_geral': custo_acumulado,
+            'custo_perdas': custo_perda_total if nome_m == sequencia[-1] else Decimal('0.0000')
         })
 
     return render(request, 'roteiros.html', {

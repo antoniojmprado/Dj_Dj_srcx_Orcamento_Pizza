@@ -83,46 +83,74 @@ def listar_orcamentos(request):
 # ==========================================
 # LISTAR ORÇAMENTOS x ROTEIROS DE PRODUÇÃO
 # ==========================================
-def listar_roteiros_producao(request):
-    # 1. Busca os dados atuais do banco
+def listar_roteiros_producao(request, pk):
+    # 1. Busca o orçamento específico para obter a quantidade  custo_perda_total
+    orcamento = get_object_or_404(Orcamento, pk=pk)
+    custo_materiais = Decimal(str(orcamento.custo_material_unitario or '0.0000'))
+    custo_perda_total = Decimal(str(orcamento.custo_perda_total or '0.0000'))
+    # custo_materiais += custo_perda_total  # Somamos o custo da perda ao
+    quantidade_solicitada = Decimal(str(orcamento.quantidade))
+
+    # 2. Busca os dados das máquinas
     fabrica = MaquinaFinancasOEE.objects.select_related('maquina').all()
 
-    # 2. Cria o dicionário de busca (Lookup Table)
-    dados_maquinas = {
-        maq.maquina.nome: {
-            'custo': (Decimal('60') / Decimal(str(maq.producao_nominal_hora))) * Decimal(str(maq.custo_minuto)),
-            'tempo': Decimal('60') / Decimal(str(maq.producao_nominal_hora))
-            
-        } for maq in fabrica
-    }
+    # 3. Cria o dicionário de busca com a NOVA LÓGICA
+    dados_maquinas = {}
+    for maq in fabrica:
+        tempo_unit = Decimal('60') / Decimal(str(maq.producao_nominal_hora))
+        custo_base = tempo_unit * Decimal(str(maq.custo_minuto))
 
-    # 3. Define as possibilidades de roteiro
+        # Aplicando sua fórmula: (Custo Base * Prod. Nominal) / Quantidade do Orçamento
+        # Nota: Se a intenção é ratear o custo fixo pela quantidade, a lógica é esta:
+        custo_orcado = (custo_base * Decimal(str(maq.producao_nominal_hora))) / quantidade_solicitada
+
+        dados_maquinas[maq.maquina.nome] = {
+            'nome_maquina': maq.maquina.nome,   
+            'tempo_total': tempo_unit * quantidade_solicitada,
+            'custo': custo_orcado
+        }
+
+    # 4. Roteiros (mantém sua lógica de sequências)
     roteiros_possiveis = {
-        "Produção Flexo_Seladora": ["Flexo Xitian", "Seladora"],
-        "Produção Flexo_Century_Seladora": ["Flexo Xitian",  "Century", "Seladora"],
-        "Produção Flexo_Boca_de_Sapo_Seladora": ["Flexo Xitian",  "Boca de Sapo", "Seladora"],
-        "Produção Wonder 1_Century_Seladora": ["Wonder 1", "Century", "Seladora"],
-        "Produção Wonder 1_Boca_de_Sapo_Seladora": ["Wonder 1", "Boca de Sapo", "Seladora"],
+        "Flexo ► Seladora": ["Flexo Xitian", "Seladora"],
+        "Flexo ► Century ► Seladora": ["Flexo Xitian",  "Century", "Seladora"],
+        "Flexo ► Boca de Sapo ► Seladora": ["Flexo Xitian",  "Boca de Sapo", "Seladora"],
+        "Wonder 1 ► Century ► Seladora": ["Wonder 1", "Century", "Seladora"],
+        "Wonder 1 ► Boca de Sapo ► Seladora": ["Wonder 1", "Boca de Sapo", "Seladora"],
     }
 
-    # 4. Monta a listagem_final processada
+    # 5. Processamento Final (Corrigido)
     listagem_final = []
     for nome_roteiro, sequencia in roteiros_possiveis.items():
         custo_total = Decimal('0.0000')
+        # Iniciamos o custo do roteiro já com o valor dos materiais
+        custo_acumulado = custo_materiais + custo_perda_total
         passos = []
 
         for nome_m in sequencia:
-            info = dados_maquinas.get(
-                nome_m, {'custo': Decimal('0'), 'tempo': 0})
-            custo_total += info['custo']
-            passos.append({'nome': nome_m, 'custo': info['custo']})
+            # Buscamos os dados da máquina. Se não achar, o custo é zero.
+            # Não precisamos buscar o nome dentro do 'info', pois já temos o 'nome_m'
+            info = dados_maquinas.get(nome_m, {'custo': Decimal('0.0000')})
+
+            custo_maquina = info['custo']
+            custo_acumulado += custo_maquina
+
+            # Montamos o dicionário do passo com informações claras
+            passos.append({
+                'nome': nome_m,
+                'custo': custo_maquina,
+            })
 
         listagem_final.append({
-            'nome': nome_roteiro,
-            'passos': passos,
-            'total': custo_total
+            'nome_roteiro': nome_roteiro,            
+            'custo_materiais': custo_materiais,
+            'passos': passos,  # Lista de dicionários com nome e custo
+            # Atribuímos o custo da perda apenas no último passo
+            'total_geral': custo_acumulado,
+            'custo_perdas': custo_perda_total if nome_m == sequencia[-1] else Decimal('0.0000')
         })
 
-    # 5. O ENVIO PARA O HTML
-    # O nome que você colocar na 'chave' (esquerda) é o nome que usará no HTML
-    return render(request, 'roteiros.html', {'roteiros': listagem_final})
+    return render(request, 'roteiros.html', {
+        'roteiros': listagem_final,
+        'orcamento': orcamento
+    })

@@ -1,0 +1,81 @@
+
+{% extends 'base_orcam.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block body %}
+
+<div class="container"> 
+    <h3>Roteiros de Produção</h3><br>
+    <div class="row">
+        <div class="col-6">
+            <div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="2" class="text-center"><h4>Dados do Orçamento: {{ orcamento.id }} - {{ orcamento.data_criacao|date:"d/m/Y" }}</h4></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Cliente: {{ orcamento.cliente }}</td></tr>
+                        <tr><td>Produto: {{ orcamento.produto_nome }}</td></tr>
+                        <tr><td>Quantidade: {{ orcamento.quantidade|floatformat:"g" }} {{ orcamento.produto_nome }}</td></tr>
+                        <tr><td>Tipo de Papelão: {{ orcamento.get_tipo_papelao }}</td></tr>
+                        <tr><td class = "preco_compra"><strong>Preços Compra:</strong> R$ {{ orcamento.chapa_utilizada.custo_m2|floatformat:2 }}/m2 - R$ {{ orcamento.chapa_utilizada.preco_kg_compra|floatformat:2 }}/kg - R$ {{ orcamento.chapa_utilizada.preco_chapa_compra|floatformat:2 }}/chapa</td></tr> 
+
+                        <tr><td>Chapa Ideal: {{ orcamento.chapa_projeto }}</td></tr>
+                        <tr><td>Chapa Utilizada: {{ orcamento.chapa_utilizada.largura_cm|floatformat:0  }} x {{ orcamento.chapa_utilizada.comprimento_cm|floatformat:0 }} cm</td></tr>
+                        <tr><td>Caixa Montada: {{ orcamento.chapa_utilizada.medida_caixa_montada_cm }}</td></tr>
+                        <tr><td>Gramatura: {{ orcamento.gramatura_kg_m2|floatformat:2 }} g/m²</td></tr>                   
+                    </tbody>
+                </table>
+            </div>
+            <div class = "fotofabrica">
+                <img src="{% static 'images/entrada.jpg' %}" alt="" width='100' >
+            </div>
+        </div>
+        <div class="col-6">
+            {% for r in roteiros %}
+                <div class="card mb-1 p-1 shadow-sm">
+                    <h4 class="text-primary">{{ r.nome_roteiro }}</h4>
+                    
+                    <div class="fluxo d-flex align-items-center flex-wrap my-2">
+                        <div class="p-1 border rounded bg-warning text-dark text-center" style="min-width: 120px;">
+                            <div class="d-flex" style="justify-content: space-between; align-items: center;">
+                                <div class="small fw-bold">Matéria-Prima</div> + <div class="small fw-bold">Perdas</div>
+                            </div>
+
+                            <div class="d-flex" style="justify-content: space-between; align-items: center;">
+                                <div class="fw-bold">R$ {{ r.custo_materiais|floatformat:2 }}</div> + <div class="fw-bold">R$ {{ r.custo_perdas|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                        
+                        {% for p in r.passos %}
+                            <span class="mx-2">➔</span>
+                            <div class="p-1 border rounded bg-light text-center">
+                                <div class="small fw-bold">{{ p.nome }}</div>
+                                <div class="text-muted" style="font-size: 0.85rem;">
+                                    R$ {{ p.custo|floatformat:2 }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="alert-success d-inline-block">
+                        <h6 class="mb-0 fw-bold">
+                            Custo Total (Matéria-Prima + Perdas + Processos): R$ {{ r.total_geral|floatformat:2 }}
+                        </h6>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-warning">Nenhum roteiro configurado para este orçamento.</div>
+            {% endfor %}            
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+

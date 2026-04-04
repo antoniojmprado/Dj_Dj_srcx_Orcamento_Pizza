@@ -19,6 +19,7 @@ class Maquina(models.Model):
     nome = models.CharField(max_length=50, null=True, blank=True)
     corte = models.BooleanField(default=False)
     impressora = models.BooleanField(default=False)
+    seladora = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'maquina'
