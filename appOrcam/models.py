@@ -264,6 +264,12 @@ class Orcamento(models.Model):
         ############ CUSTO DO MATERIAL UNITÁRIO ############################
         # Para o custo de material unitário, consideramos o custo do papelão rateado pela quantidade de unidades por chapa (corte conjugado), ou integral se for corte simples. A tinta é adicionada integralmente por unidade, pois cada unidade leva a mesma quantidade de tinta independentemente do corte.
         ####################################################################
+        # A TRAVA PARA PIZZAS (Adicione este trecho aqui)
+        # Verificamos se a palavra "pizza" está no nome do produto (independente de maiúsculas)
+        if "pizza" in self.produto_nome.lower():
+            divisor = Decimal('1')
+            # Isso garante que para qualquer pizza, o rateio de máquina
+            # ignore o 'unidades_chapa' e use sempre 1.
         
         if self.unidades_chapa > 1:
             self.custo_material_unitario = (area_utilizada * custo_m2_papelao) / Decimal(str(self.unidades_chapa))
@@ -274,7 +280,7 @@ class Orcamento(models.Model):
 
         # --- CÁLCULO DO MATERIAL ---
         # Adiciona a tinta (que é sempre por unidade final)
-        self.custo_material_unitario += self.custo_tinta_unitario
+        self.custo_material_unitario += self.custo_tinta_unitario # já calculado no início do save() e armazenado no campo custo_tinta_unitario do orçamento, para garantir que o custo da tinta seja sempre considerado integralmente por unidade, independentemente do corte. Já inclui o custo do papelão, que é calculado considerando as perdas, então não é necessário adicionar a perda de papelão separadamente aqui.
         
         # 2.1 CÁLCULO DINÂMICO DE PERDAS (Ajustado para os seus campos reais)
         if self.chapa_utilizada:
@@ -429,7 +435,7 @@ class Orcamento(models.Model):
 
         # 5. PREÇO FINAL COM MARGEM (Markup Inverso)
         # IMPORTANTE: Somamos todos os custos reais calculados
-        custo_total_sem_margem = self.custo_material_unitario + self.custo_perda_total + self.custo_impressao + self.custo_corte + self.custo_seladora + self.custo_frete_unitario
+        custo_total_sem_margem = self.custo_material_unitario + self.custo_impressao + self.custo_corte + self.custo_seladora + self.custo_frete_unitario
 
         self.preco_final_unitario = custo_total_sem_margem * (Decimal('1') + (self.margem_real/100 if self.margem_real > 0 else self.custo_total_sem_margem))        
            
@@ -539,20 +545,18 @@ class Orcamento(models.Model):
     
     @property
     def custo_total_fabricacao(self):
-        """Soma de todos os custos reais (Material + Máquinas"""
+        """Soma de todos os custos reais (Material (perdas inclusas) + Máquinas"""
         return (self.custo_papelao_unitario +
                 self.custo_tinta_padrao +
-                self.custo_perda_total +
                 self.custo_impressao +
                 self.custo_corte +
                 self.custo_seladora )
     
     @property
     def custo_total_sem_margem(self):
-        """Soma de todos os custos reais (Material + Máquinas + Frete)"""
+        """Soma de todos os custos reais (Material (perdas inclusas) + Máquinas + Frete)"""
         return (self.custo_papelao_unitario +
                 self.custo_tinta_padrao +
-                self.custo_perda_total +
                 self.custo_impressao +
                 self.custo_corte +
                 self.custo_seladora +
@@ -566,7 +570,7 @@ class Orcamento(models.Model):
     @property
     def subtotal_materiais(self):
         """Soma: Papelão + Perda + Tinta"""
-        return self.custo_papelao_unitario + self.custo_perda_total + self.custo_tinta_padrao
+        return self.custo_papelao_unitario  + self.custo_tinta_padrao # perda de papelão já está embutida no custo do papelao unitário, pois o custo do papelao é calculado considerando as perdas. Portanto, não é necessário somar a perda de papelão separadamente aqui.
 
     @property
     def subtotal_processos(self):
@@ -631,7 +635,7 @@ class Orcamento(models.Model):
 
     @property       
     def subtotal_materiais_insumos_porc(self):    # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem
-        return (self.custo_papelao_unitario_porc + self.custo_perda_projeto_porc + self.custo_tinta_padrao_porc)
+        return (self.custo_papelao_unitario + self.custo_tinta_padrao) * 100/self.custo_total_sem_margem if self.custo_total_sem_margem else Decimal('0.20')
 
     @property       
     # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem

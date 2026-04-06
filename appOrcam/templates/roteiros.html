@@ -47,11 +47,11 @@
                     <div class="fluxo d-flex align-items-center flex-wrap my-2">
                         <div class="p-2 border rounded bg-warning text-dark text-center" style="min-width: 140px;">
                             <div class="d-flex justify-content-between small fw-bold">
-                                <span>Mat-Prima</span> <span>+</span> <span>Perdas</span>
+                                <span>Papelão</span> <span>+</span> <span>Tinta</span>
                             </div>
                             <div class="d-flex justify-content-between fw-bold">
-                                <span>R$ {{ r.custo_materiais|floatformat:2 }}</span>
-                                <span>R$ {{ r.custo_perdas|floatformat:2 }}</span>
+                                <span>R$ {{ r.custo_materiais_parcial|floatformat:2 }}</span>
+                                <span>R$ {{ r.custo_tinta_unitario|floatformat:2 }}</span>
                             </div>
                         </div>
                         

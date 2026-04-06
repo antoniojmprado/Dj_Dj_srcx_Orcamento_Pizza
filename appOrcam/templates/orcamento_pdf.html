@@ -66,21 +66,24 @@
             <td class="col-valor">{{ orcamento.custo_papelao_unitario_porc|floatformat:0 }} %</td>
         </tr>
         <tr>
-            <td>
-                ♻️ Perda de chapa por "Promoção" =>  
-                    {% if orcamento.custo_perda_excedente > 0 %}
-                    Perda Projeto = R$ {{ orcamento.custo_perda_projeto|floatformat:2 }}  + Perda Excedente = R$ {{ orcamento.custo_perda_excedente|floatformat:2 }} 
-                    {% else %}    
-                        Perda Projeto = R$ {{ orcamento.custo_perda_projeto|floatformat:2 }} 
-                    {% endif %}    
-            </td>
-            <td class="col-valor">R$ {{ orcamento.custo_perda_total|floatformat:2 }}</td>
-            <td class="col-valor">{{ orcamento.custo_perda_projeto_porc|floatformat:0 }} %</td>
-        </tr>
-        <tr>
             <td>🎨 Tinta e Insumos de Impressão</td><td class="col-valor">R$ {{ orcamento.custo_tinta_padrao|floatformat:2 }}</td>
             <td class="col-valor">{{ orcamento.custo_tinta_padrao_porc|floatformat:0 }} %</td>
         </tr>
+        <tr>
+            <td>
+                ♻️ Perda de chapa por "Promoção" =>  
+                    {% if orcamento.custo_perda_excedente > 0 %}
+                    Perda Projeto = R$ {{ orcamento.custo_perda_projeto|floatformat:2 }}  + Perda Excedente = R$ {{ orcamento.custo_perda_excedente|floatformat:2 }}  
+                    <span class="text-danger"> - <strong>obs.: já considerada na custo unitário do papelão.</strong></span>
+                    {% else %}    
+                        Perda Projeto = R$ {{ orcamento.custo_perda_projeto|floatformat:2 }}
+                    <span class="text-danger"> - <strong>obs.: já considerada na custo unitário do papelão.</strong></span>
+                    {% endif %}    
+            </td>
+            <td class="col-valor text-danger">R$ {{ orcamento.custo_perda_total|floatformat:2 }}</td>
+            <td class="col-valor text-danger">{{ orcamento.custo_perda_projeto_porc|floatformat:0 }} %</td>
+        </tr>
+
         <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td></tr>
 
         <tr style="font-size: 22px; font-weight:bold;">
