@@ -23,8 +23,8 @@
                         <tr><td><strong>Tipo de Papelão:</strong> {{ orcamento.get_tipo_papelao }}</td></tr>
                         <tr><td class="text-danger"><strong>Preços Compra:</strong> R$ {{ orcamento.chapa_utilizada.custo_m2|floatformat:2 }}/m2 - R$ {{ orcamento.chapa_utilizada.preco_kg_compra|floatformat:2 }}/kg</td></tr> 
                         <tr></tr>
-                        <tr><td><strong>Chapa Ideal:</strong> {{ orcamento.chapa_projeto }}</td></tr>
-                        <tr><td><strong>Chapa Utilizada:</strong> {{ orcamento.chapa_utilizada.largura_cm|floatformat:0 }} x {{ orcamento.chapa_utilizada.comprimento_cm|floatformat:0 }} cm</td></tr>
+                        <tr><td><strong>Chapa Ideal:</strong>  {{ orcamento.chapa_projeto.largura_cm|floatformat:0 }} x {{ orcamento.chapa_projeto.comprimento_cm|floatformat:0 }} cm -  {{ orcamento.get_tipo_papelao }}</td></tr>
+                        <tr><td><strong>Chapa Utilizada:</strong> {{ orcamento.chapa_utilizada.largura_cm|floatformat:0 }} x {{ orcamento.chapa_utilizada.comprimento_cm|floatformat:0 }} cm -  {{ orcamento.get_tipo_papelao }}</td></tr>
                         <tr><td><strong>Gramatura:</strong> {{ orcamento.gramatura_kg_m2|floatformat:2 }} g/m²</td></tr>                   
                     </tbody>
                 </table>
@@ -47,11 +47,11 @@
                     <div class="fluxo d-flex align-items-center flex-wrap my-2">
                         <div class="p-2 border rounded bg-warning text-dark text-center" style="min-width: 140px;">
                             <div class="d-flex justify-content-between small fw-bold">
-                                <span>Papelão</span> <span>+</span> <span>Tinta</span>
+                                <span>Papelão</span> <span>+</span> <span>Tinta (/min)</span>
                             </div>
                             <div class="d-flex justify-content-between fw-bold">
                                 <span>R$ {{ r.custo_materiais_parcial|floatformat:2 }}</span>
-                                <span>R$ {{ r.custo_tinta_unitario|floatformat:2 }}</span>
+                                <span>R$ {{ r.custo_tinta_unitario|floatformat:2 }} </span>
                             </div>
                         </div>
                         
@@ -60,7 +60,10 @@
                             <div class="p-1 border rounded bg-light text-center" style="min-width: 80px;">
                                 <div class="small fw-bold">{{ p.nome }}</div>
                                 <div class="text-muted" style="font-size: 0.75rem;">
-                                    R$ {{ p.custo|floatformat:2 }}
+                                    R$ {{ p.custo|floatformat:2 }} / min
+                                    {% if p.tempo_operacao_minutos > 0 %}
+                                        <br><span class="text-danger">{{ p.tempo_operacao_minutos|floatformat:0 }} min</span>
+                                    {% endif %}
                                 </div>
                             </div>
                         {% endfor %}
@@ -68,7 +71,7 @@
                     
                     <div class="alert-success p-2 rounded">
                         <h6 class="mb-0 fw-bold text-success text-center">
-                            TOTAL GERAL: R$ {{ r.total_geral|floatformat:2 }}
+                            TOTAL GERAL: R$ {{ r.custo_minuto_total|floatformat:2 }}/un. - <span class="text-danger">{{ r.tempo_operacao_total|floatformat:0 }} min</span>
                         </h6>
                     </div>
                 </div>

@@ -122,12 +122,12 @@ def listar_roteiros_producao(request, pk):
     for maq in fabrica:
         tempo_unit = Decimal('60') / Decimal(str(maq.producao_nominal_hora))
         custo_base = tempo_unit * Decimal(str(maq.custo_minuto))
-
-
+        
+        capacidade_producao = Decimal(str(maq.producao_nominal_hora))  # Capacidade nominal da máquina por hora
         # Caso do custo de impressão é o custo de impressao normal dividido pela quantidade de unidades por chapa.
         # Nota: Se a intenção é ratear o custo fixo pela quantidade, a lógica é esta:
         custo_orcado = (custo_base * Decimal(str(maq.producao_nominal_hora))) / quantidade_solicitada
-        
+                
         if maq.maquina.impressora:
             custo_orcado = custo_orcado / divisor if divisor > 1 else custo_orcado
                     
@@ -139,18 +139,15 @@ def listar_roteiros_producao(request, pk):
         else:            
             multiplicador = Decimal('2') if maq.maquina.corte else Decimal('1')
 
-
         if maq.maquina.corte:
-            custo_orcado = (custo_orcado * multiplicador) if divisor > 1  else custo_orcado
+            custo_orcado = (custo_orcado * multiplicador) if divisor > 1 else custo_orcado
             
         # Caso da seladora: se for seladora, o custo é o mesmo do corte normal multiplicado por 2 porque os fundos são produzidos em lote separado, mas se for corte simples, o custo é o mesmo do corte normal (sem multiplicação).                
-        if maq.maquina.seladora:
-            custo_orcado = custo_orcado * multiplicador if divisor > 1 and "pizza" in orcamento.produto_nome.lower() else custo_orcado
-                        
-               
+        if maq.maquina.seladora: custo_orcado = custo_orcado * multiplicador if divisor > 1 and "pizza" in orcamento.produto_nome.lower() else custo_orcado
+                                       
         dados_maquinas[maq.maquina.nome] = {
             'nome_maquina': maq.maquina.nome,   
-            'tempo_total': tempo_unit * quantidade_solicitada,
+            'tempo_maquina': tempo_unit * quantidade_solicitada,
             'custo': custo_orcado
         }
 
@@ -162,12 +159,11 @@ def listar_roteiros_producao(request, pk):
         "Wonder 1 ► Century ► Seladora": ["Wonder 1", "Century", "Seladora"],
         "Wonder 1 ► Boca de Sapo ► Seladora": ["Wonder 1", "Boca de Sapo", "Seladora"],
     }
-
+    tempo_operacao_total = Decimal('0.0000')
     # 5. Processamento Final (Corrigido)
     listagem_final = []
     for nome_roteiro, sequencia in roteiros_possiveis.items():
         custo_total = Decimal('0.0000')
-        # Iniciamos o custo do roteiro já com o valor dos materiais
         custo_acumulado = custo_materiais 
         passos = []
 
@@ -178,22 +174,29 @@ def listar_roteiros_producao(request, pk):
 
             custo_maquina = info['custo']
             custo_acumulado += custo_maquina
-
+                       
+            tempo_operacao_minutos = info.get('tempo_maquina', Decimal('0.0000'))   
+            tempo_operacao_total += tempo_operacao_minutos
             # Montamos o dicionário do passo com informações claras
             passos.append({
                 'nome': nome_m,
                 'custo': custo_maquina,
+                'tempo_operacao_minutos': tempo_operacao_minutos,
             })
-
+       
+        
         listagem_final.append({
             'nome_roteiro': nome_roteiro,            
             'custo_materiais_parcial': custo_materiais_parcial,
             'custo_tinta_unitario': Decimal(str(orcamento.custo_tinta_unitario or '0.0000')),
             'passos': passos,  # Lista de dicionários com nome e custo
-            # Atribuímos o custo da perda apenas no último passo
-            'total_geral': custo_acumulado,
-            'custo_perdas': custo_perda_total if nome_m == sequencia[-1] else Decimal('0.0000')
+            'custo_minuto_total': custo_acumulado,
+            'custo_perdas': custo_perda_total if nome_m == sequencia[-1] else Decimal('0.0000'),
+            'tempo_operacao_total': tempo_operacao_total
         })
+        
+        # Inicializa o tempo total do roteiro
+        tempo_operacao_total = Decimal('0.0000')
 
     return render(request, 'roteiros.html', {
         'roteiros': listagem_final,
