@@ -1,9 +1,38 @@
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
+from appOEE.models import ParametroFinanceiro, Maquina, Horas_turno, Turnos_dia
 from appOrcam.forms import OrcamentoForm
-from .models import Chapa, Orcamento, MaquinaFinancasOEE
+# Ajuste o nome do model de parâmetros
+from .models import Chapa, Custo_tinta, Orcamento, MaquinaFinancasOEE
 from decimal import Decimal
+from django.db import connection
+from .models import MemoriaCalculoDinamica
+
+
+def memoria_calculo_view(request):
+    from appOEE.models import ParametroFinanceiro
+
+    calculos_maquinas = MemoriaCalculoDinamica.objects.all()
+    parametros = ParametroFinanceiro.objects.first()
+
+    # Preparamos os dados aqui para o HTML não precisar fazer conta
+    dados_formatados = []
+    for m in calculos_maquinas:
+        dados_formatados.append({
+            'nome_maquina': m.nome_maquina,
+            'valor_reposicao': m.valor_reposicao,
+            'participacao_pct': m.participacao_real * 100,
+            'custo_absorvido': m.participacao_real * m.custo_fixo_total_ref,
+            'custo_minuto_real': m.custo_minuto_real,
+            'total_ref': m.custo_fixo_total_ref,
+        })
+
+    context = {
+        'maquinas': dados_formatados,
+        'params': parametros,
+    }
+    return render(request, 'memoria_calculo.html', context)
 
 # =========================
 # LISTAR PRODUTOS-CHAPAS-PADRÃO
@@ -153,11 +182,11 @@ def listar_roteiros_producao(request, pk):
 
     # 4. Roteiros (mantém sua lógica de sequências)
     roteiros_possiveis = {
-        "Flexo ► Seladora": ["Flexo Xitian", "Seladora"],
-        "Flexo ► Century ► Seladora": ["Flexo Xitian",  "Century", "Seladora"],
-        "Flexo ► Boca de Sapo ► Seladora": ["Flexo Xitian",  "Boca de Sapo", "Seladora"],
-        "Wonder 1 ► Century ► Seladora": ["Wonder 1", "Century", "Seladora"],
-        "Wonder 1 ► Boca de Sapo ► Seladora": ["Wonder 1", "Boca de Sapo", "Seladora"],
+        "1) Flexo ► Seladora": ["Flexo Xitian", "Seladora"],
+        "2) Flexo ► Century ► Seladora": ["Flexo Xitian",  "Century", "Seladora"],
+        "3) Flexo ► Boca de Sapo ► Seladora": ["Flexo Xitian",  "Boca de Sapo", "Seladora"],
+        "4)  Wonder 1 ► Century ► Seladora": ["Wonder 1", "Century", "Seladora"],
+        "5) Wonder 1 ► Boca de Sapo ► Seladora": ["Wonder 1", "Boca de Sapo", "Seladora"],
     }
     tempo_operacao_total = Decimal('0.0000')
     # 5. Processamento Final (Corrigido)
@@ -202,3 +231,63 @@ def listar_roteiros_producao(request, pk):
         'roteiros': listagem_final,
         'orcamento': orcamento
     })
+
+# ==========================================
+# TELA DE ENTRADA DE DADOS - PREMISSAS
+# ==========================================
+def dados_tela_premissas(request):
+    preco_ondaB = Chapa.objects.filter(tipo_papelao="Onda B").first()
+    preco_ondaE = Chapa.objects.filter(tipo_papelao="Onda E").first()
+    
+    preco_tinta = Custo_tinta.objects.first()
+    preco_tinta = preco_tinta.custo_tinta_unitario
+    
+    #    fin_seladora = MaquinaFinancasOEE.objects.filter(maquina_id=11).first()
+    
+    if preco_ondaB and preco_ondaB.custo_m2 > 0:
+        preco_ondaB = preco_ondaB.custo_m2
+        print(f'Preço Onda B: {preco_ondaB}')
+        
+    if preco_ondaE and preco_ondaE.custo_m2 > 0:
+        preco_ondaE = preco_ondaE.custo_m2
+        print(f'Preço Onda E: {preco_ondaE}')
+        
+    with connection.cursor() as cursor:
+        # Prejuízo acumulado por paradas improdutivas
+        cursor.execute(
+            """   
+                SELECT  tot_custo_fixo_final as cf FROM oee_bd.view_total_custos_fixos;s
+            """)
+        
+        total_custo_fixo = cursor.fetchone()
+        total_custo_fixo = round(total_custo_fixo[0], 2) if total_custo_fixo and total_custo_fixo[0] is not None else Decimal('0.00')
+        print(f'Total Custo Fixo: {total_custo_fixo}')
+        
+        
+    return render(request, 'premissas.html', {
+            'preco_ondaB': preco_ondaB,
+            'preco_ondaE': preco_ondaE,
+            'preco_tinta': preco_tinta,
+            'total_custo_fixo': total_custo_fixo
+    })
+
+
+def memoria_calculo_view(request):
+    # Pega os dados da View do MySQL que criamos
+    maquinas_custos = MemoriaCalculoDinamica.objects.all()
+
+    # Pega os parâmetros globais
+    config_financeira = ParametroFinanceiro.objects.first()
+
+    # Opcional: Se quiser exibir os turnos e horas no cabeçalho
+    # vindo direto das tabelas originais
+    horas = Horas_turno.objects.first()
+    turnos = Turnos_dia.objects.first()
+
+    context = {
+        'maquinas': maquinas_custos,
+        'financeiro': config_financeira,
+        'horas': horas,
+        'turnos': turnos,
+    }
+    return render(request, 'appOrcam/memoria_calculo.html', context)

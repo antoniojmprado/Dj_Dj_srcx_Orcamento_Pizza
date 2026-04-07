@@ -596,22 +596,19 @@ def dashboard_roce(request):
         (float(params.percentual_empresa_estudo) / 100)
 
         # Fórmula: Pessoal * Encargos * Benefícios * Outros
-        custo_pessoal_base = params.quantidade_pessoas * \
-            float(params.salario_medio)
-        encargos = float(params.encargos_trabalhistas_pct) / 100
+        custo_pessoal_base = params.quantidade_pessoas * float(params.salario_medio)
+        encargos = 1+ float(params.encargos_trabalhistas_pct) / 100
         beneficios = 1 + (float(params.beneficios_pct) / 100)
         outros = 1 + (float(params.outros_custos_fixos_pct) / 100)
         prolabore_socio = prolabore_socio
 
         depreciacao_mensal = float(params.depreciacao_mensal/100)
-        manutencoes_mensais = float(params.manutencoes_mensais)
-        servicos_terceirizados_mensal = float(
-            params.servicos_terceirizados_mensal)
+        manutencoes_mensais = float(params.manutencoes_mensais)                                             
+        servicos_terceirizados_mensal = float(params.servicos_terceirizados_mensal)
 
-        custo_fixo_operacional = (
-            custo_pessoal_base / encargos) * beneficios * outros
-        aluguel_proporcional = float(
-            params.aluguel_iptu_total) * (float(params.percentual_empresa_estudo) / 100)
+        custo_fixo_operacional = (custo_pessoal_base * encargos * beneficios * outros)
+        
+        aluguel_proporcional = float(params.aluguel_iptu_total) * (float(params.percentual_empresa_estudo) / 100)
 
     # 1A. Cálculo da depreciação mensal (exemplo simplificado, ajuste conforme seus critérios contábeis)
         with connection.cursor() as cursor:

@@ -3,13 +3,14 @@ from django.contrib import admin
 from django.utils.html import format_html
 from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, Orcamento, Chapa, CategoriaProduto
 
+
 @admin.register(Chapa)
 class ChapaAdmin(admin.ModelAdmin):
     list_display = ('id', 'nome', 'largura_cm', 'comprimento_cm',
-                    'tipo_papelao', 'custo_m2', 'gramatura_kg_m2', 
+                    'tipo_papelao', 'custo_m2', 'gramatura_kg_m2',
                     'larg_apara_m', 'preco_apara_kg', 'explicacao_tecnica')
-    
-    list_editable = ('nome', 'largura_cm', 'comprimento_cm','tipo_papelao',
+
+    list_editable = ('nome', 'largura_cm', 'comprimento_cm', 'tipo_papelao',
                      'custo_m2', 'gramatura_kg_m2', 'larg_apara_m', 'preco_apara_kg', 'explicacao_tecnica')
     search_fields = ('nome',)
 
@@ -21,21 +22,21 @@ class ConfiguracaoRateioAdmin(admin.ModelAdmin):
 
     # Permite editar a velocidade diretamente na lista para ser mais rápido
     list_editable = ('producao_un_hora',)
-    
+
 
 @admin.register(Custo_tinta)
 class Custo_tintaAdmin(admin.ModelAdmin):
     # Isso impede que você crie vários registros; você só edita um.
     def has_add_permission(self, request):
         return not Custo_tinta.objects.exists()
-    
+
 
 @admin.register(Custo_frete)
 class Custo_freteAdmin(admin.ModelAdmin):
     # Isso impede que você crie vários registros; você só edita um.
     def has_add_permission(self, request):
         return not Custo_frete.objects.exists()
-    
+
 
 @admin.register(CategoriaProduto)
 class CategoriaProdutoAdmin(admin.ModelAdmin):
@@ -50,11 +51,10 @@ class OrcamentoAdmin(admin.ModelAdmin):
         # Gerar o link para a página de impressão do orçamento
         url = reverse('imprimir_orcamento', kwargs={'pk': obj.pk})
         return format_html('<a href="{}" target="_blank">Imprimir PDF</a>', url)
-    
-    
+
     # 1. Trava os campos para o formulário não sobrescrever o cálculo do Python
-    readonly_fields = ('preco_final_unitario', 
-                       'data_criacao', 
+    readonly_fields = ('preco_final_unitario',
+                       'data_criacao',
                        'resumo_composicao', 'area_total',
                        'area_projeto_liquida',
                        'area_perda_projeto',
@@ -117,4 +117,3 @@ class OrcamentoAdmin(admin.ModelAdmin):
 
     list_filter = ('maquina_impressao', 'data_criacao')
     search_fields = ('cliente', 'produto_nome')
-         

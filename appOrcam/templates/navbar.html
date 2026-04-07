@@ -36,7 +36,11 @@
                     </li>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="{% url 'listar_orcamentos' %}">Listar Orçamentos</a>
+                        <a class="nav-link" aria-current="page" href="{% url 'listar_orcamentos' %}">List_Orçamentos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'dados_tela_premissas' %}">Premissas</a>
+                        <a class="nav-link" aria-current="page" href="{% url 'memoria_calculo_view' %}">Memória de Calculo</a>
                     </li>
                 </ul>
                
@@ -50,8 +54,6 @@
                 </span>
                 <span class="badge bg-warning text-dark">Semana Passada (2ª-Sáb): {{ total_semana_passada }}</span>
             </div> 
-            
-            <a class="nav-link" href="{% static  'arquivos\\info_orcamento\\info_iniciais.txt' %}" target="_blank">Info</a>     
         </div>         
     </nav>  
 
