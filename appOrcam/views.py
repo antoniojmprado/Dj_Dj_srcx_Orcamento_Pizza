@@ -242,44 +242,6 @@ def listar_roteiros_producao(request, pk):
         'orcamento': orcamento
     })
 
-# ==========================================
-# TELA DE ENTRADA DE DADOS - PREMISSAS
-# ==========================================
-def dados_tela_premissas(request):
-    preco_ondaB = Chapa.objects.filter(tipo_papelao="Onda B").first()
-    preco_ondaE = Chapa.objects.filter(tipo_papelao="Onda E").first()
-    
-    preco_tinta = Custo_tinta.objects.first()
-    preco_tinta = preco_tinta.custo_tinta_unitario
-    
-    #    fin_seladora = MaquinaFinancasOEE.objects.filter(maquina_id=11).first()
-    
-    if preco_ondaB and preco_ondaB.custo_m2 > 0:
-        preco_ondaB = preco_ondaB.custo_m2
-        print(f'Preço Onda B: {preco_ondaB}')
-        
-    if preco_ondaE and preco_ondaE.custo_m2 > 0:
-        preco_ondaE = preco_ondaE.custo_m2
-        print(f'Preço Onda E: {preco_ondaE}')
-        
-    with connection.cursor() as cursor:
-        # Prejuízo acumulado por paradas improdutivas
-        cursor.execute(
-            """   
-                SELECT  tot_custo_fixo_final as cf FROM oee_bd.view_total_custos_fixos;s
-            """)
-        
-        total_custo_fixo = cursor.fetchone()
-        total_custo_fixo = round(total_custo_fixo[0], 2) if total_custo_fixo and total_custo_fixo[0] is not None else Decimal('0.00')
-        print(f'Total Custo Fixo: {total_custo_fixo}')
-        
-        
-    return render(request, 'premissas.html', {
-            'preco_ondaB': preco_ondaB,
-            'preco_ondaE': preco_ondaE,
-            'preco_tinta': preco_tinta,
-            'total_custo_fixo': total_custo_fixo
-    })
 
 
 def memoria_calculo_view(request):

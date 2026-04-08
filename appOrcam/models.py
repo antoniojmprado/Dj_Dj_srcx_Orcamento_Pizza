@@ -284,6 +284,7 @@ class Orcamento(models.Model):
 
                 # 3. DIVISOR E TRAVA PARA PIZZAS
                 divisor = Decimal(str(self.unidades_chapa or '1'))
+                
                 if divisor < 1:
                     divisor = Decimal('1')
                 if "pizza" in self.produto_nome.lower():
@@ -332,8 +333,8 @@ class Orcamento(models.Model):
                         cb_impr = MemoriaCalculoDinamica.objects.filter(maquina_id=self.maquina_impressao.id).first()
                         custo_min = Decimal(str(cb_impr.custo_minuto_real)) if cb_impr else Decimal(str(fin_impr.custo_minuto))
 
-                        custo_base = tempo_unit * custo_min
-                        quantidade_ajustada = Decimal(str(self.quantidade)) / divisor if divisor > 1 else Decimal(str(self.quantidade))
+                        custo_base = tempo_unit * custo_min / divisor if divisor > 1 else Decimal(str(self.quantidade))
+                        quantidade_ajustada = Decimal(str(self.quantidade)) 
                         self.custo_impressao = custo_base * fin_impr.producao_nominal_hora / quantidade_ajustada
 
                     # 2. CORTE (DINÂMICA)
