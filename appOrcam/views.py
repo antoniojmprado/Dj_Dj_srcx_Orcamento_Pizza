@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from appOEE.models import ParametroFinanceiro, Maquina, Horas_turno, Turnos_dia
 from appOrcam.forms import OrcamentoForm
 # Ajuste o nome do model de parâmetros
-from .models import Chapa, Custo_tinta, Orcamento, MaquinaFinancasOEE
+from .models import Chapa, Custo_tinta, Imposto, Orcamento, MaquinaFinancasOEE
 from decimal import Decimal
 from django.db import connection
 from .models import MemoriaCalculoDinamica
@@ -71,9 +71,16 @@ def home(request):
 def imprimir_orcamento(request, pk):
     # Busca o orçamento pelo ID ou dá erro 404 se não existir
     orcamento = get_object_or_404(Orcamento, pk=pk)
+    
+    impostos_ativos = Imposto.objects.filter(ativo_no_calculo=True)
+
+    context = {
+        'orcamento': orcamento,
+        'impostos_ativos': impostos_ativos,
+    }
 
     # Passamos o objeto para o template
-    return render(request, 'orcamento_pdf.html', {'orcamento': orcamento})
+    return render(request, 'orcamento_pdf.html', context)
 
 
 # =========================
@@ -150,7 +157,10 @@ def listar_roteiros_producao(request, pk):
     dados_maquinas = {}
     for maq in fabrica:
         tempo_unit = Decimal('60') / Decimal(str(maq.producao_nominal_hora))
-        custo_base = tempo_unit * Decimal(str(maq.custo_minuto))
+        cb_impr = MemoriaCalculoDinamica.objects.filter(maquina_id=maq.maquina.id).first()
+        custo_min = Decimal(str(cb_impr.custo_minuto_real)) if cb_impr else Decimal(str(maq.custo_minuto))
+
+        custo_base = tempo_unit * custo_min
         
         capacidade_producao = Decimal(str(maq.producao_nominal_hora))  # Capacidade nominal da máquina por hora
         # Caso do custo de impressão é o custo de impressao normal dividido pela quantidade de unidades por chapa.
@@ -291,3 +301,15 @@ def memoria_calculo_view(request):
         'turnos': turnos,
     }
     return render(request, 'appOrcam/memoria_calculo.html', context)
+
+
+def orcamento_pdf_view(request, pk):
+    orcamento = get_object_or_404(Orcamento, pk=pk)
+    # Pegamos apenas os impostos que de fato compõem o cálculo
+    impostos_ativos = Imposto.objects.filter(ativo_no_calculo=True)
+
+    context = {
+        'orcamento': orcamento,
+        'impostos_ativos': impostos_ativos,
+    }
+    return render(request, 'appOrcam/orcamento_pdf.html', context)

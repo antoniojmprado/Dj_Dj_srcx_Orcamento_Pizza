@@ -1,7 +1,12 @@
 from django.urls import reverse
 from django.contrib import admin
 from django.utils.html import format_html
-from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, Orcamento, Chapa, CategoriaProduto
+from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, Orcamento, Chapa, CategoriaProduto, Imposto
+
+
+@admin.register(Imposto)
+class ImpostoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nome', 'aliquota', 'ativo_no_calculo', 'observacao')
 
 
 @admin.register(Chapa)

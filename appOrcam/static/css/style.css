@@ -321,3 +321,48 @@ td.total_margem_lucro{
     vertical-align: middle;
     line-height: normal;
 }
+
+/* Tooltip para tela */
+.tooltip-imposto {
+    position: relative;
+    cursor: help;
+    color: #3d1b9b;
+    text-decoration: underline dotted;
+}
+
+.tooltip-imposto .tooltiptext {
+    visibility: hidden;
+    width: 250px;
+    background-color: #212529;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 99;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 16px;
+    line-height: 1.4;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip-imposto:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* ESCONDER O TOOLTIP NA IMPRESSÃO */
+@media print {
+    .tooltiptext {
+        display: none !important;
+    }
+
+    .tooltip-imposto {
+        text-decoration: none;
+        color: inherit;
+    }
+}

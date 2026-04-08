@@ -10,9 +10,11 @@ urlpatterns = [
     path('listar_orcamentos/', views.listar_orcamentos, name='listar_orcamentos'),
     path('get-chapa-detalhes/<int:chapa_id>/', views.get_chapa_detalhes, name='get_chapa_detalhes'),
     path('listar_roteiros_producao/', views.listar_roteiros_producao, name='listar_roteiros_producao'),
+    path('memoria_calculo_view/', views.memoria_calculo_view, name='memoria_calculo_view'),
     
-    path('dados_tela_premissas/', views.dados_tela_premissas,name='dados_tela_premissas'),
-    path('memoria_calculo_view/', views.memoria_calculo_view,name='memoria_calculo_view'),
+    path('orcamento_pdf_view/<int:pk>/', views.orcamento_pdf_view,
+         name='orcamento_pdf_view'),
+
     
 
 ]

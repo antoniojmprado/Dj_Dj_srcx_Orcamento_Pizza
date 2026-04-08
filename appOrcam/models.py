@@ -8,6 +8,16 @@ from appOEE.models import Maquina
 
 # appOrcam/models.py
 
+class Imposto(models.Model):
+    nome = models.CharField(max_length=50)  # Ex: ICMS, PIS/COFINS, IPI
+    aliquota = models.DecimalField(max_digits=5, decimal_places=2)  # Ex: 18.00
+    ativo_no_calculo = models.BooleanField( default=True)  # Se entra no Markup ou não
+    observacao = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nome} - {self.aliquota}%"
+    
+    
 class MemoriaCalculoDinamica(models.Model):
     maquina_id = models.BigIntegerField(primary_key=True)
     nome_maquina = models.CharField(max_length=50)
@@ -219,6 +229,15 @@ class Orcamento(models.Model):
     custo_perda_total = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     custo_perda_projeto = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     custo_perda_excedente = models.DecimalField(max_digits=10, decimal_places=4, default=0)
+    
+    # vendas com e sem nota
+    # Campo para a escolha do usuário
+    venda_com_nota = models.BooleanField(default=False, verbose_name="Venda com Nota Fiscal?")
+
+    # Campos para armazenar os cálculos comparativos
+    preco_final_com_nota = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    preco_final_sem_nota = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    aliquota_imposto_aplicada = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
     @property
     def tipo_papelao(self):  # neste caso, refere-se a chapa do projeto
@@ -283,11 +302,20 @@ class Orcamento(models.Model):
                     custo_ref = Decimal(str(self.chapa_utilizada.custo_m2))
                     # ... (seus cálculos de área permanecem iguais)
                     self.area_total = Decimal(str(self.chapa_utilizada.largura_cm/100)) * Decimal(str(self.chapa_utilizada.comprimento_cm/100))
-                    self.area_projeto_liquida = (Decimal(str(self.chapa_projeto.largura_cm/100)) - Decimal(str(self.chapa_projeto.larg_apara_m * 2))) * (
-                        (Decimal(str(self.chapa_projeto.comprimento_cm/100)) - Decimal(str(self.chapa_projeto.larg_apara_m * 2))))
+                    self.area_projeto_liquida = (Decimal(str(self.chapa_projeto.largura_cm/100)) - Decimal(str(self.chapa_projeto.larg_apara_m * 2))) * ((Decimal(str(self.chapa_projeto.comprimento_cm/100)) - Decimal(str(self.chapa_projeto.larg_apara_m * 2))))
+
+                    self.area_perda_projeto = (Decimal(str(self.chapa_projeto.largura_cm/100)) * Decimal(str(self.chapa_projeto.larg_apara_m * 2))) + ((Decimal(str(self.chapa_projeto.comprimento_cm/100)) * Decimal(str(self.chapa_projeto.larg_apara_m * 2))))
+                    
                     self.perda_area_total = self.area_total - self.area_projeto_liquida
+
+                    self.perda_area_excedente = self.perda_area_total - self.area_perda_projeto 
+                    
                     self.custo_perda_total = self.perda_area_total * custo_ref
-                    # (Mantive os campos principais para o cálculo final)
+                    
+                    self.custo_perda_projeto = self.area_perda_projeto * custo_ref
+                    
+                    self.custo_perda_excedente = self.custo_perda_total - self.custo_perda_projeto
+                            # (Mantive os campos principais para o cálculo final)
 
                 try:
                     # --- CÁLCULO DE MÁQUINAS DINÂMICO ---
@@ -358,12 +386,41 @@ class Orcamento(models.Model):
                     print(f"Erro máquinas: {e}")
 
                 # 5. PREÇO FINAL
-                custo_total_sem_margem = (self.custo_material_unitario + self.custo_perda_total +
+                custo_total_sem_margem = (self.custo_material_unitario +
                                         self.custo_impressao + self.custo_corte +
                                         self.custo_seladora + self.custo_frete_unitario)
 
-                self.preco_final_unitario = custo_total_sem_margem * (Decimal('1') + (self.margem_real/100 if self.margem_real > 0 else Decimal('0')))
+                self.preco_final_unitario = custo_total_sem_margem * (Decimal('1') + (self.margem_real/100)) if self.margem_real > 0 else Decimal('0')
+                
+                print(f"Custo Total sem Margem: {custo_total_sem_margem}")
+                print(f"Margem Real: {self.margem_real}%")
+                print(f"Preço Final Unitário (sem nota): {self.preco_final_unitario}")
 
+            # 1. Busca Impostos Ativos (Ex: 28,65%)
+                from django.db.models import Sum
+                total_impostos = Imposto.objects.filter(ativo_no_calculo=True).aggregate(Sum('aliquota'))['aliquota__sum'] or Decimal('0.00')
+                
+                self.aliquota_imposto_aplicada = total_impostos
+
+                imposto_decimal = total_impostos / Decimal('100')
+
+                margem_decimal = self.margem_real / Decimal('100')
+
+                # 2. Cálculo SEM NOTA (Markup só com margem)
+                denominador_sem = Decimal('1') - margem_decimal
+                self.preco_final_sem_nota = custo_total_sem_margem / (denominador_sem if denominador_sem > 0 else Decimal('0.01'))
+
+                # 3. Cálculo COM NOTA (Markup com margem + impostos)
+                denominador_com = Decimal('1') - margem_decimal - imposto_decimal
+                self.preco_final_com_nota = custo_total_sem_margem / (denominador_com if denominador_com > 0 else Decimal('0.01'))
+
+                # 4. Mantém o preco_final_unitario baseado na escolha do usuário para o valor total
+                if self.venda_com_nota:
+                        self.preco_final_unitario = self.preco_final_com_nota
+                else:
+                        self.preco_final_unitario = self.preco_final_sem_nota
+        
+        
                 super().save(*args, **kwargs)
 
     @property
@@ -388,8 +445,8 @@ class Orcamento(models.Model):
 
     @property
     def custo_minuto_impressora(self):
-        obj_maquina_impressao = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_impressao.id)
-        return obj_maquina_impressao.custo_minuto if obj_maquina_impressao.custo_minuto else Decimal('0.86')
+        cb_impr = MemoriaCalculoDinamica.objects.filter(maquina_id=self.maquina_impressao.id).first()
+        return cb_impr.custo_minuto_real if cb_impr.custo_minuto_real else Decimal('0.86')
 
     @property
     def nome_maquina_corte(self):
@@ -399,8 +456,8 @@ class Orcamento(models.Model):
     @property
     def custo_minuto_corte(self):
         try:
-            obj_maquina_corte = MaquinaFinancasOEE.objects.get(maquina_id=self.maquina_corte.id)
-            return obj_maquina_corte.custo_minuto if obj_maquina_corte else Decimal('0.0')
+            obj_maquina_corte = MemoriaCalculoDinamica.objects.get(maquina_id=self.maquina_corte.id)
+            return obj_maquina_corte.custo_minuto_real if obj_maquina_corte.custo_minuto_real else Decimal('0.0')
         except:
             print("Erro: Não é possível mostrar o custo por minuto se não corte externo")
 
@@ -416,8 +473,8 @@ class Orcamento(models.Model):
 
     @property
     def custo_minuto_seladora(self):
-        obj_seladora = MaquinaFinancasOEE.objects.get(maquina_id=11)
-        return obj_seladora.custo_minuto if obj_seladora.custo_minuto else Decimal('0.86')
+        obj_seladora = MemoriaCalculoDinamica.objects.get(maquina_id=11)
+        return obj_seladora.custo_minuto_real if obj_seladora.custo_minuto_real else Decimal('0.86')
 
     @property
     def nome_chapa_projeto(self):
@@ -484,9 +541,14 @@ class Orcamento(models.Model):
                 self.custo_frete_unitario)
 
     @property
-    def valor_total_pedido(self):
+    def valor_total_pedido_sem_nota(self):
         """Preço Final Unitário x Quantidade"""
         return self.preco_final_unitario * self.quantidade
+
+    @property
+    def valor_total_pedido_com_nota(self):
+        """Preço Final Unitário x Quantidade"""
+        return self.preco_final_com_nota * self.quantidade
 
     @property
     def subtotal_materiais(self):
@@ -506,7 +568,12 @@ class Orcamento(models.Model):
     @property
     def margem_de_lucro(self):
         """Soma de todos os custos (Materiais + Processos + Logística)"""
-        return self.custo_total_sem_margem * self.margem_real/100
+        return self.custo_total_sem_margem / (Decimal('1') - self.margem_real/100) - self.custo_total_sem_margem if self.margem_real > 0 else Decimal('0')
+
+    @property
+    def total_impostos(self):
+        """Soma de todos os custos (Materiais + Processos + Logística)"""
+        return self.aliquota_imposto_aplicada if self.aliquota_imposto_aplicada > 0 else Decimal('0')
 
     @property
     def lucro(self):
