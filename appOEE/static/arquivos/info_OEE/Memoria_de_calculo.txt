@@ -41,13 +41,13 @@ Assim teríamos:
 ### CUSTOS FIXOS INCLUINDO DEPRECIAÇÃO PARA O CORRETO CÁLCULO DO EBIT ###
 #########################################################################
 
-Funcionarios:  65 x 2200 / (67/100) x (1+10/100) x (1+1/100) = R$ 237.123,88 + 
+Funcionarios:  65 x 2200 / (1+(67/100)) x (1+10/100) x (1+1/100) = R$ 238.810,00
 Retirada do sócio= 4300000 * (5/100)= R$ 215.000,00/mês de acordo com minhas contas. +
 O preço médio ficou só a título de informação, mas com ele a produção média mensal fica em 1.720.000, dentro da realidade que conheço daquele negócio e daquela empresa. Na verdade são duas empresas do mesmo grupo e os números que estou passando referem-se às duas juntas. Isolando apenas uma delas, que é o nosso objeto de estudo, pelas minhas informações, estamos falando em 65% do total geral. Portanto os custos fixos finalmente seriam distribuídos da seguinte forma:
 
 R$ 300.000,00 pagamentos mensais Wonder 1 + Wonder 2 => apenas a empresa objeto do nosso estudo +
 R$ 140,000,00 x 0,60 = R$ 84.000,00 => aluguel total com imposto IPTU => apenas a empresa objeto do nosso estudo +
-R$ 237.123,88 => Funcionarios +
+R$ 262.691,00 => Funcionarios +
 R$ 30.000 => manutenções de equipamentos +
 R$ 30.000 => serviços de informática
 ===========================

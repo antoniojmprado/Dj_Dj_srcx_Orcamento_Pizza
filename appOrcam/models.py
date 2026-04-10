@@ -22,6 +22,7 @@ class MemoriaCalculoDinamica(models.Model):
     maquina_id = models.BigIntegerField(primary_key=True)
     nome_maquina = models.CharField(max_length=50)
     valor_reposicao = models.DecimalField(max_digits=12, decimal_places=2)
+    depreciacao_maquina = models.DecimalField(max_digits=15, decimal_places=2)
     participacao_real = models.DecimalField(max_digits=15, decimal_places=6)
     custo_fixo_total_ref = models.DecimalField(max_digits=12, decimal_places=2)
     custo_minuto_real = models.DecimalField(max_digits=16, decimal_places=4)

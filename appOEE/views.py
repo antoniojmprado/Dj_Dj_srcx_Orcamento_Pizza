@@ -572,16 +572,12 @@ def dashboard_roce(request):
         aluguel_proporcional = 84000.00
         financiamento_wonders = 300000.00
         prolabore_socio = prolabore_socio
-        percentual_empresa_estudo = float(
-            params.percentual_empresa_estudo) if params else 0.0
-        depreciacao_mensal = float(
-            params.depreciacao_mensal) if params else 0.0
-        manutencoes_mensais = float(
-            params.manutencoes_mensais) if params else 0.0
+        percentual_empresa_estudo = float(params.percentual_empresa_estudo) if params else 0.0
+        depreciacao_mensal = float(params.depreciacao_mensal) if params else 0.0
+        manutencoes_mensais = float(params.manutencoes_mensais) if params else 0.0
         servicos_terceirizados_mensal = float(params.servicos_terceirizados_mensal) if params else 0.0
         preco_unitario = float(params.preco_unitario) if params else 0.0
-        quantidade_vendida = float(
-            params.quantidade_vendida) if params else 0.0
+        quantidade_vendida = float(params.quantidade_vendida) if params else 0.0
         faturamento_grupo = float(params.faturamento_grupo) if params else 0.0
     else:
         # Dados das Vendas
@@ -590,14 +586,12 @@ def dashboard_roce(request):
         faturamento_grupo = float(params.faturamento_grupo)
 
         # Lógica de cálculo baseada nos seus inputs
-        percentual_empresa_estudo = float(
-            params.percentual_empresa_estudo) / 100
-        faturamento_alvo = float(params.faturamento_grupo) * \
-        (float(params.percentual_empresa_estudo) / 100)
+        percentual_empresa_estudo = float(params.percentual_empresa_estudo) / 100
+        faturamento_alvo = float(params.faturamento_grupo) * (float(params.percentual_empresa_estudo) / 100)
 
         # Fórmula: Pessoal * Encargos * Benefícios * Outros
         custo_pessoal_base = params.quantidade_pessoas * float(params.salario_medio)
-        encargos = 1+ float(params.encargos_trabalhistas_pct) / 100
+        encargos = 1 + float(params.encargos_trabalhistas_pct) / 100
         beneficios = 1 + (float(params.beneficios_pct) / 100)
         outros = 1 + (float(params.outros_custos_fixos_pct) / 100)
         prolabore_socio = prolabore_socio
@@ -607,6 +601,8 @@ def dashboard_roce(request):
         servicos_terceirizados_mensal = float(params.servicos_terceirizados_mensal)
 
         custo_fixo_operacional = (custo_pessoal_base * encargos * beneficios * outros)
+        
+        print(f"Custo Pessoal Base: {custo_pessoal_base}")
         
         aluguel_proporcional = float(params.aluguel_iptu_total) * (float(params.percentual_empresa_estudo) / 100)
 

@@ -1,38 +1,14 @@
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
-from appOEE.models import ParametroFinanceiro, Maquina, Horas_turno, Turnos_dia
+from appOEE.models import MaquinaFinancas, ParametroFinanceiro, Maquina, Horas_turno, Turnos_dia
 from appOrcam.forms import OrcamentoForm
 # Ajuste o nome do model de parâmetros
 from .models import Chapa, Custo_tinta, Imposto, Orcamento, MaquinaFinancasOEE
 from decimal import Decimal
 from django.db import connection
+from django.db.models import Sum
 from .models import MemoriaCalculoDinamica
-
-
-def memoria_calculo_view(request):
-    from appOEE.models import ParametroFinanceiro
-
-    calculos_maquinas = MemoriaCalculoDinamica.objects.all()
-    parametros = ParametroFinanceiro.objects.first()
-
-    # Preparamos os dados aqui para o HTML não precisar fazer conta
-    dados_formatados = []
-    for m in calculos_maquinas:
-        dados_formatados.append({
-            'nome_maquina': m.nome_maquina,
-            'valor_reposicao': m.valor_reposicao,
-            'participacao_pct': m.participacao_real * 100,
-            'custo_absorvido': m.participacao_real * m.custo_fixo_total_ref,
-            'custo_minuto_real': m.custo_minuto_real,
-            'total_ref': m.custo_fixo_total_ref,
-        })
-
-    context = {
-        'maquinas': dados_formatados,
-        'params': parametros,
-    }
-    return render(request, 'memoria_calculo.html', context)
 
 # =========================
 # LISTAR PRODUTOS-CHAPAS-PADRÃO
@@ -99,7 +75,6 @@ def form_modelForm(request):
             # O POST aconteceu, mas o formulário tem erros (ex: campo vazio)
             messages.error(
                 request, "Os dados não foram salvos. Verifique os campos.")
-
     else:
         # Se o método for GET (primeira vez entrando na página),
         # apenas criamos o formulário vazio, SEM mensagem de erro.
@@ -243,26 +218,76 @@ def listar_roteiros_producao(request, pk):
     })
 
 
-
 def memoria_calculo_view(request):
-    # Pega os dados da View do MySQL que criamos
+    # 1. Agregações de impostos e ativos
+    agregacao = Imposto.objects.filter(ativo_no_calculo=True).aggregate(total=Sum('aliquota'))
+    total_impostos = agregacao['total'] or Decimal('0.00')
+
+    agregacao_ativos = MaquinaFinancas.objects.filter(valor_reposicao__isnull=False).aggregate(total=Sum('valor_reposicao'))
+    total_ativos = agregacao_ativos['total'] or Decimal('0.00')
+
+    # 2. Busca os dados da View do MySQL
     maquinas_custos = MemoriaCalculoDinamica.objects.all()
-
-    # Pega os parâmetros globais
     config_financeira = ParametroFinanceiro.objects.first()
-
-    # Opcional: Se quiser exibir os turnos e horas no cabeçalho
-    # vindo direto das tabelas originais
     horas = Horas_turno.objects.first()
     turnos = Turnos_dia.objects.first()
+    
+    p = ParametroFinanceiro.objects.first()
+
+    # Cálculos Individuais baseados na sua planilha e na lógica da VIEW
+    custo_folha = (p.quantidade_pessoas * p.salario_medio) * \
+                  (1 + (p.encargos_trabalhistas_pct / 100)) * \
+                  (1 + (p.beneficios_pct / 100))
+
+    custo_aluguel = (p.aluguel_iptu_total * p.percentual_empresa_estudo) / 100
+
+    # Depreciação Total (conforme a lógica que você preferiu)
+    depreciacao_total = total_ativos * ((p.depreciacao_mensal / 100) / 12)
+
+    # Soma de todos os componentes
+    custo_fixo_calculado = custo_folha + custo_aluguel + \
+        p.prestacoes_investimentos + \
+        p.manutencoes_mensais + \
+        p.servicos_terceirizados_mensal + \
+        depreciacao_total
+        
+    custo_fixo_calculado = custo_fixo_calculado * (1 + (p.outros_custos_fixos_pct / 100))
+
+    # 3. O PULO DO GATO: Criar a lista formatada com o cálculo da porcentagem
+    dados_formatados = []
+    for m in maquinas_custos:
+        dados_formatados.append({
+            'nome_maquina': m.nome_maquina,
+            'valor_reposicao': m.valor_reposicao,
+            'depreciacao_maquina': m.depreciacao_maquina,  # Novo campo vindo da VIEW
+            # Multiplica por 100 aqui
+            'participacao_pct': (m.participacao_real or 0) * 100,
+            'custo_absorvido': (m.participacao_real or 0) * (m.custo_fixo_total_ref or 0),
+            'custo_minuto_real': m.custo_minuto_real,
+            # Adicionado para o cabeçalho não quebrar
+            'custo_fixo_total_ref': m.custo_fixo_total_ref
+        })
 
     context = {
-        'maquinas': maquinas_custos,
+        'maquinas': dados_formatados,  # Enviamos a lista processada
         'financeiro': config_financeira,
         'horas': horas,
         'turnos': turnos,
+        'total_impostos': total_impostos,
+        'total_ativos': total_ativos,
+        'demonstrativo': {
+            'folha': custo_folha,
+            'aluguel': custo_aluguel,
+            'prestacoes': p.prestacoes_investimentos,
+            'manutencoes': p.manutencoes_mensais,
+            'terceiros': p.servicos_terceirizados_mensal,
+            'depreciacao': depreciacao_total,
+            'total_geral': custo_fixo_calculado,
+        }
     }
     return render(request, 'appOrcam/memoria_calculo.html', context)
+
+
 
 
 def orcamento_pdf_view(request, pk):

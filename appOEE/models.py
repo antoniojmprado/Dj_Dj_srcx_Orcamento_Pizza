@@ -298,47 +298,34 @@ class ParametroFinanceiro(models.Model):
         super(ParametroFinanceiro, self).save(*args, **kwargs)
 
     # Faturamento e Divisão entre empresas
-    faturamento_grupo = models.DecimalField(
-        max_digits=15, decimal_places=2, default=4472000.00)
-    percentual_empresa_estudo = models.DecimalField(
-        max_digits=5, decimal_places=2, default=65.00)
+    faturamento_grupo = models.DecimalField( max_digits=15, decimal_places=2, default=4472000.00)
+    percentual_empresa_estudo = models.DecimalField( max_digits=5, decimal_places=2, default=65.00)
 
     # Pessoal
     quantidade_pessoas = models.IntegerField(default=65)
-    salario_medio = models.DecimalField(
-        max_digits=10, decimal_places=2, default=2200.00)
-    encargos_trabalhistas_pct = models.DecimalField(
-        max_digits=5, decimal_places=2, default=67.00)
-    beneficios_pct = models.DecimalField(
-        max_digits=5, decimal_places=2, default=10.00)
+    salario_medio = models.DecimalField( max_digits=10, decimal_places=2, default=2200.00)
+    encargos_trabalhistas_pct = models.DecimalField( max_digits=5, decimal_places=2, default=67.00)
+    beneficios_pct = models.DecimalField( max_digits=5, decimal_places=2, default=10.00)
 
     # Outros
-    outros_custos_fixos_pct = models.DecimalField(
-        max_digits=5, decimal_places=2, default=1.00)
-    retirada_socio_pct = models.DecimalField(
-        max_digits=5, decimal_places=2, default=5.00)
-    aluguel_iptu_total = models.DecimalField(
-        max_digits=12, decimal_places=2, default=140000.00)
+    outros_custos_fixos_pct = models.DecimalField( max_digits=5, decimal_places=2, default=1.00)
+    retirada_socio_pct = models.DecimalField( max_digits=5, decimal_places=2, default=5.00)
+    aluguel_iptu_total = models.DecimalField( max_digits=12, decimal_places=2, default=140000.00)
 
     # Investimentos em equipamentos
-    prestacoes_investimentos = models.DecimalField(
-        max_digits=15, decimal_places=2, default=300000.00)
+    prestacoes_investimentos = models.DecimalField( max_digits=15, decimal_places=2, default=300000.00)
 
     # depreciacao mensal (pode ser calculada a partir do valor de reposição das máquinas)
-    depreciacao_mensal = models.DecimalField(
-        max_digits=15, decimal_places=2, default=8.00)
+    depreciacao_mensal = models.DecimalField( max_digits=15, decimal_places=2, default=8.00)
 
     # manutencoes mensais
-    manutencoes_mensais = models.DecimalField(
-        max_digits=15, decimal_places=2, default=30000)
+    manutencoes_mensais = models.DecimalField( max_digits=15, decimal_places=2, default=30000)
 
     # servicos terceirizados mensais (TI, recrutamento, limpeza, segurança, etc)
-    servicos_terceirizados_mensal = models.DecimalField(
-        max_digits=15, decimal_places=2, default=30000)
+    servicos_terceirizados_mensal = models.DecimalField( max_digits=15, decimal_places=2, default=30000)
 
     # Relacao custos variaveis e faturamento real
-    custo_variav_fatur_real_pct = models.DecimalField(
-        max_digits=5, decimal_places=2, default=5.00)
+    custo_variav_fatur_real_pct = models.DecimalField( max_digits=5, decimal_places=2, default=5.00)
 
     class Meta:
         verbose_name = "Parâmetro Financeiro"

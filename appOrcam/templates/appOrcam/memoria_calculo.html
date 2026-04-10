@@ -14,25 +14,43 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-3">
-                    <strong>Salário Médio:</strong> R$ {{ params.salario_medio|floatformat:2 }}<br>
-                    <strong>Pessoas:</strong> {{ params.quantidade_pessoas }}
+                    <strong>Salário Médio:</strong> R$ {{ financeiro.salario_medio|floatformat:"2g" }}<br>
+                    <strong>Pessoas:</strong> {{ financeiro.quantidade_pessoas }}<br>
+                    <strong>Total Impostos: </strong>{{ total_impostos|floatformat:"1" }}%
                 </div>
                 <div class="col-md-3">
-                    <strong>Encargos:</strong> {{ params.encargos_trabalhistas_pct }}%<br>
-                    <strong>Benefícios:</strong> {{ params.beneficios_pct }}%
+                    <strong>Encargos:</strong> {{ financeiro.encargos_trabalhistas_pct|floatformat:0  }}%<br>
+                    <strong>Benefícios:</strong> {{ financeiro.beneficios_pct|floatformat:0 }}%<br>
+                    <strong>Outros Custos Fixos:</strong> {{ financeiro.outros_custos_fixos_pct|floatformat:0 }}%
                 </div>
                 <div class="col-md-3">
-                    <strong>Aluguel/IPTU Total:</strong> R$ {{ params.aluguel_iptu_total|floatformat:2 }}<br>
-                    <strong>Uso Empresa:</strong> {{ params.percentual_empresa_estudo }}%
+                    <strong>Aluguel/IPTU Total:</strong> R$ {{ financeiro.aluguel_iptu_total|floatformat:"2g" }}<br>
+                    <strong>% Sr. Caixa no grupo:</strong> {{ financeiro.percentual_empresa_estudo|floatformat:0 }}%<br>
+                    <strong>Total Ativos:</strong> R$ {{ total_ativos|floatformat:"2g" }}
                 </div>
                 <div class="col-md-3 text-right">
                     <h4 class="text-primary">Custo Fixo Total</h4>
-                    <h3>R$ {{ maquinas.0.custo_fixo_total_ref|floatformat:2 }}</h3>
+                    <h3>R$ {{ maquinas.0.custo_fixo_total_ref|floatformat:"2g" }}</h3>
                 </div>
             </div>
         </div>
     </div>
-
+    <div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">Detalhamento da Composição do Custo Fixo</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-sm">
+            <tr><td>Funcionários (Salário + Encargos + Benefícios)</td><td class="text-right">R$ {{ demonstrativo.folha|floatformat:"2g" }}</td></tr>
+            <tr><td>Aluguel e IPTU (Proporcional Sr. Caixa)</td><td class="text-right">R$ {{ demonstrativo.aluguel|floatformat:"2g" }}</td></tr>
+            <tr><td>Prestações de Investimentos</td><td class="text-right">R$ {{ demonstrativo.prestacoes|floatformat:"2g" }}</td></tr>
+            <tr><td>Manutenções Mensais</td><td class="text-right">R$ {{ demonstrativo.manutencoes|floatformat:"2g" }}</td></tr>
+            <tr><td>Serviços Terceirizados</td><td class="text-right">R$ {{ demonstrativo.terceiros|floatformat:"2g" }}</td></tr>
+            <tr><td>Depreciação Mensal dos Ativos</td><td class="text-right">R$ {{ demonstrativo.depreciacao|floatformat:"2g" }}</td></tr>
+            <tr class="table-primary"><strong><td>TOTAL CUSTO FIXO ENCONTRADO</td><td class="text-right">R$ {{ demonstrativo.total_geral|floatformat:"2g" }}</td></strong></tr>
+        </table>
+    </div>
+</div>
     <div class="card">
         <div class="card-header bg-dark text-white">
             <h5 class="mb-0">Rateio por Ativo e Custo por Minuto</h5>
@@ -43,19 +61,21 @@
                     <tr>
                         <th>Máquina</th>
                         <th class="text-right">Valor de Reposição</th>
+                        <th class="text-right">Depreciação da Máquina</th>
                         <th class="text-right">% Participação</th>
                         <th class="text-right">Custo Fixo Absorvido</th>
-                        <th class="text-right bg-warning">Custo/Minuto (Real)</th>
+                        <th class="bg-primary text-white">Custo/Minuto (Real)</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for m in maquinas %}
                     <tr>
                         <td>{{ m.nome_maquina }}</td>
-                        <td class="text-right">R$ {{ m.valor_reposicao|floatformat:2 }}</td>
-                        <td class="text-right">{{ m.participacao_pct|floatformat:2 }}%</td>
-                        <td class="text-right">R$ {{ m.custo_absorvido|floatformat:2 }}</td>
-                        <td class="text-right font-weight-bold text-danger">R$ {{ m.custo_minuto_real|floatformat:4 }}</td>
+                        <td class="text-right">R$ {{ m.valor_reposicao|floatformat:"2g" }}</td>
+                        <td class="text-right">R$ {{ m.depreciacao_maquina|floatformat:"2g" }}</td>
+                        <td class="text-right">{{ m.participacao_pct|floatformat:"1" }}%</td>
+                        <td class="text-right">R$ {{ m.custo_absorvido|floatformat:"2g" }}</td>
+                        <td class="text-right font-weight-bold text-danger">R$ {{ m.custo_minuto_real|floatformat:"2g" }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
