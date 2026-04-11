@@ -18,6 +18,17 @@ class Imposto(models.Model):
         return f"{self.nome} - {self.aliquota}%"
     
     
+
+class EncargosTrabalhistas(models.Model):
+    nome = models.CharField(max_length=50)  # Ex: ICMS, PIS/COFINS, IPI
+    aliquota = models.DecimalField(max_digits=5, decimal_places=2)  # Ex: 18.00
+    ativo_no_calculo = models.BooleanField( default=True)  # Se entra no Markup ou não
+    observacao = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nome} - {self.aliquota}%"
+    
+    
 class MemoriaCalculoDinamica(models.Model):
     maquina_id = models.BigIntegerField(primary_key=True)
     nome_maquina = models.CharField(max_length=50)
@@ -332,9 +343,9 @@ class Orcamento(models.Model):
 
                         # Busca na View
                         cb_impr = MemoriaCalculoDinamica.objects.filter(maquina_id=self.maquina_impressao.id).first()
-                        custo_min = Decimal(str(cb_impr.custo_minuto_real)) if cb_impr else Decimal(str(fin_impr.custo_minuto))
+                        custo_min = Decimal(str(cb_impr.custo_minuto_real)) if cb_impr else 0.0
 
-                        custo_base = tempo_unit * custo_min / divisor if divisor > 1 else Decimal(str(self.quantidade))
+                        custo_base = tempo_unit * custo_min / divisor if divisor > 1 else tempo_unit * custo_min
                         quantidade_ajustada = Decimal(str(self.quantidade)) 
                         self.custo_impressao = custo_base * fin_impr.producao_nominal_hora / quantidade_ajustada
 

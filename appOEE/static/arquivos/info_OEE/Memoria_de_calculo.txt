@@ -41,7 +41,8 @@ Assim teríamos:
 ### CUSTOS FIXOS INCLUINDO DEPRECIAÇÃO PARA O CORRETO CÁLCULO DO EBIT ###
 #########################################################################
 
-Funcionarios:  65 x 2200 / (1+(67/100)) x (1+10/100) x (1+1/100) = R$ 238.810,00
+Funcionarios:  65 x 2200 / (1+(67/100)) x (1+10/100) x (1+1/100) = R$ 262.691,00
+
 Retirada do sócio= 4300000 * (5/100)= R$ 215.000,00/mês de acordo com minhas contas. +
 O preço médio ficou só a título de informação, mas com ele a produção média mensal fica em 1.720.000, dentro da realidade que conheço daquele negócio e daquela empresa. Na verdade são duas empresas do mesmo grupo e os números que estou passando referem-se às duas juntas. Isolando apenas uma delas, que é o nosso objeto de estudo, pelas minhas informações, estamos falando em 65% do total geral. Portanto os custos fixos finalmente seriam distribuídos da seguinte forma:
 
@@ -51,7 +52,7 @@ R$ 262.691,00 => Funcionarios +
 R$ 30.000 => manutenções de equipamentos +
 R$ 30.000 => serviços de informática
 ===========================
-(CF sem depreciação)  = R$ 681.123,88/mês
+(CF sem depreciação)  = R$ 709.317.91
 
 ---------------------------------
 -------- Depreciação ------------

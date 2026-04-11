@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from appOEE.models import MaquinaFinancas, ParametroFinanceiro, Maquina, Horas_turno, Turnos_dia
 from appOrcam.forms import OrcamentoForm
 # Ajuste o nome do model de parâmetros
-from .models import Chapa, Custo_tinta, Imposto, Orcamento, MaquinaFinancasOEE
+from .models import Chapa, Custo_tinta, EncargosTrabalhistas, Imposto, Orcamento, MaquinaFinancasOEE
 from decimal import Decimal
 from django.db import connection
 from django.db.models import Sum
@@ -38,7 +38,7 @@ def inicial(request):
 # ========================= appOrcam\templates\home.html
 def home(request):
     # return render(request, 'home.html')
-    return render(request, 'appOrcam/templates/home.html')
+    return render(request, 'appOrcam/templates/listar_orcamentos.html')
 
 
 # =========================
@@ -162,7 +162,8 @@ def listar_roteiros_producao(request, pk):
         dados_maquinas[maq.maquina.nome] = {
             'nome_maquina': maq.maquina.nome,   
             'tempo_maquina': tempo_unit * quantidade_solicitada,
-            'custo': custo_orcado
+            'custo': custo_orcado,
+            'capacidade_producao': capacidade_producao,
         }
 
     # 4. Roteiros (mantém sua lógica de sequências)
@@ -191,7 +192,7 @@ def listar_roteiros_producao(request, pk):
                        
             tempo_operacao_minutos = info.get('tempo_maquina', Decimal('0.0000'))   
             tempo_operacao_total += tempo_operacao_minutos
-            # Montamos o dicionário do passo com informações claras
+            # Montamos o dicionário do passo com informações clarasMaquinaFinancas
             passos.append({
                 'nome': nome_m,
                 'custo': custo_maquina,
@@ -228,15 +229,35 @@ def memoria_calculo_view(request):
 
     # 2. Busca os dados da View do MySQL
     maquinas_custos = MemoriaCalculoDinamica.objects.all()
+    
+    maquinas_capacidades = MaquinaFinancasOEE.objects.all()
+    
+    custo_tinta = Custo_tinta.objects.first()
+    custo_tinta_valor = custo_tinta.custo_tinta_unitario if custo_tinta.custo_tinta_unitario else Decimal(
+        '0.00')
+    
     config_financeira = ParametroFinanceiro.objects.first()
     horas = Horas_turno.objects.first()
     turnos = Turnos_dia.objects.first()
+    
+    # 3. Custo chapas Ondas B e E
+    custo_chapa_onda_b = Chapa.objects.filter(tipo_papelao__icontains='Onda B').first()
+    custo_chapa_onda_e = Chapa.objects.filter(tipo_papelao__icontains='Onda E').first()
+    custo_onda_b = custo_chapa_onda_b.custo_m2 if custo_chapa_onda_b else Decimal('0.00')
+    custo_onda_e = custo_chapa_onda_e.custo_m2 if custo_chapa_onda_e else Decimal('0.00')
+    
+    print(f'custo_onda_b: {custo_onda_b}, custo_onda_e: {custo_onda_e}')  
+    
+    enc_pct = EncargosTrabalhistas.objects.filter(ativo_no_calculo=True).aggregate(total=Sum('aliquota'))
+    encargos_trabalhistas_pct = enc_pct['total'] or Decimal('0.00')
+    
+    encargos_ativos = EncargosTrabalhistas.objects.filter(ativo_no_calculo=True)
     
     p = ParametroFinanceiro.objects.first()
 
     # Cálculos Individuais baseados na sua planilha e na lógica da VIEW
     custo_folha = (p.quantidade_pessoas * p.salario_medio) * \
-                  (1 + (p.encargos_trabalhistas_pct / 100)) * \
+                  (1 + (encargos_trabalhistas_pct / 100)) * \
                   (1 + (p.beneficios_pct / 100))
 
     custo_aluguel = (p.aluguel_iptu_total * p.percentual_empresa_estudo) / 100
@@ -251,21 +272,29 @@ def memoria_calculo_view(request):
         p.servicos_terceirizados_mensal + \
         depreciacao_total
         
-    custo_fixo_calculado = custo_fixo_calculado * (1 + (p.outros_custos_fixos_pct / 100))
+    custos_fixos_parcial = custo_fixo_calculado 
+    outros_custos_fixos = custos_fixos_parcial * p.outros_custos_fixos_pct / 100
+    custo_fixo_calculado = custo_fixo_calculado + outros_custos_fixos
+    
+    pct_outros_custos_fixos = p.outros_custos_fixos_pct if p.outros_custos_fixos_pct else Decimal('0.00')
 
     # 3. O PULO DO GATO: Criar a lista formatada com o cálculo da porcentagem
     dados_formatados = []
-    for m in maquinas_custos:
+    for m in zip(maquinas_custos, maquinas_capacidades):
         dados_formatados.append({
-            'nome_maquina': m.nome_maquina,
-            'valor_reposicao': m.valor_reposicao,
-            'depreciacao_maquina': m.depreciacao_maquina,  # Novo campo vindo da VIEW
+            'nome_maquina': m[0].nome_maquina,
+            'valor_reposicao': m[0].valor_reposicao,
+            'depreciacao_maquina': m[0].depreciacao_maquina,  # Novo campo vindo da VIEW
             # Multiplica por 100 aqui
-            'participacao_pct': (m.participacao_real or 0) * 100,
-            'custo_absorvido': (m.participacao_real or 0) * (m.custo_fixo_total_ref or 0),
-            'custo_minuto_real': m.custo_minuto_real,
+            'participacao_pct': (m[0].participacao_real or 0) * 100,
+            'custo_absorvido': (m[0].participacao_real or 0) * (m[0].custo_fixo_total_ref or 0),
+            'custo_minuto_real': m[0].custo_minuto_real,
             # Adicionado para o cabeçalho não quebrar
-            'custo_fixo_total_ref': m.custo_fixo_total_ref
+            'custo_fixo_total_ref': m[0].custo_fixo_total_ref,
+            # Novo campo vindo da tabela de máquinas
+            'capacidade_producao': m[1].producao_nominal_hora if m[1].producao_nominal_hora else Decimal('0.00'),  
+            'capacidade_producao_minuto': 1/(m[1].producao_nominal_hora/60) if m[1].producao_nominal_hora else Decimal('0.00'),  
+            'custo_unidade': (m[0].custo_minuto_real * (1/(Decimal(str(m[1].producao_nominal_hora/60))) if m[1].producao_nominal_hora else Decimal('0.00'))) if m[0].custo_minuto_real and m[1].producao_nominal_hora else Decimal('0.00')                 ,
         })
 
     context = {
@@ -277,17 +306,24 @@ def memoria_calculo_view(request):
         'total_ativos': total_ativos,
         'demonstrativo': {
             'folha': custo_folha,
+            'encargos_trabalhistas_pct': encargos_trabalhistas_pct,
+            'encargos_ativos': encargos_ativos,
             'aluguel': custo_aluguel,
             'prestacoes': p.prestacoes_investimentos,
             'manutencoes': p.manutencoes_mensais,
             'terceiros': p.servicos_terceirizados_mensal,
             'depreciacao': depreciacao_total,
+            'custo_fixo_parcial': custos_fixos_parcial,
+            'outros_custos_pct': outros_custos_fixos,
             'total_geral': custo_fixo_calculado,
-        }
+            'pct_outros_custos_fixos': pct_outros_custos_fixos,
+        },
+        # Custo Chapas  Onda B e E
+        'custo_onda_b': custo_onda_b,
+        'custo_onda_e': custo_onda_e,
+        'custo_tinta': custo_tinta_valor 
     }
     return render(request, 'appOrcam/memoria_calculo.html', context)
-
-
 
 
 def orcamento_pdf_view(request, pk):
@@ -297,6 +333,6 @@ def orcamento_pdf_view(request, pk):
 
     context = {
         'orcamento': orcamento,
-        'impostos_ativos': impostos_ativos,
+        'impostos_ativos': impostos_ativos
     }
     return render(request, 'appOrcam/orcamento_pdf.html', context)

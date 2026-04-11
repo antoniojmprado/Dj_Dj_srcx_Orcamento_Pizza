@@ -16,12 +16,22 @@
                 <div class="col-md-3">
                     <strong>Salário Médio:</strong> R$ {{ financeiro.salario_medio|floatformat:"2g" }}<br>
                     <strong>Pessoas:</strong> {{ financeiro.quantidade_pessoas }}<br>
-                    <strong>Total Impostos: </strong>{{ total_impostos|floatformat:"1" }}%
+                    <strong>Total Impostos: </strong>{{ total_impostos|floatformat:"1" }}%<br>
+
                 </div>
                 <div class="col-md-3">
-                    <strong>Encargos:</strong> {{ financeiro.encargos_trabalhistas_pct|floatformat:0  }}%<br>
+                    <span class="tooltip-imposto">
+                        <strong>Encargos {{ demonstrativo.encargos_trabalhistas_pct|floatformat:"1" }}%</strong>
+                        <span class="tooltiptext">
+                            <h6><strong>% Encargos Trabalhisas:</strong></h6>
+                            <hr style="margin: 5px 0; border-color: #444;">
+                            {% for enc in demonstrativo.encargos_ativos %}
+                                • {{ enc.nome }}: {{ enc.aliquota }}%<br>
+                            {% endfor %}
+                        </span>
+					</span><br>
                     <strong>Benefícios:</strong> {{ financeiro.beneficios_pct|floatformat:0 }}%<br>
-                    <strong>Outros Custos Fixos:</strong> {{ financeiro.outros_custos_fixos_pct|floatformat:0 }}%
+                    <strong>Outros Custos Fixos:</strong> {{ financeiro.outros_custos_fixos_pct|floatformat:0 }}%<br>  
                 </div>
                 <div class="col-md-3">
                     <strong>Aluguel/IPTU Total:</strong> R$ {{ financeiro.aluguel_iptu_total|floatformat:"2g" }}<br>
@@ -35,22 +45,34 @@
             </div>
         </div>
     </div>
+    <div class="card mb-4 border-success">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Matéria-Prima</h5>
+        </div>
+        <div class="card-body" style="display: flex; justify-content: space-around;">
+            <div><strong>Papelão Onda B:</strong> R$ {{ custo_onda_b|floatformat:"2g" }}/m²</div>
+            <div><strong>Papelão Onda E:</strong> R$ {{ custo_onda_e|floatformat:"2g" }}/m²</div>
+            <div><strong>Tinta:</strong> R$ {{ custo_tinta|floatformat:"2g" }}/un_produto</div>
+        </div>
+    </div>    
     <div class="card mb-4">
     <div class="card-header bg-secondary text-white">
-        <h5 class="mb-0">Detalhamento da Composição do Custo Fixo</h5>
+        <h5 class="mb-0">Detalhamento da Composição do Custo Fixo Mensal</h5>
     </div>
     <div class="card-body">
-        <table class="table table-sm">
-            <tr><td>Funcionários (Salário + Encargos + Benefícios)</td><td class="text-right">R$ {{ demonstrativo.folha|floatformat:"2g" }}</td></tr>
-            <tr><td>Aluguel e IPTU (Proporcional Sr. Caixa)</td><td class="text-right">R$ {{ demonstrativo.aluguel|floatformat:"2g" }}</td></tr>
-            <tr><td>Prestações de Investimentos</td><td class="text-right">R$ {{ demonstrativo.prestacoes|floatformat:"2g" }}</td></tr>
-            <tr><td>Manutenções Mensais</td><td class="text-right">R$ {{ demonstrativo.manutencoes|floatformat:"2g" }}</td></tr>
-            <tr><td>Serviços Terceirizados</td><td class="text-right">R$ {{ demonstrativo.terceiros|floatformat:"2g" }}</td></tr>
-            <tr><td>Depreciação Mensal dos Ativos</td><td class="text-right">R$ {{ demonstrativo.depreciacao|floatformat:"2g" }}</td></tr>
-            <tr class="table-primary"><strong><td>TOTAL CUSTO FIXO ENCONTRADO</td><td class="text-right">R$ {{ demonstrativo.total_geral|floatformat:"2g" }}</td></strong></tr>
+        <table class="table table-bordered table-hover">
+            <tr><td>• Funcionários (Salário + Encargos + Benefícios)</td><td style="text-align:right">R$ {{ demonstrativo.folha|floatformat:"2g" }}</td></tr>
+            <tr><td>• Aluguel e IPTU (Proporcional Sr. Caixa)</td><td style="text-align:right">R$ {{ demonstrativo.aluguel|floatformat:"2g" }}</td></tr>
+            <tr><td>• Prestações de Investimentos</td><td style="text-align:right">R$ {{ demonstrativo.prestacoes|floatformat:"2g" }}</td></tr>
+            <tr><td>• Manutenções Mensais</td><td style="text-align:right">R$ {{ demonstrativo.manutencoes|floatformat:"2g" }}</td></tr>
+            <tr><td>• Serviços Terceirizados</td><td style="text-align:right">R$ {{ demonstrativo.terceiros|floatformat:"2g" }}</td></tr>
+            <tr><td>• Depreciação Mensal dos Ativos</td><td style="text-align:right">R$ <u>{{ demonstrativo.depreciacao|floatformat:"2g" }}</u></td></tr>
+            <tr class="table-light"><td>Custos Fixos - Parcial</td><td style="text-align:right">R$ {{ demonstrativo.custo_fixo_parcial|floatformat:"2g" }}</td></tr>
+            <tr><td>• Outros Custos Fixos ({{ demonstrativo.pct_outros_custos_fixos|floatformat:"1g" }}% sobre parcial)  </td><td style="text-align:right">R$ {{ demonstrativo.outros_custos_pct|floatformat:"2g" }}</td></tr>
+            <strong><tr class="table-primary"><td>Total Custos Fixos</td><td style="text-align:right">R$ {{ demonstrativo.total_geral|floatformat:"2g" }}</td></tr></strong>
         </table>
     </div>
-</div>
+
     <div class="card">
         <div class="card-header bg-dark text-white">
             <h5 class="mb-0">Rateio por Ativo e Custo por Minuto</h5>
@@ -60,22 +82,24 @@
                 <thead class="thead-light">
                     <tr>
                         <th>Máquina</th>
-                        <th class="text-right">Valor de Reposição</th>
-                        <th class="text-right">Depreciação da Máquina</th>
-                        <th class="text-right">% Participação</th>
-                        <th class="text-right">Custo Fixo Absorvido</th>
-                        <th class="bg-primary text-white">Custo/Minuto (Real)</th>
+                        <th style="text-align:center">Valor de Reposição</th>
+                        <th style="text-align:center">Depreciação</th>
+                        <th style="text-align:center">% Participação</th>
+                        <th style="text-align:center">Custo Fixo Absorvido</th>
+                        <th style="text-align:center">Cap_Max_Prod</th>
+                        <th class="bg-primary text-white">R$/Min - R$/un</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for m in maquinas %}
                     <tr>
                         <td>{{ m.nome_maquina }}</td>
-                        <td class="text-right">R$ {{ m.valor_reposicao|floatformat:"2g" }}</td>
-                        <td class="text-right">R$ {{ m.depreciacao_maquina|floatformat:"2g" }}</td>
-                        <td class="text-right">{{ m.participacao_pct|floatformat:"1" }}%</td>
-                        <td class="text-right">R$ {{ m.custo_absorvido|floatformat:"2g" }}</td>
-                        <td class="text-right font-weight-bold text-danger">R$ {{ m.custo_minuto_real|floatformat:"2g" }}</td>
+                        <td style="text-align: right;">R$ {{ m.valor_reposicao|floatformat:"2g" }}</td>
+                        <td style="text-align: right;">R$ {{ m.depreciacao_maquina|floatformat:"2g" }}</td>
+                        <td style="text-align: right;">{{ m.participacao_pct|floatformat:"1" }}%</td>
+                        <td style="text-align: right;">R$ {{ m.custo_absorvido|floatformat:"2g" }}</td>
+                        <td style="text-align: right;">{{ m.capacidade_producao|floatformat:"g" }} un/h - {{ m.capacidade_producao_minuto|floatformat:"3g" }} min/un</td>
+                        <td style="text-align: right;" class="  font-weight-bold text-danger">R$ {{ m.custo_minuto_real|floatformat:"2g" }}/min - {{m.custo_unidade|floatformat:"2g"}}/un</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -85,6 +109,8 @@
 
     <div class="mt-3 text-muted small">
         * Base de tempo calculada sobre 22.704 min/mês (conforme turnos e horas cadastrados).
+        --- R$/min = Custo Fixo Absorvido/22.704 min/mês --- tempo/unidade (min/un = 60/cap_max_prod)<br>
+        * R$/un = custo por minuto x tempo por unidade, que é calculado como 60 dividido pela capacidade máxima de produção (unidades por hora).
     </div>
 </div>
 

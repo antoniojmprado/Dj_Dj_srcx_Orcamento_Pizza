@@ -327,12 +327,12 @@ td.total_margem_lucro{
     position: relative;
     cursor: help;
     color: #3d1b9b;
-    text-decoration: underline dotted;
+   /* text-decoration: underline dotted;*/
 }
 
 .tooltip-imposto .tooltiptext {
     visibility: hidden;
-    width: 250px;
+    width: 350px;
     background-color: #212529;
     color: #fff;
     text-align: left;
