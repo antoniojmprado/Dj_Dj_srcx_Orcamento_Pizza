@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<div class="container">
+    <form action="destino" id="form_entrada" method="POST">
+        <label for="cep_destino">Digite o cep</label>
+        <input type="text" name="cep_destino" id="cep_destino" oninput="check_cep(this)"
+            pattern="\d{5}[0-9]{1}[0-9]{1}[0-9]{1}" placeholder="digite o cep" required><br><br>
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>{{ message}}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+
+        <label for="valor_total">Digite o valor total da carga</label>
+        <input type="text" name="valor_total" id='valor_total' oninput="check(this)" pattern="\d{1,6}"
+            placeholder="valor da carga" required> <br><br>
+
+        <label for="kg_total">Digite o peso total da carga em kg</label>
+        <input type="text" name="kg_total" id='kg_total' oninput="check(this)" pattern="\d{1,6}"
+            placeholder="peso da carga" required><br><br>
+
+        <input type="submit" style="border-radius:5px" name="btn_submit" id="btn_submit" accesskey="m"
+            value="Avançar [ALT=m]">
+    </form>
+</div>
+<br>
+
+{% endblock %}

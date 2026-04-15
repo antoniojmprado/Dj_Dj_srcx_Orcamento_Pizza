@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'appOrcam',
     'appOEE',
+    'appFrete',  # Adicione aqui a appFrete para que o Django reconheça as URLs e views dela
 ]
 
 MIDDLEWARE = [
@@ -131,5 +132,19 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
+# 1. Onde o navegador busca os arquivos (URL)
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# 2. Onde estão seus arquivos de desenvolvimento (CUIDADO: Use colchetes aqui)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# 3. Onde o Django vai reunir tudo para produção (CUIDADO: SEM colchetes aqui)
+# Mude o nome da pasta final para 'staticfiles' para não dar conflito
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Informe ao Django qual é a URL de login do seu projeto
+LOGIN_URL = '/orcam/login/'  # Ou o caminho exato que você usa no appOrcam
+LOGIN_REDIRECT_URL = '/frete/'  # Para onde ele volta depois de logar
+LOGOUT_REDIRECT_URL = '/orcam/login/'  # Para onde ele vai depois de deslogar

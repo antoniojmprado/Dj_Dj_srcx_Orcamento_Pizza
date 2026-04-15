@@ -58,62 +58,39 @@ $(document).ready(function () {
         });
     });
             // Escuta a mudança no campo de seleção de produto/chapa
-        $('#id_selecionar_produto_padrao').change(function () {
-            var chapaId = $(this).val();
+    $('#id_selecionar_produto_padrao').change(function () {
+        var chapaId = $(this).val(); // Verificação rápida do valor selecionado
 
-            if (chapaId) {
-                $.ajax({
-                    url: '/get-chapa-detalhes/' + chapaId + '/',
-                    type: 'GET',
-                    success: function (data) {
-                        // 1. Preenche o Nome do Produto (descrição para o orçamento)
-                        $('#id_produto_nome').val(data.nome);
+        if (chapaId) {
+            $.ajax({
+                // Use a URL que funcionou no navegador (ex: /get_chapa_detalhes/ ou /orcam/get_chapa_detalhes/)
+                url: '/orcam/get_chapa_detalhes/' + chapaId + '/',
+                type: 'GET',
+                success: function (data) {
+                    // 1. Preenche o Nome (id_produto_nome)
+                    $('#id_produto_nome').val(data.nome);
 
-                        // 2. Preenche as Unidades por Chapa (Rendimento)
-                        $('#id_unidades_chapa').val(data.unidades_chapa).trigger('input');
+                    // 2. Preenche o Rendimento (id_unidades_chapa)
+                    // Dica: Use .trigger('change') para garantir que o Django/JS perceba a mudança
+                    $('#id_unidades_chapa').val(data.unidades_chapa).trigger('change');
 
-                        // 3. Seleciona a chapa automaticamente nos campos de FK
-                        // Isso garante que o cálculo use os custos da chapa correta
-                        $('#id_chapa_projeto').val(chapaId);
-                        $('#id_chapa_utilizada').val(chapaId);
+                    // 3. O PONTO CRÍTICO: chapa_projeto e chapa_utilizada
+                    // Como são ForeignKeys, o Django gera os IDs como #id_chapa_projeto e #id_chapa_utilizada
+                    $('#id_chapa_projeto').val(chapaId).trigger('change');
+                    $('#id_chapa_utilizada').val(chapaId).trigger('change');
 
-                        console.log("Configurações da chapa aplicadas!");
-                    },
-                    error: function () {
-                        console.error("Erro ao buscar detalhes da chapa.");
-                    }
-                });
-            }
-        });
+                    console.log("Campos preenchidos para a chapa ID: " + chapaId);
+                },
+                error: function () {
+                    console.error("Erro ao buscar detalhes da chapa. Verifique a URL.");
+                }
+            });
+        }
+    });
 
 });
 
 
-$('#myTable').on('click', 'button[name=orcam_id]', function (e) {
-    e.preventDefault();
-    var id = $(this).closest('tr').find('#getId').html(); //alert('id para editar nivel '+id);
-
-    $.ajax({ 
-        type: 'GET',
-        url: `/orcamento/${id}/` ,
-        data: {},
-        success: function (response) {
-            // Abre nova janela com o conteúdo do PDF/HTML
-            var novaJanela = window.open('', '_blank');
-            if (novaJanela) {
-                novaJanela.document.write(response);
-                novaJanela.document.close();
-            } else {
-                alert("Por favor, habilite pop-ups para este site.");
-            }
-        },
-        error: function (xhr, status, error) {
-            // MELHORADO: Mostra o erro técnico no console
-            console.error("Erro AJAX:", status, error);
-            alert("Ocorreu um erro...ao tentar abrir orcamento");
-        }
-    });
-});    
 
 // Aguarda 3 segundos (3000 milissegundos)
 setTimeout(function () {

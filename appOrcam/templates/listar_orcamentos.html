@@ -60,8 +60,8 @@
                 <td class = 'direita'> {{ orc.custo_total_sem_margem|floatformat:2 }}</td>
                 <td class = 'direita'> {{ orc.margem_real|floatformat:"g" }} %</td>
                 <td class = 'direita'> {{ orc.custo_total_com_margem|floatformat:"2g" }}</td>
-                <td class = 'direita'> {{ orc.valor_total_pedido|floatformat:"2g" }}</td>
-                <td><button class="btn btn-outline-secondary" name = "orcam_id"><strong>Abrir</strong></button></td>
+                <td class = 'direita'> {{ orc.valor_total_pedido|floatformat:"2g" }}</td><!--<td><button class="btn btn-outline-secondary" name = "orcam_id"><strong>Abrir</strong></button></td>-->
+                <td><a class="btn btn-outline-secondary" href="{% url 'imprimir_orcamento' orc.id %}"><strong>Abrir</strong></a></td>
                 <td><a class="btn btn-outline-secondary" href="{% url 'listar_roteiros_producao' orc.id %}" ><strong>Roteiros</strong></a></td>
             </tr>
             {% endfor %}

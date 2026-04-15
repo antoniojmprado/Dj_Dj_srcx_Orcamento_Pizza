@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Cálculo de Frete - {{ destino_cidade }} ({{ uf_coluna }})</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>CEP Destino:</strong> {{ destino_cep }}</p>
+                    <p><strong>Peso Informado:</strong> {{ peso_informado }} kg</p>
+                </div>
+                <div class="col-md-6 text-right">
+                    <p><strong>Data da Consulta:</strong> {{ agora }}</p>
+                    <p><strong>Valor da Carga:</strong> R$ {{ valor_nf|floatformat:2 }}</p>
+                </div>
+            </div>
+
+            <table class="table table-bordered table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Transportadora</th>
+                        <th>Região</th>
+                        <th>Frete Total</th>
+                        <th>Custo por Unidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transp, total, unidade, regiao in lista_resultados %}
+                    <tr>
+                        <td><strong>{{ transp }}</strong></td>
+                        <td>{{ regiao }}</td>
+                        <td>R$ {{ total|floatformat:2 }}</td>
+                        <td class="table-success">R$ {{ unidade|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">Nenhuma transportadora atende esta região.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted">
+            <a href="{% url 'appFrete:calcular_frete_view' %}" class="btn btn-outline-secondary">Nova Consulta</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,172 @@
+div.alert {
+    position: relative;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    padding-top: 10px;
+    padding-bottom: 5px;
+    background-color: #ECECEC;
+    border-color: #ff0000;
+}
+
+.borda_indice {
+    border: 2px solid #0000ff;
+    border-radius: 15px;
+    padding: 3px;
+}
+
+#botao {
+    /* background-color: lightgreen; */
+    background-color: black;
+    border-radius: 10px;
+    border-color: #ffffff;
+    color: white;
+    font-weight: bolder;
+}
+
+.btn_inicio:hover{
+    box-shadow: 7px 0px 30px 0px #0c0d0d;
+}
+
+button.campo{
+    width: 32px;
+    height: 32px;
+    text-align: center;
+    padding: 0; 
+    font-size: 18px;
+    /* line-height: 1.428571429; */
+    border-radius: 50%;
+    background-color: rgb(32, 89, 181);
+    border-color: rgb(32,89,181);
+    color:white
+}
+
+button.campo:hover {
+    box-shadow: 7px 0px 30px 0px #429ed7;
+}
+
+button.campo_neg{
+    width: 32px;
+    height: 32px;
+    text-align: center;
+    padding: 0; 
+    font-size: 18px;
+    /* line-height: 1.428571429; */
+    border-radius: 50%;
+    background-color: #ff0000;
+    border-color: #ff0000;
+    color:white
+}
+
+button.campo_neg:hover{
+    box-shadow: 7px 0px 30px 0px #e96a6a;
+}
+
+
+#campo{
+    border-radius: 10px;
+}
+
+.center {
+    text-align: center;
+}
+
+.dic_prox{
+    color: red;
+}
+
+.dimens_blue{
+    background-color: #00f;
+    padding:3px;
+    margin-right: 1px;
+}
+
+.dimens_red{
+    background-color: #ececec;
+    padding:3px;
+    margin-right: 1px;
+}
+
+.dimens_black{
+    background-color: #6056566c;
+    padding:3px;
+    margin-right: 1px;
+}
+
+.dimens_cyan{
+    background-color: rgba(238, 188, 202, 0.709);
+    padding:3px;
+    margin-right: 1px;
+}
+
+.destino.negrito{
+    font-weight: bold;
+}
+
+td.frete_valor{
+    border: 1px solid #d00;
+    box-shadow: 3px 0px 15px 0px #03781e;
+    font-weight: bolder;
+}
+
+/* .col.dimens_red input,
+.col.dimens_cyan input,
+.col.dimens_black input
+{
+    padding:2px
+} */
+
+.jumbotron{
+    background-color: #ECECEC
+}
+
+.larg_botao{
+    width: 25px;
+}
+.negrBorda{
+    font-weight: bold;
+    border: 1px solid #ff0000;
+    padding: 7px;
+    line-height:20px;
+    background-color: #ECECEC
+}
+
+.nav-link.active h3{
+    padding:1px
+}
+
+.negrito{
+    font-weight:900;
+    padding: 7px;
+    line-height: 20px;
+}
+
+.negritoBorda {
+    font-weight: bold;
+    border: 1px solid #ff0000;
+    padding: 7px;
+    line-height: 20px;
+}
+
+#produtos {
+    padding: 5px;
+    /* background-color: #eee */
+}
+
+.resultado {
+    font-weight: bold;
+    border: 1px solid #ff0000;
+    padding: 7px;
+    line-height: 20px;
+    background-color: #101010;
+    color:white
+}
+
+.submit_produto{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+th,
+td{
+    text-align: center;
+}
