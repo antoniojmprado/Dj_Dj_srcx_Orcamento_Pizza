@@ -56,6 +56,7 @@ def calcular_frete_view(request):
         # Dados do destino
         destino_uf = destino['uf'].to_string(index=False, header=False).strip()
         destino_cidade = destino['municipio'].to_string(index=False, header=False).strip()
+        logradouro_destino = destino['logradouro'].to_string(index=False, header=False).strip()  # Pode ser opcional
 
         # Se não enviou as dimensões ainda, manda para a tela de dimensões (regiao.html)
         if 'comprimento' not in request.POST:
@@ -65,7 +66,7 @@ def calcular_frete_view(request):
                 "cidade": destino_cidade,
                 "kg_total": kg_total_informado,
                 "valor_total": valor_total_nf,
-                "logradouro": destino['logradouro'].to_string(index=False, header=False)
+                "logradouro": logradouro_destino    
             }
             return render(request, 'appFrete/regiao.html', {'dic': dic_prox_pag, 'agora': agora})
 
@@ -81,13 +82,23 @@ def calcular_frete_view(request):
         # 2. Cálculo do Volume Total e Unidades Totais
         vol_total_m3 = 0
         total_unidades = 0
+        total_pacotes = 0
+        items = []  # Lista para armazenar as descrições de cada item para debug/logging 
         for i in range(len(list_comps)):
             # Dentro do seu loop de cálculo de volume:
             v_i = (float(list_comps[i].replace(',', '.')) * float(list_largs[i].replace(',', '.')) *
                 float(list_alts[i].replace(',', '.')) / 1000000) * float(list_vols[i].replace(',', '.'))
             vol_total_m3 += v_i
             total_unidades += int(list_unis[i]) * int(list_vols[i])
-
+            
+            total_pacotes += int(list_vols[i])
+            
+            append_item = f"Item {i+1}: {list_comps[i]}x{list_largs[i]}x{list_alts[i]} cm -  {list_vols[i]} pacotes - Unid./Pacote: {list_unis[i]} -  Tot. Unid.: {int(list_unis[i]) * int(list_vols[i])} -  Volume Total: {v_i: .2f} m³"
+            items.append(append_item)                
+            
+            item_i = f"Item {i+1}: {list_comps[i]}x{list_largs[i]}x{list_alts[i]} cm, Qtde: {list_vols[i]}, Unid./Pacote: {list_unis[i]}, Vol.Total: {v_i:.2f} m³"
+            print(item_i)       
+            
         # 3. Lógica Capital vs Interior
         capitais_df = pd.read_excel(os.path.join(caminho_bases, 'estados_capitais_BR.xlsx'))
         cidade_capital = capitais_df.loc[capitais_df['uf'] == destino_uf, 'capital'].to_string(index=False, header=False).strip()
@@ -101,6 +112,8 @@ def calcular_frete_view(request):
         # Cálculos de Peso Cubado (Lógica que você tinha no transp.py)
         tab_transp['peso_cubado_calc'] = vol_total_m3 * tab_transp['ANTT']
         tab_transp['peso_final'] = np.where(tab_transp['peso_cubado_calc'] < kg_total_informado, kg_total_informado, tab_transp['peso_cubado_calc'])
+        
+        peso_cubado_final = tab_transp['peso_final'].iloc[0]  # Pegando o peso final para exibir no template
 
         
         # Cálculo dos Componentes (Excesso, AdVal, Gris, etc.)
@@ -113,7 +126,7 @@ def calcular_frete_view(request):
         # Frete Peso (Calculado sobre os 100kg iniciais ou peso total dependendo da sua regra)
         tab_transp['frete_min'] = tab_transp['100_kg']
         
-        tab_transp['frete_peso_total'] = tab_transp['frete_peso'] * tab_transp['peso_cubado_calc']
+        tab_transp['frete_peso_total'] = tab_transp['frete_peso'] * tab_transp['peso_final']
         
 
         # Soma do Frete sem Impostos
@@ -136,18 +149,24 @@ def calcular_frete_view(request):
             res_dict['transportadora'],
             res_dict['frete_final'],
             res_dict['frete_unidade'],
-            res_dict['regiao']
-        )  
+            res_dict['regiao'],
+            res_dict['peso_final']
+        )
 
         contexto = {
             'agora': agora,
+            'cep': cep_destino_raw,
             'lista_resultados': lista_resultados,
-            'destino_cidade': destino_cidade,
+            'destino_cidade': destino_cidade,                        
             'uf_coluna': uf_coluna,
+            "logradouro": logradouro_destino,
             'vol_total': vol_total_m3,
             'total_unidades': total_unidades,
+            'total_pacotes': total_pacotes,
             'peso_informado': kg_total_informado,
-            'valor_nf': valor_total_nf
+            'peso_cubado_final': peso_cubado_final,
+            'valor_nf': valor_total_nf,                     
+            'items': items  # Adicionando a lista de descrições dos itens para debug/logging
         }
 
         return render(request, 'appFrete/result_transps.html', contexto)

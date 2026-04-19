@@ -8,7 +8,7 @@
 <div>
     <h3><u>Destino</u></h3>
 </div>
-<div>CEP: {{ dic.cep }}</div>
+<div>CEP: <span id="cep">{{ dic.cep }}</span></div>
 <div>Logradouro: {{ dic.logradouro }}</div>
 <div>U.F.: {{ dic.uf }}</div>
 <div>Cidade: {{ dic.cidade }}</div>
@@ -48,6 +48,7 @@
         </div>
         {% csrf_token %}
         <input type="hidden" name="cep" value="{{ dic.cep }}">
+        <input type="hidden" name="logradouro" value="{{ dic.logradouro }}">
         <input type="hidden" name="kg_total" value="{{ dic.kg_total }}">
         <input type="hidden" name="valor_total" value="{{ dic.valor_total }}">
         <input type="hidden" name="uf" value="{{ dic.uf }}">

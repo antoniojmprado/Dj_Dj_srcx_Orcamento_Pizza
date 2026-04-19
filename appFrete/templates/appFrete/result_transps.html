@@ -4,20 +4,45 @@
 <div class="container mt-4">
     <div class="card shadow">
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Cálculo de Frete - {{ destino_cidade }} ({{ uf_coluna }})</h4>
+            <h4 class="mb-0">Cálculo de Frete - {{ destino_cidade }} ({{ uf_coluna }}) - {{ logradouro }} </h4>
         </div>
         <div class="card-body">
-            <div class="row mb-4">
+            <div class="row">
                 <div class="col-md-6">
-                    <p><strong>CEP Destino:</strong> {{ destino_cep }}</p>
-                    <p><strong>Peso Informado:</strong> {{ peso_informado }} kg</p>
+                    <p id="cep"><strong>CEP Destino:</strong> {{ cep }}</p>
+                    <p><strong>Peso Informado:</strong> {{ peso_informado|floatformat:"g" }} kg</p>
+                    <p><strong>Peso Cubado:</strong> {{ peso_cubado_final|floatformat:"g"  }} kg</p>
+                    <p><strong>Volume Total:</strong> {{ vol_total|floatformat:1}} m³</p>
                 </div>
                 <div class="col-md-6 text-right">
                     <p><strong>Data da Consulta:</strong> {{ agora }}</p>
-                    <p><strong>Valor da Carga:</strong> R$ {{ valor_nf|floatformat:2 }}</p>
+                    <p><strong>Valor da Carga:</strong> R$ {{ valor_nf|floatformat:"2g" }}</p>
+                    <p><strong>Total de Pacotes:</strong> {{ total_pacotes|floatformat:"g" }}</p>
+                    <p><strong>Total de Unidades:</strong> {{ total_unidades|floatformat:"g" }}</p>
                 </div>
             </div>
-
+            <div class="card ">
+                <div class="card-header bg-secondary text-white">
+                        <button class="p-0 thead-light btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                            <strong>Clique para Detalhamento dos itens</strong>
+                        </button>
+                </div>
+                <div class="collapse" id="collapseExample">
+                    <div class="card-body">
+                        <div style="display:flex; justify-content: center;">
+                            {% if items %}
+                                <ul class="list-group">
+                                    {% for item in items %}
+                                        <li class="list-group-item">{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">Nenhum item adicionado.</p>
+                            {% endif %}
+                        </div> 
+                    </div>  
+                </div>
+            </div>
             <table class="table table-bordered table-hover">
                 <thead class="thead-light">
                     <tr>
@@ -28,11 +53,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for transp, total, unidade, regiao in lista_resultados %}
+                    {% for transp, total, unidade, regiao, peso_cubado_final in lista_resultados %}
                     <tr>
                         <td><strong>{{ transp }}</strong></td>
                         <td>{{ regiao }}</td>
-                        <td>R$ {{ total|floatformat:2 }}</td>
+                        <td>R$ {{ total|floatformat:"2g" }}</td>
                         <td class="table-success">R$ {{ unidade|floatformat:2 }}</td>
                     </tr>
                     {% empty %}

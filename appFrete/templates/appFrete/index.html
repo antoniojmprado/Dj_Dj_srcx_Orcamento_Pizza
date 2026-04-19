@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'appFrete/base.html' %}
 
 {% block body %}
 
@@ -21,8 +21,8 @@
             {% endfor %}
         {% endif %}
 
-        <label for="valor_total">Digite o valor total da carga</label>
-        <input type="text" name="valor_total" id='valor_total' oninput="check(this)" pattern="\d{1,6}"
+        <label for="valor_total">Digite o valor total da carga</label> 
+        <input class = "mask-decimal" type="text" name="valor_total" id='valor_total' oninput="check(this)"
             placeholder="valor da carga" required> <br><br>
 
         <label for="kg_total">Digite o peso total da carga em kg</label>

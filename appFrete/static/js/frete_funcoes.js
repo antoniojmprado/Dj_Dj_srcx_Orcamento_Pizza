@@ -64,4 +64,29 @@ window.myFunction = function() {
     }
 }
 
+$(document).ready(function () {
+    // 1. MÁSCARAS VISUAIS
+    // Para inteiros (Ex: 1.500)
+    $('.mask-inteiro').mask('#.##0', { reverse: true });
+
+    // Para decimais/moeda (Ex: 1.250,50)
+    $('#valor_total, .mask-money').mask('#.##0,00', { reverse: true });
+
+    // 2. LIMPEZA ANTES DO ENVIO (Crucial para o Django não dar erro)
+    $('form').submit(function () {
+        // Limpar inteiros (remover todos os pontos)
+        $('.mask-inteiro').each(function () {
+            var val = $(this).val().replace(/\./g, '');
+            $(this).val(val);
+        });
+
+        // Limpar decimais (remover pontos e trocar vírgula por ponto)
+        $('.mask-decimal, .mask-money').each(function () {
+            var val = $(this).val().replace(/\./g, '').replace(',', '.');
+            $(this).val(val);
+        });
+    });
+    
+})
+
 

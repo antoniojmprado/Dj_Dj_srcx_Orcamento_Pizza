@@ -90,7 +90,9 @@ $(document).ready(function () {
 
 });
 
-
+let cep = document.getElementById('cep').innerText;
+// Aplica a máscara 00000-000
+document.getElementById('cep').innerText = cep.replace(/(\d{5})(\d{3})/, "$1-$2");
 
 // Aguarda 3 segundos (3000 milissegundos)
 setTimeout(function () {
