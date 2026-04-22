@@ -8,13 +8,14 @@
 <div>
     <h3><u>Destino</u></h3>
 </div>
+<div>Cliente: <span id="cep">{{ dic.cliente }}</span></div>
+
+<div>U.F.: {{ dic.uf }} - Cidade: {{ dic.cidade }}</div>
 <div>CEP: <span id="cep">{{ dic.cep }}</span></div>
-<div>Logradouro: {{ dic.logradouro }}</div>
-<div>U.F.: {{ dic.uf }}</div>
-<div>Cidade: {{ dic.cidade }}</div>
 <div>Bairro: {{ dic.bairro }}</div>
-<div>Peso total: {{ dic.kg_total }} kg</div>
-<div>Valor total: R$ {{ dic.valor_total }}</div>
+<div>Endereço: {{ dic.logradouro }}</div>
+<div>Peso total: {{ dic.kg_total|floatformat:"0g" }} kg</div>
+<div>Valor total: R$ {{ dic.valor_total|floatformat:"2g" }}</div>
 <hr>
 <h3>Dimensões dos produtos em <span class="centimetros">centímetros</span></h3>
     <form action="{% url 'appFrete:calcular_frete_view' %}" method="POST">
@@ -48,13 +49,15 @@
         </div>
         {% csrf_token %}
         <input type="hidden" name="cep" value="{{ dic.cep }}">
+        <input type="hidden" name="cliente" value="{{ dic.cliente }}">
+        <input type="hidden" name="cidade" value="{{ dic.cidade }}">
+        <input type="hidden" name="bairro" value="{{ dic.bairro }}">
         <input type="hidden" name="logradouro" value="{{ dic.logradouro }}">
         <input type="hidden" name="kg_total" value="{{ dic.kg_total }}">
         <input type="hidden" name="valor_total" value="{{ dic.valor_total }}">
         <input type="hidden" name="uf" value="{{ dic.uf }}">
-        <input type="hidden" name="cidade" value="{{ dic.cidade }}">
 
-        <button type="submit">Calcular Frete</button>
+        <button type="submit"  accesskey="k" >Calcular Frete [ALT + k]</button>
     </form>
 </div>
 

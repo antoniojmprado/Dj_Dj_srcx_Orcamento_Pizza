@@ -29,6 +29,10 @@ def calcular_frete_view(request):
     if request.method == 'POST':
         # Dados base que persistem entre as telas
         cep_destino_raw = request.POST.get('cep_destino') or request.POST.get('cep')
+        cep_destino_raw = cep_destino_raw.replace('-','') # para remover hífen mostrado no campo em cep em regiao.html
+        
+        cliente_destino = request.POST.get('cliente')
+        cliente_destino = cliente_destino.upper()
 
         kg_total_raw = request.POST.get('kg_total', '0').replace(',', '.')
         valor_total_raw = request.POST.get('valor_total', '0').replace(',', '.')
@@ -57,16 +61,28 @@ def calcular_frete_view(request):
         destino_uf = destino['uf'].to_string(index=False, header=False).strip()
         destino_cidade = destino['municipio'].to_string(index=False, header=False).strip()
         logradouro_destino = destino['logradouro'].to_string(index=False, header=False).strip()  # Pode ser opcional
+        bairro_destino = destino['bairro'].to_string(index=False, header=False).strip()  # Pode ser opcional
+
+        if logradouro_destino in ["", "NaN"]:
+           logradouro_destino = "..."
+           print(f' sou a rua   ...')
+           
+        if bairro_destino in ["", "NaN"]:
+           bairro_destino = "..."
+           print(f' sou a bairro_destino  porrrrra ...')
 
         # Se não enviou as dimensões ainda, manda para a tela de dimensões (regiao.html)
         if 'comprimento' not in request.POST:
+               
             dic_prox_pag = {
-                "cep": cep_destino_raw,
+                "cep": f"{cep_destino_raw[:5]}-{cep_destino_raw[5:]}",
+                "cliente": cliente_destino.upper(),
                 "uf": destino_uf,
-                "cidade": destino_cidade,
+                "cidade": destino_cidade.upper(),
+                "logradouro": logradouro_destino.upper(),
+                "bairro": bairro_destino.upper(),
                 "kg_total": kg_total_informado,
                 "valor_total": valor_total_nf,
-                "logradouro": logradouro_destino    
             }
             return render(request, 'appFrete/regiao.html', {'dic': dic_prox_pag, 'agora': agora})
 
@@ -155,11 +171,13 @@ def calcular_frete_view(request):
 
         contexto = {
             'agora': agora,
-            'cep': cep_destino_raw,
+            'cep': f"{cep_destino_raw[:5]}-{cep_destino_raw[5:]}",
+            "cliente": cliente_destino,
             'lista_resultados': lista_resultados,
-            'destino_cidade': destino_cidade,                        
+            'destino_cidade': destino_cidade.upper(),                        
             'uf_coluna': uf_coluna,
-            "logradouro": logradouro_destino,
+            "logradouro": logradouro_destino.upper(),
+            "bairro":bairro_destino.upper(),
             'vol_total': vol_total_m3,
             'total_unidades': total_unidades,
             'total_pacotes': total_pacotes,

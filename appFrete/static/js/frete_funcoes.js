@@ -67,22 +67,36 @@ window.myFunction = function() {
 $(document).ready(function () {
     // 1. MÁSCARAS VISUAIS
     // Para inteiros (Ex: 1.500)
-    $('.mask-inteiro').mask('#.##0', { reverse: true });
+    $('.mask-inteiro').mask('00,000', { reverse: true });
 
-    // Para decimais/moeda (Ex: 1.250,50)
-    $('#valor_total, .mask-money').mask('#.##0,00', { reverse: true });
+    // Para decimais/moeda (Ex: 1,250.50)
+    $('.mask-decimal, .mask-money').mask('#,##0.00', { reverse: true });
+
+    // Para cep (Ex: 12345-67)
+    $('.mask-cep').mask('00000-000');
 
     // 2. LIMPEZA ANTES DO ENVIO (Crucial para o Django não dar erro)
     $('form').submit(function () {
         // Limpar inteiros (remover todos os pontos)
         $('.mask-inteiro').each(function () {
-            var val = $(this).val().replace(/\./g, '');
+            var val = $(this).val().replace(/\./g, '').replace(/\,/g, '');
+            $(this).val(val);
+
+            // Se o valor ultrapassar 10000, força o limite máximo
+            if (parseInt(val) > 10000) {
+                field.val('10.000');
+            }
+        });
+
+        // Limpar decimais (remover pontos e trocar vírgula por ponto)
+        $('.mask-cep').each(function () {
+            var val = $(this).val().replace(/\-/g, '');
             $(this).val(val);
         });
 
         // Limpar decimais (remover pontos e trocar vírgula por ponto)
         $('.mask-decimal, .mask-money').each(function () {
-            var val = $(this).val().replace(/\./g, '').replace(',', '.');
+            var val = $(this).val().replace(/\,/g, '')
             $(this).val(val);
         });
     });

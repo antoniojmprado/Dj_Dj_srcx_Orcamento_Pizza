@@ -8,6 +8,11 @@ div.alert {
     border-color: #ff0000;
 }
 
+#cabecalho{
+    display:flex;
+    justify-content: space-between;
+}
+
 .borda_indice {
     border: 2px solid #0000ff;
     border-radius: 15px;
@@ -107,13 +112,6 @@ td.frete_valor{
     box-shadow: 3px 0px 15px 0px #03781e;
     font-weight: bolder;
 }
-
-/* .col.dimens_red input,
-.col.dimens_cyan input,
-.col.dimens_black input
-{
-    padding:2px
-} */
 
 .jumbotron{
     background-color: #ECECEC

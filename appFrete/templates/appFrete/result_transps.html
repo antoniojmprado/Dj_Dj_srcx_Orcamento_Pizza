@@ -1,18 +1,28 @@
-{% extends 'base.html' %}
+{% extends 'appFrete\base.html' %}
 
 {% block body %}
 <div class="container mt-4">
     <div class="card shadow">
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Cálculo de Frete - {{ destino_cidade }} ({{ uf_coluna }}) - {{ logradouro }} </h4>
+            <div id="cabecalho">
+                <div>
+                    <h4 class="mb-0">Cálculo de Frete</h4>
+                </div>
+                <div>
+                    <h4>Cliente {{ cliente }}</h4>
+                </div>
+                <div>
+                    <h4><strong>CEP Destino:</strong> {{ cep }}</h4>
+                </div>                        
+            </div>
         </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <p id="cep"><strong>CEP Destino:</strong> {{ cep }}</p>
+                    <p><strong>Cidade:</strong> {{ destino_cidade }} / <strong>{{ uf_coluna }}</strong></p>
+                    <p><strong>Endereço:</strong> {{ logradouro }} - <strong>Bairro:</strong> {{ bairro }} </p>
                     <p><strong>Peso Informado:</strong> {{ peso_informado|floatformat:"g" }} kg</p>
-                    <p><strong>Peso Cubado:</strong> {{ peso_cubado_final|floatformat:"g"  }} kg</p>
-                    <p><strong>Volume Total:</strong> {{ vol_total|floatformat:1}} m³</p>
+                    <p><strong>Peso Cubado:</strong> {{ peso_cubado_final|floatformat:"0g" }} kg</p>
                 </div>
                 <div class="col-md-6 text-right">
                     <p><strong>Data da Consulta:</strong> {{ agora }}</p>
@@ -23,8 +33,9 @@
             </div>
             <div class="card ">
                 <div class="card-header bg-secondary text-white">
-                        <button class="p-0 thead-light btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                            <strong>Clique para Detalhamento dos itens</strong>
+                        <button class="p-0 thead-light btn btn-secondary" type="button" data-bs-toggle="collapse"     data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample"
+                         onmouseover="red_white(this)" onmouseout="white_gray(this)">
+                            <strong>Clique para Detalhamento dos itens - <strong>Volume Total:</strong> {{ vol_total|floatformat:1}} m³</strong>
                         </button>
                 </div>
                 <div class="collapse" id="collapseExample">
@@ -73,4 +84,17 @@
         </div>
     </div>
 </div>
+<script>
+    function red_white(x) {
+        x.style.color = "#0D6EFD";
+        x.style.backgroundColor = "white";
+        x.style.padding = "2"
+    }
+
+    function white_gray(x) {
+        x.style.color = "#fff";
+        x.style.backgroundColor = "#6C757D";
+        x.style.padding = "2"
+    }
+</script>
 {% endblock %}
