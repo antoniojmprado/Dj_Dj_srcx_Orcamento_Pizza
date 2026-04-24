@@ -28,10 +28,6 @@ def calcular_frete_view(request, pk=None):
         # Busca o frete salvo ou dá erro 404 se não existir
         frete_obj = get_object_or_404(DetalhesFrete, pk=pk)
         
-        peso_cubado_bd = frete_obj.peso_cubado
-        peso_informado_bd = frete_obj.peso_informado
-        
-        
         # Aqui, pegamos as transportadoras salvas vinculadas a esse frete
         # Supondo que você tenha um Relacionamento (ForeignKey) no seu modelo
         
@@ -40,9 +36,7 @@ def calcular_frete_view(request, pk=None):
         # foreingkey que tem o related_name = 'transportadora'. Com isso pode-se fazer a busca 'reversa' já que este é o recurso para 
         # obterem-se os dados de ambas tabelas graças ao relacionamento feito na criação do modelo. 
         
-        lista_resultados = frete_obj.transportadoras.all().order_by('frete_unidade') # transportadoras related_name em "class TransportadorasFrete(models.Model)"
-        
-        itens_frete = frete_obj.itens.all().order_by('-comprimento') # itens related_name em "class ItensFrete(models.Model)"
+        lista_resultados = frete_obj.transportadoras.all().order_by('frete_unidade') 
 
         contexto = {
             'pk': pk, # Importante para o HTML saber que é histórico
@@ -58,9 +52,6 @@ def calcular_frete_view(request, pk=None):
             'peso_cubado': frete_obj.peso_cubado,
             'valor_nf': frete_obj.valor_nf,
             'lista_resultados': lista_resultados,
-            'itens_frete': itens_frete,
-            'peso_cubado_bd' : peso_cubado_bd,
-            'peso_informado_bd' : peso_informado_bd
         }
         return render(request, 'appFrete/result_transps.html', contexto)
     # --- FIM DO BLOCO DE HISTÓRICO ---
@@ -81,7 +72,8 @@ def calcular_frete_view(request, pk=None):
         cliente_destino = cliente_destino.upper()
 
         kg_total_raw = request.POST.get('kg_total', '0').replace(',', '.')
-        valor_total_raw = request.POST.get('valor_total', '0').replace(',', '.')
+        valor_total_raw = request.POST.get(
+            'valor_total', '0').replace(',', '.')
         print(f'valor_total_raw: {valor_total_raw} | kg_total_raw: {kg_total_raw}')
 
         # Agora converte para float (que o Pandas adora)
@@ -105,15 +97,20 @@ def calcular_frete_view(request, pk=None):
 
         # Dados do destino
         destino_uf = destino['uf'].to_string(index=False, header=False).strip()
-        destino_cidade = destino['municipio'].to_string(index=False, header=False).strip()
-        logradouro_destino = destino['logradouro'].to_string(index=False, header=False).strip()  # Pode ser opcional
-        bairro_destino = destino['bairro'].to_string(index=False, header=False).strip()  # Pode ser opcional
+        destino_cidade = destino['municipio'].to_string(
+            index=False, header=False).strip()
+        logradouro_destino = destino['logradouro'].to_string(
+            index=False, header=False).strip()  # Pode ser opcional
+        bairro_destino = destino['bairro'].to_string(
+            index=False, header=False).strip()  # Pode ser opcional
 
         if logradouro_destino in ["", "NaN"]:
            logradouro_destino = "..."
+           print(f' sou a rua   ...')
 
         if bairro_destino in ["", "NaN"]:
            bairro_destino = "..."
+           print(f' sou a bairro_destino  porrrrra ...')
 
         # Se não enviou as dimensões ainda, manda para a tela de dimensões (regiao.html)
         print(">>> O POST CHEGOU!")
@@ -164,12 +161,15 @@ def calcular_frete_view(request, pk=None):
             print(item_i)
 
         # 3. Lógica Capital vs Interior
-        capitais_df = pd.read_excel(os.path.join(caminho_bases, 'estados_capitais_BR.xlsx'))
-        cidade_capital = capitais_df.loc[capitais_df['uf'] == destino_uf, 'capital'].to_string(index=False, header=False).strip()
+        capitais_df = pd.read_excel(os.path.join(
+            caminho_bases, 'estados_capitais_BR.xlsx'))
+        cidade_capital = capitais_df.loc[capitais_df['uf'] == destino_uf, 'capital'].to_string(
+            index=False, header=False).strip()
         uf_coluna = f"{destino_uf}_CAPITAL" if destino_cidade == cidade_capital else f"{destino_uf}_INTERIOR"
 
         # 4. Tabela de Transportadoras e Fórmulas
-        transp_df = pd.read_excel(os.path.join(caminho_bases, 'NOVA_Tabela_fretes_transportadoras.xlsx'), 'senhor_caixa')
+        transp_df = pd.read_excel(os.path.join(
+            caminho_bases, 'NOVA_Tabela_fretes_transportadoras.xlsx'), 'senhor_caixa')
         # Ajustado nome da coluna 'estado' conforme seu Excel
         tab_transp = transp_df.loc[transp_df['estado'] == uf_coluna].copy()
         
@@ -192,7 +192,8 @@ def calcular_frete_view(request, pk=None):
         # Frete Peso (Calculado sobre os 100kg iniciais ou peso total dependendo da sua regra)
         tab_transp['frete_min'] = tab_transp['100_kg']
 
-        tab_transp['frete_peso_total'] = tab_transp['frete_peso'] * tab_transp['peso_final']
+        tab_transp['frete_peso_total'] = tab_transp['frete_peso'] * \
+            tab_transp['peso_final']
 
         # Soma do Frete sem Impostos
         tab_transp['frete_net'] = (

@@ -3,7 +3,9 @@
 ========================== */
 $(document).ready(function () {
     if ($('#myTable').length) {
+
         const table = $('#myTable').DataTable({
+            "order": [[0, "desc"]],
             dom: 'Bfrtip',
             buttons: [
                 'copyHtml5', 'excelHtml5', 'csvHtml5',

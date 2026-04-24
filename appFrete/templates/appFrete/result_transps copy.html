@@ -21,13 +21,8 @@
                 <div class="col-md-6">
                     <p><strong>Cidade:</strong> {{ destino_cidade }} / <strong>{{ uf_coluna }} - ICMS: {{ icms|floatformat:"g" }} %</strong></p>
                     <p><strong>Endereço:</strong> {{ logradouro }} - <strong>Bairro:</strong> {{ bairro }} </p>
-                    {% if pk %}
-                        <p><strong>Peso Informado:</strong> {{ peso_informado_bd|floatformat:"g" }} kg</p>
-                        <p><strong>Peso Cubado:</strong> {{ peso_cubado_bd|floatformat:"0g" }} kg</p>
-                    {% else %}
-                        <p><strong>Peso Informado:</strong> {{ peso_informado|floatformat:"g" }} kg</p>
-                        <p><strong>Peso Cubado:</strong> {{ peso_cubado_final|floatformat:"0g" }} kg</p>
-                    {% endif %}
+                    <p><strong>Peso Informado:</strong> {{ peso_informado|floatformat:"g" }} kg</p>
+                    <p><strong>Peso Cubado:</strong> {{ peso_cubado_final|floatformat:"0g" }} kg</p>
                 </div>
                 <div class="col-md-6 text-right">
                     <p><strong>Data da Consulta:</strong> {{ agora }}</p>
@@ -46,35 +41,6 @@
                 <div class="collapse" id="collapseExample">
                     <div class="card-body">
                         <div style="display:flex; justify-content: center;">
-                        {% if pk %}
-                            <table class="table table-bordered table-hover">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>Compr.</th>
-                                        <th>Larg.</th>
-                                        <th>Alt.</th>
-                                        <th>Qt_Pac.</th>
-                                        <th>Qt_Un.</th>
-                                        <th>Tot_Un.</th>
-                                        <th>Vol_m3</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for f in itens_frete %}
-                                        <tr>
-                                            <td>{{ f.comprimento }}</td>
-                                            <td>{{ f.largura }}</td>
-                                            <td>{{ f.altura }}</td>
-                                            <td>{{ f.qt_pacotes }}</td>
-                                            <td>{{ f.qt_unidades }}</td>
-                                            <td>{{ f.qt_unidades }} * {{ f.qt_pacotes }}</td>
-                                            <td>{{ f.volume_item}}</td>                         
-                                        </tr>
-                                    {% endfor %}	
-                                                
-                                </tbody>
-                            </table>			
-                        {% else %}
                             {% if items %}
                                 <ul class="list-group">
                                     {% for item in items %}
@@ -84,8 +50,6 @@
                             {% else %}
                                 <p class="text-muted">Nenhum item adicionado.</p>
                             {% endif %}
-                        {% endif %}
-                        
                         </div> 
                     </div>  
                 </div>
