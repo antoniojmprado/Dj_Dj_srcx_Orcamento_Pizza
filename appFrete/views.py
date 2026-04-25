@@ -1,3 +1,4 @@
+from django.db.models import Count  # 1. Importação necessária
 import os
 import pandas as pd
 import numpy as np
@@ -29,8 +30,10 @@ def calcular_frete_view(request, pk=None):
         frete_obj = get_object_or_404(DetalhesFrete, pk=pk)
         
         peso_cubado_bd = frete_obj.peso_cubado
-        peso_informado_bd = frete_obj.peso_informado
+        peso_informado_bd = frete_obj.peso_informado  
+        total_unidades_bd = frete_obj.total_unidades  
         
+        print(f' total_unidades_bd {total_unidades_bd}')
         
         # Aqui, pegamos as transportadoras salvas vinculadas a esse frete
         # Supondo que você tenha um Relacionamento (ForeignKey) no seu modelo
@@ -42,8 +45,35 @@ def calcular_frete_view(request, pk=None):
         
         lista_resultados = frete_obj.transportadoras.all().order_by('frete_unidade') # transportadoras related_name em "class TransportadorasFrete(models.Model)"
         
-        itens_frete = frete_obj.itens.all().order_by('-comprimento') # itens related_name em "class ItensFrete(models.Model)"
-
+        itens_frete = frete_obj.itens.all() # itens related_name em "class ItensFrete(models.Model)"
+        
+        
+        resultado = itens_frete.values('frete_id').annotate(num_itens=Count('id'))
+        for item in resultado:
+            print(f"Frete ID: {item['frete_id']}, Número de Itens: {item['num_itens']}")    
+        
+        qt_itens = len(itens_frete)
+        range_itens = range(qt_itens)
+        print(f' qt_itens {range_itens}')
+        
+        tot_unidades_item = []
+        volume_item = []
+        for item in itens_frete:
+            c = int(item.comprimento)
+            l = int(item.largura)
+            a = int(item.altura)
+            
+            pc = int(item.qt_pacotes)
+            un = int(item.qt_unidades)
+            tot_un_indiv = pc * un
+            tot_unidades_item.append(tot_un_indiv)
+            
+            vol_item = ((c * l * a) / 1000000) * pc
+            volume_item.append(vol_item)
+            
+        # Cria uma única lista combinada
+        dados_combinados_frete = zip(itens_frete, tot_unidades_item, volume_item)
+        
         contexto = {
             'pk': pk, # Importante para o HTML saber que é histórico
             'agora': frete_obj.data_hora.strftime("%d/%b/%Y %H:%M"),
@@ -53,14 +83,15 @@ def calcular_frete_view(request, pk=None):
             'logradouro': frete_obj.logradouro,
             'bairro': frete_obj.bairro,
             'vol_total': frete_obj.total_volume,
-            'total_unidades': frete_obj.total_unidades,
+            'total_unidades_bd': total_unidades_bd,
             'total_pacotes': frete_obj.total_pacotes,
             'peso_cubado': frete_obj.peso_cubado,
             'valor_nf': frete_obj.valor_nf,
             'lista_resultados': lista_resultados,
-            'itens_frete': itens_frete,
+            'dados_frete': dados_combinados_frete,
             'peso_cubado_bd' : peso_cubado_bd,
-            'peso_informado_bd' : peso_informado_bd
+            'peso_informado_bd' : peso_informado_bd,
+            'tot_unidades_item' : tot_unidades_item
         }
         return render(request, 'appFrete/result_transps.html', contexto)
     # --- FIM DO BLOCO DE HISTÓRICO ---

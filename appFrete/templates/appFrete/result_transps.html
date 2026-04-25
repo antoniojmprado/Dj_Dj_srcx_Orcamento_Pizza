@@ -33,7 +33,7 @@
                     <p><strong>Data da Consulta:</strong> {{ agora }}</p>
                     <p><strong>Valor da Carga:</strong> R$ {{ valor_nf|floatformat:"2g" }}</p>
                     <p><strong>Total de Pacotes:</strong> {{ total_pacotes|floatformat:"g" }}</p>
-                    <p><strong>Total de Unidades:</strong> {{ total_unidades|floatformat:"g" }}</p>
+                    <p><strong>Total de Unidades:</strong> {{ total_unidades_bd|floatformat:"g" }}</p>
                 </div>
             </div>
             <div class="card ">
@@ -50,6 +50,7 @@
                             <table class="table table-bordered table-hover">
                                 <thead class="thead-light">
                                     <tr>
+                                        <th>item</th>
                                         <th>Compr.</th>
                                         <th>Larg.</th>
                                         <th>Alt.</th>
@@ -60,18 +61,18 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for f in itens_frete %}
+                                    {% for f, unid_item, vol_item in dados_frete %}
                                         <tr>
-                                            <td>{{ f.comprimento }}</td>
-                                            <td>{{ f.largura }}</td>
-                                            <td>{{ f.altura }}</td>
+                                            <td>{{ forloop.counter}}</td>
+                                            <td>{{ f.comprimento|floatformat:0  }}</td>
+                                            <td>{{ f.largura|floatformat:0  }}</td>
+                                            <td>{{ f.altura|floatformat:0  }}</td>
                                             <td>{{ f.qt_pacotes }}</td>
                                             <td>{{ f.qt_unidades }}</td>
-                                            <td>{{ f.qt_unidades }} * {{ f.qt_pacotes }}</td>
-                                            <td>{{ f.volume_item}}</td>                         
-                                        </tr>
-                                    {% endfor %}	
-                                                
+                                            <td>{{ unid_item }}</td>
+                                            <td>{{ vol_item|floatformat:"2g"}}</td>                         
+                                        </tr>                                             
+                                    {% endfor %}	                                                
                                 </tbody>
                             </table>			
                         {% else %}
@@ -105,7 +106,7 @@
                             <tr>
                                 <td><strong>{{ item.nome_transportadora }}</strong></td>
                                 <td>{{ item.regiao }}</td>
-                                <td>R$ {{ item.valor_frete|floatformat:2 }}</td>
+                                <td>R$ {{ item.valor_frete|floatformat:"2g" }}</td>
                                 <td class="table-success">R$ {{ item.frete_unidade|floatformat:2 }}</td>                                
                             </tr>
                         {% endfor %}			
