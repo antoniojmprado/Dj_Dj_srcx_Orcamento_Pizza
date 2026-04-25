@@ -164,7 +164,103 @@ td.frete_valor{
     margin-right: 5px;
 }
 
-th,
+th{
+    text-align: right;
+    font-size: 12px;
+}
+
 td{
+    text-align: right;
+    font-size: 14px;
+}
+
+/* Estilo para o rodapé da tabela */
+thead{
+    font-size: 16px;
     text-align: center;
+    background-color: #040714; 
+    color:white
+}
+
+tfoot {
+    font-size: 14px;
+    text-align: center;
+    background-color: #040714; 
+    color:white
+}
+
+th.sorting.sorting.dtfc-fixed-left,
+th.sorting.sorting.dtfc-fixed-right{
+    background-color:#040714;
+    text-align: center;
+}
+
+th.sorting {
+    background-color: #040714;
+    text-align: center;
+    color:#fff;
+    font-size: 16px;
+}
+
+table.dataTable tfoot tr>.dtfc-fixed-left,
+table.dataTable tfoot tr>.dtfc-fixed-right,
+th{
+    top: 0;
+    bottom: 0;
+    z-index: 3;
+    background-color: #040714; 
+    /*text-align: center;*/
+    font-size: 16px;
+}
+
+
+button.dt-button.buttons-copy.buttons-html5 {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-excel.buttons-html5 {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-csv.buttons-html5 {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-csv.buttons-html5 {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-pdf.buttons-html5 {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-collection.buttons-colvis {
+    background-color: #040714;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+
+}
+
+
+.page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: #040714;
+    border-color: #040714;
 }

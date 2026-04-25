@@ -165,7 +165,7 @@ th.sorting {
     background-color: #040714;
     text-align: center;
     color:#fff;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .verm{
@@ -180,7 +180,7 @@ th{
     z-index: 3;
     background-color: #040714; 
     /*text-align: center;*/
-    font-size: 16px;
+    font-size: 14px;
 }
 
 
@@ -255,8 +255,18 @@ div.col-6.entradas{
     border: none
 }
 
+td.orc{
+    text-align: right;
+    font-size: 14px;
+}
 td.direita{
     text-align: right;
+    font-size: 14px;
+}
+
+td.centralizado{
+    text-align: center;
+    font-size: 14px;
 }
 
 div.pad {
@@ -366,3 +376,4 @@ td.total_margem_lucro{
         color: inherit;
     }
 }
+

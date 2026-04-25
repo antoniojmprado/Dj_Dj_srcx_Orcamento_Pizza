@@ -23,9 +23,9 @@
                 <th>Custo Corte R$</th>
                 <th>Unid/ch</th>
                 <th>Custo Frete R$</th>
-                <th>R$/un - Margem</th>
+                <th>R$/un - Marg</th>
                 <th>Margem</th>
-                <th>R$/un + Margem</th>
+                <th>R$/un + Marg</th>
                 <th>Total Orçado R$</th>
                 <th></th>
                 <th></th>
@@ -34,10 +34,10 @@
         <tbody>
             {% for orc in orcamentos %}
             <tr>
-                <td id = "getId">{{ orc.id }}</td>
-                <td>{{ orc.data_criacao|date:"d/m/Y" }}</td>
-                <td>{{ orc.cliente}}</td>
-                <td>{{ orc.produto_nome}}</td>
+                <td class="orc" id = "getId">{{ orc.id }}</td>
+                <td class="orc">{{ orc.data_criacao|date:"d/m/Y" }}</td>
+                <td class="orc">{{ orc.cliente}}</td>
+                <td class="orc">{{ orc.produto_nome}}</td>
                 <td class = 'direita'>{{ orc.quantidade|floatformat:"g"}}</td>
                 <td class = 'direita'>{{ orc.nome_maquina_impressao}}</td>
                 <td class = 'direita'> {{ orc.custo_material_unitario|floatformat:2}}</td>
@@ -71,23 +71,23 @@
             {% endfor %}
         </tbody>
         <tfoot>
-            <th>id</th>
-            <th>Data de Criação</th>
-            <th>Cliente</th>
-            <th>Produto</th>
-            <th>Qt. un.</th>
-            <th>Impressora</th>
-            <th>Custo Mater.</th>
-            <th>Custo Perdas</th>
-            <th>Custo Impr.</th>
-            <th>Corte/Vinco</th>
-            <th>Custo Corte</th>
-            <th>Unid/ch</th>
-            <th>Custo Frete</th>
-            <th>R$/un/un - Margem</th>
-            <th>Margem</th>
-            <th>R$/un + Margem</th>
-            <th>Total Orçado</th>
+                <th>id</th>
+                <th>Data de Criação</th>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th>Qt. un.</th>
+                <th>Impressora</th>
+                <th>Custo Mater. R$</th>
+                <th>Custo Perdas R$</th>
+                <th>Custo Impr. R$</th>
+                <th>Corte/Vinco </th>
+                <th>Custo Corte R$</th>
+                <th>Unid/ch</th>
+                <th>Custo Frete R$</th>
+                <th>R$/un - Marg</th>
+                <th>Margem</th>
+                <th>R$/un + Marg</th>
+                <th>Total Orçado R$</th>
             <th></th>
             <th></th>
         </tfoot>  

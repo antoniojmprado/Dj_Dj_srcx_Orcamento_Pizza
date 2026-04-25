@@ -6,6 +6,7 @@ class DetalhesFrete(models.Model):
     cliente = models.CharField(max_length=200)
     cep_destino = models.CharField(max_length=9)
     cidade = models.CharField(max_length=100)
+    uf_coluna = models.CharField(max_length=150,  blank=True, null=True)
     logradouro = models.CharField(max_length=255)
     bairro = models.CharField(max_length=100)
     peso_informado = models.DecimalField(max_digits=10, decimal_places=3)

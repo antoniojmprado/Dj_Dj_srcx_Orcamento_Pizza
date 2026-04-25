@@ -9,7 +9,7 @@
                     <h4 class="mb-0">Cálculo de Frete #{{pk}}</h4>
                 </div>
                 <div>
-                    <h4>Cliente {{ cliente }}</h4>
+                    <h4>Cliente: {{ cliente }}</h4>
                 </div>
                 <div>
                     <h4><strong>CEP Destino:</strong> {{ cep }}</h4>
@@ -19,7 +19,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Cidade:</strong> {{ destino_cidade }} / <strong>{{ uf_coluna }} - ICMS: {{ icms|floatformat:"g" }} %</strong></p>
+                    <p><strong>Cidade:</strong> {{ destino_cidade }} - <strong>{{ uf_coluna }}</strong> - <strong>ICMS: {{ icms|floatformat:"g" }} %</strong></p>
                     <p><strong>Endereço:</strong> {{ logradouro }} - <strong>Bairro:</strong> {{ bairro }} </p>
                     {% if pk %}
                         <p><strong>Peso Informado:</strong> {{ peso_informado_bd|floatformat:"g" }} kg</p>
@@ -33,14 +33,18 @@
                     <p><strong>Data da Consulta:</strong> {{ agora }}</p>
                     <p><strong>Valor da Carga:</strong> R$ {{ valor_nf|floatformat:"2g" }}</p>
                     <p><strong>Total de Pacotes:</strong> {{ total_pacotes|floatformat:"g" }}</p>
+                    {% if pk %}
                     <p><strong>Total de Unidades:</strong> {{ total_unidades_bd|floatformat:"g" }}</p>
+                    {% else %}
+                    <p><strong>Total de Unidades:</strong> {{ total_unidades|floatformat:"g" }}</p>
+                    {% endif %}
                 </div>
             </div>
             <div class="card ">
                 <div class="card-header bg-secondary text-white">
                         <button class="p-0 thead-light btn btn-secondary" type="button" data-bs-toggle="collapse"     data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample"
                          onmouseover="red_white(this)" onmouseout="white_gray(this)">
-                            <strong>Clique para Detalhamento dos itens - <strong>Volume Total:</strong> {{ vol_total|floatformat:1}} m³</strong>
+                            <strong>Clique para Detalhamento do(s) <span class="badge bg-light text-dark">  {{ num_itens_frete }}  </span> itens do frete - <strong>Volume Total:</strong> {{ vol_total|floatformat:1}} m³</strong>
                         </button>
                 </div>
                 <div class="collapse" id="collapseExample">

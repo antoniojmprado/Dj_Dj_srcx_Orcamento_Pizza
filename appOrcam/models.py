@@ -421,11 +421,11 @@ class Orcamento(models.Model):
 
                 # 2. Cálculo SEM NOTA (Markup só com margem)
                 denominador_sem = Decimal('1') - margem_decimal
-                self.preco_final_sem_nota = custo_total_sem_margem / (denominador_sem if denominador_sem > 0 else Decimal('0.01'))
+                self.preco_final_sem_nota = self.preco_final_unitario
 
                 # 3. Cálculo COM NOTA (Markup com margem + impostos)
-                denominador_com = Decimal('1') - margem_decimal - imposto_decimal
-                self.preco_final_com_nota = custo_total_sem_margem / (denominador_com if denominador_com > 0 else Decimal('0.01'))
+                denominador_com = Decimal('1') + imposto_decimal
+                self.preco_final_com_nota = self.preco_final_sem_nota * (denominador_com if denominador_com > 0 else Decimal('0.01'))
 
                 # 4. Mantém o preco_final_unitario baseado na escolha do usuário para o valor total
                 if self.venda_com_nota:
@@ -581,7 +581,7 @@ class Orcamento(models.Model):
     @property
     def margem_de_lucro(self):
         """Soma de todos os custos (Materiais + Processos + Logística)"""
-        return self.custo_total_sem_margem / (Decimal('1') - self.margem_real/100) - self.custo_total_sem_margem if self.margem_real > 0 else Decimal('0')
+        return self.custo_total_sem_margem * (self.margem_real/100) if self.margem_real > 0 else Decimal('0')
 
     @property
     def total_impostos(self):

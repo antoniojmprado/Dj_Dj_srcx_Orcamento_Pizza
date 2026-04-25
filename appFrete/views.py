@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
-from appFrete.models import DetalhesFrete
+from appFrete.models import DetalhesFrete, ItensFrete
 
 # Configuração de localidade para o Real brasileiro
 try:
@@ -24,14 +24,15 @@ def calcular_frete_view(request, pk=None):
     caminho_bases = os.path.join(settings.BASE_DIR, 'appFrete', 'tab_bases')
     agora = datetime.datetime.now().strftime("%d/%b/%Y %H:%M")
     
-    # --- NOVO BLOCO: TRATAMENTO DE HISTÓRICO ---
+    # --- NOVO BLOCO: TRATAMENTO DE HISTÓRICO - DADOS QUE VÊM DO BANCO ---
     if pk:
         # Busca o frete salvo ou dá erro 404 se não existir
         frete_obj = get_object_or_404(DetalhesFrete, pk=pk)
         
         peso_cubado_bd = frete_obj.peso_cubado
         peso_informado_bd = frete_obj.peso_informado  
-        total_unidades_bd = frete_obj.total_unidades  
+        total_unidades_bd = frete_obj.total_unidades
+        icms = frete_obj.icms  
         
         print(f' total_unidades_bd {total_unidades_bd}')
         
@@ -45,16 +46,16 @@ def calcular_frete_view(request, pk=None):
         
         lista_resultados = frete_obj.transportadoras.all().order_by('frete_unidade') # transportadoras related_name em "class TransportadorasFrete(models.Model)"
         
+        
+        # itens_frete = QuerySet
         itens_frete = frete_obj.itens.all() # itens related_name em "class ItensFrete(models.Model)"
         
-        
+        # agrupara numero de itens por frete_id, ou seja, contar quantos itens tem para cada frete_id. O resultado é uma lista de dicionários, onde cada dicionário tem o 'frete_id' e o 'num_itens' correspondente.            
+        # O Count('id') conta o número de itens para cada frete_id, e o values('frete_id') agrupa os resultados por frete_id. O resultado é uma lista de dicionários, onde cada dicionário tem o 'frete_id' e o 'num_itens' correspondente.
         resultado = itens_frete.values('frete_id').annotate(num_itens=Count('id'))
-        for item in resultado:
-            print(f"Frete ID: {item['frete_id']}, Número de Itens: {item['num_itens']}")    
-        
-        qt_itens = len(itens_frete)
-        range_itens = range(qt_itens)
-        print(f' qt_itens {range_itens}')
+        # for item in resultado:
+        #     print(f"Frete ID: {item['frete_id']}, Número de Itens: {item['num_itens']}")   
+        num_itens_frete = resultado[0]['num_itens'] if resultado else 0    
         
         tot_unidades_item = []
         volume_item = []
@@ -80,6 +81,7 @@ def calcular_frete_view(request, pk=None):
             'cep': frete_obj.cep_destino,
             'cliente': frete_obj.cliente,
             'destino_cidade': frete_obj.cidade,
+            'uf_coluna': frete_obj.uf_coluna,
             'logradouro': frete_obj.logradouro,
             'bairro': frete_obj.bairro,
             'vol_total': frete_obj.total_volume,
@@ -91,10 +93,13 @@ def calcular_frete_view(request, pk=None):
             'dados_frete': dados_combinados_frete,
             'peso_cubado_bd' : peso_cubado_bd,
             'peso_informado_bd' : peso_informado_bd,
-            'tot_unidades_item' : tot_unidades_item
+            'tot_unidades_item' : tot_unidades_item,
+            'num_itens_frete' : num_itens_frete, 
+            'icms': icms
         }
         return render(request, 'appFrete/result_transps.html', contexto)
-    # --- FIM DO BLOCO DE HISTÓRICO ---
+    
+    # --- FIM DO BLOCO DE HISTÓRICO  - DADOS QUE VÊM DO BANCO ---
 
     # ETAPA 1: GET - Apenas exibe o formulário inicial (CEP, Peso, Valor)
     if request.method == 'GET':
@@ -103,8 +108,7 @@ def calcular_frete_view(request, pk=None):
     # ETAPA 2: POST - Processamento (Destino ou Cálculo Final)
     if request.method == 'POST':
         # Dados base que persistem entre as telas
-        cep_destino_raw = request.POST.get(
-            'cep_destino') or request.POST.get('cep')
+        cep_destino_raw = request.POST.get('cep_destino') or request.POST.get('cep')
         # para remover hífen mostrado no campo em cep em regiao.html
         cep_destino_raw = cep_destino_raw.replace('-', '')
 
@@ -147,7 +151,6 @@ def calcular_frete_view(request, pk=None):
            bairro_destino = "..."
 
         # Se não enviou as dimensões ainda, manda para a tela de dimensões (regiao.html)
-        print(">>> O POST CHEGOU!")
         if 'comprimento' in request.POST:
             print(">>> COMPRIMENTO ENCONTRADO!")
         else:
@@ -194,6 +197,9 @@ def calcular_frete_view(request, pk=None):
             item_i = f"Item {i+1}: {list_comps[i]}x{list_largs[i]}x{list_alts[i]} cm, Qtde: {list_vols[i]}, Unid./Pacote: {list_unis[i]}, Vol.Total: {v_i:.2f} m³"
             print(item_i)
 
+            num_itens_calculados_frete = i + 1  # Para exibir no template
+            
+        print(f'num_itens_calculados_frete: {num_itens_calculados_frete} | total_unidades: {total_unidades} | vol_total_m3: {vol_total_m3:.2f} m³')
         # 3. Lógica Capital vs Interior
         capitais_df = pd.read_excel(os.path.join(caminho_bases, 'estados_capitais_BR.xlsx'))
         cidade_capital = capitais_df.loc[capitais_df['uf'] == destino_uf, 'capital'].to_string(index=False, header=False).strip()
@@ -272,6 +278,7 @@ def calcular_frete_view(request, pk=None):
             'peso_cubado_final': peso_cubado_final,
             'valor_nf': valor_total_nf,
             'items': items,
+            'num_itens_frete': num_itens_calculados_frete,
             'icms': icms*100,
             'lista_resultados_dict': lista_resultados_dict 
         }
@@ -279,6 +286,16 @@ def calcular_frete_view(request, pk=None):
         return render(request, 'appFrete/result_transps.html', contexto)
     
 def lista_fretes(request):
-        # O prefetch_related traz as transportadoras de uma vez só, poupando o banco de dados
-        fretes = DetalhesFrete.objects.prefetch_related('transportadoras').all().order_by('-data_hora')
+        '''
+        Essa view é responsável por exibir a lista de fretes salvos, ordenados pela data de criação (do mais recente para o mais antigo).
+        Ela utiliza o método prefetch_related para otimizar a consulta das transportadoras relacionadas a cada frete, 
+        e o annotate para contar o número de itens relacionados a cada frete. 
+        O resultado é passado para o template 'lista_fretes.html' para renderização.
+        '''
+    
+        fretes = DetalhesFrete.objects.prefetch_related('transportadoras') \
+            .annotate(num_itens=Count('itens')) \
+            .all() \
+            .order_by('-data_hora')
+                
         return render(request, 'appFrete/lista_fretes.html', {'fretes': fretes})
