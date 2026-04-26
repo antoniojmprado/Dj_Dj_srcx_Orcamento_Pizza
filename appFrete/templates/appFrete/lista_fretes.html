@@ -15,6 +15,7 @@
                 <th style = "text-align: center;">Cidade</th>
                 <th style = "text-align: center;">CEP</th>
                 <th style = "text-align: center;">Peso (kg)</th>
+                <th style = "text-align: center;">Peso Cubado (kg)</th>
                 <th style = "text-align: center;"># Itens</th>
                 <th style = "text-align: center;">R$ NF</th>
                 <th style = "text-align: center;">R$ Frete</th>
@@ -31,8 +32,9 @@
                 <td>{{ frete.uf_coluna }}</td>
                 <td>{{ frete.cidade }}</td>
                 <td>{{ frete.cep_destino }}</td>
-                <td>{{ frete.peso_informado|floatformat:"g" }}</td>
-                <td>{{ frete.num_itens }}</td>
+                <td style="text-align: center;">{{ frete.peso_informado|floatformat:"0g" }}</td>
+                <td style="text-align: center;">{{ frete.peso_cubado|floatformat:"0g" }}</td>
+                <td style="text-align: center;">{{ frete.num_itens }}</td>
                 <td>{{ frete.valor_nf|floatformat:"2g" }}</td>
                 <td>{% with menor_frete=frete.transportadoras.all|dictsort:"valor_frete"|first %}
                         {{ menor_frete.valor_frete|floatformat:"2g" }}
@@ -61,6 +63,7 @@
              <tr>
                 <th style = "text-align: center;">id</th>
                 <th style = "text-align: center;">Data</th>
+                <th style = "text-align: center;"></th>
                 <th style = "text-align: center;"></th>
                 <th style = "text-align: center;"></th>
                 <th style = "text-align: center;"></th>
