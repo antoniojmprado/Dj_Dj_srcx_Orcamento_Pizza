@@ -19,7 +19,7 @@
                 <th style = "text-align: center;"># Itens</th>
                 <th style = "text-align: center;">R$ NF</th>
                 <th style = "text-align: center;">R$ Frete</th>
-                <th style = "text-align: center;">Ações</th>
+                <th style = "text-align: center;">Ação</th>
             </tr>
         </thead>
         <tbody>
@@ -50,10 +50,7 @@
                 <td class="text-center">
                     <a href="{% url 'appFrete:result_transps' frete.id %}" class="btn btn-sm btn-info" title="Ver Detalhes">
                         <i class="fas fa-eye"></i>
-                    </a>                    
-                    <button onclick="confirmarExclusao('{{ frete.id }}', '{{ frete.cliente }}')" class="btn btn-sm btn-danger" title="Excluir">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    </a>    
                 </td>
             </tr>
             

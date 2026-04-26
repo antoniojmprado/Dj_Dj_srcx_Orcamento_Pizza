@@ -145,6 +145,6 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Informe ao Django qual é a URL de login do seu projeto
-LOGIN_URL = '/orcam/login/'  # Ou o caminho exato que você usa no appOrcam
-LOGIN_REDIRECT_URL = '/frete/'  # Para onde ele volta depois de logar
-LOGOUT_REDIRECT_URL = '/orcam/login/'  # Para onde ele vai depois de deslogar
+LOGIN_URL = 'login'            # Usamos o 'name' que definimos no urls.py
+LOGIN_REDIRECT_URL = '/frete/' # Aqui está perfeito, manda para o app de frete
+LOGOUT_REDIRECT_URL = 'login'  # Ao sair, ele volta para a tela de login

@@ -1,3 +1,7 @@
+
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from .models import DetalhesFrete, TransportadorasFrete, ItensFrete
 from django.db.models import Count  # 1. Importação necessária
 import os
 import pandas as pd
@@ -10,7 +14,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
-from appFrete.models import DetalhesFrete, ItensFrete
+from django.db import transaction
 
 # Configuração de localidade para o Real brasileiro
 try:
@@ -19,7 +23,7 @@ except:
     locale.setlocale(locale.LC_ALL, 'Portuguese_Brazil.1252')
 
 
-# @login_required
+@login_required
 def calcular_frete_view(request, pk=None): 
     caminho_bases = os.path.join(settings.BASE_DIR, 'appFrete', 'tab_bases')
     agora = datetime.datetime.now().strftime("%d/%b/%Y %H:%M")
@@ -282,6 +286,60 @@ def calcular_frete_view(request, pk=None):
             'icms': icms*100,
             'lista_resultados_dict': lista_resultados_dict 
         }
+    
+    # --- BLOCO DE SALVAMENTO NO BANCO DE DADOS ---
+
+        try:
+            with transaction.atomic():
+                # 1. Salva o Cabeçalho (DetalhesFrete)
+                # Note que incluí a nova coluna 'uf_coluna'
+                frete_master = DetalhesFrete.objects.create(
+                    cliente=cliente_destino,
+                    cep_destino=f"{cep_destino_raw[:5]}-{cep_destino_raw[5:]}",
+                    cidade=destino_cidade.upper(),
+                    uf_coluna=uf_coluna, # Sua nova coluna!
+                    logradouro=logradouro_destino.upper(),
+                    bairro=bairro_destino.upper(),
+                    total_volume=vol_total_m3,
+                    total_unidades=total_unidades,
+                    total_pacotes=total_pacotes,
+                    peso_informado=kg_total_informado,
+                    peso_cubado=peso_cubado_final,
+                    valor_nf=valor_total_nf,
+                    icms=icms * 100
+                )
+
+                # 2. Salva os Itens (ItensFrete)
+                # Percorremos as listas que vieram do formulário
+                for i in range(len(list_comps)):
+                    ItensFrete.objects.create(
+                        frete=frete_master,
+                        comprimento=float(list_comps[i].replace(',', '.')),
+                        largura=float(list_largs[i].replace(',', '.')),
+                        altura=float(list_alts[i].replace(',', '.')),
+                        qt_pacotes=int(list_vols[i]),
+                        qt_unidades=int(list_unis[i]),
+                        volume_item=(float(list_comps[i].replace(',', '.')) * float(list_largs[i].replace(',', '.')) * float(list_alts[i].replace(',', '.')) / 1000000) * float(list_vols[i].replace(',', '.'))
+                    )
+
+                # 3. Salva as Transportadoras Calculadas (TransportadorasFrete)
+                # Usamos o res_dict que você já preparou para o loop
+                for i in range(len(res_dict['transportadora'])):
+                    TransportadorasFrete.objects.create(
+                        frete=frete_master,
+                        nome_transportadora=res_dict['transportadora'][i],
+                        regiao=res_dict['regiao_display'][i],
+                        valor_frete=res_dict['frete_final'][i],
+                        frete_unidade=res_dict['frete_unidade'][i]
+                    )
+                
+                print(f">>> SUCESSO: Frete ID {frete_master.id} salvo com sucesso!")
+
+        except Exception as e:
+            print(f">>> ERRO AO SALVAR NO BANCO: {e}")
+            messages.error(request, "Erro ao salvar os dados do frete no histórico.")
+        # --- FIM DO SALVAMENTO ---    
+        
 
         return render(request, 'appFrete/result_transps.html', contexto)
     

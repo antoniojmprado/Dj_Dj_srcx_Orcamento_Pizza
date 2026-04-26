@@ -1,42 +1,45 @@
 {% extends 'appFrete/base.html' %}
 
 {% block body %}
+<div class="conteudo-principal">
+    <div class="container mt-5">
+        <h2>Calcular Frete</h2>
+        <hr>
+        <form action="{% url 'appFrete:calcular_frete_view' %}" id="form_entrada" method="POST">
+            {% csrf_token %}
+            
+            <label for="cep_destino">Digite o cep</label> <!-- pattern="\d{5}[0-9]-{3}" -->
+            <input class = "mask-cep" type="text" name="cep_destino" id="cep_destino" oninput="check_cep(this)"
+                placeholder="digite o CEP" required><br><br>
 
-<div class="container">
-    <form action="{% url 'appFrete:calcular_frete_view' %}" id="form_entrada" method="POST">
-        {% csrf_token %}
-        
-        <label for="cep_destino">Digite o cep</label> <!-- pattern="\d{5}[0-9]-{3}" -->
-        <input class = "mask-cep" type="text" name="cep_destino" id="cep_destino" oninput="check_cep(this)"
-             placeholder="digite o CEP" required><br><br>
+            <label for="cliente">Cliente:</label> <!-- pattern="\d{5}[0-9]-{3}" -->
+            <input type="text" name="cliente" id="cliente" oninput="check_cliente(this)"
+                placeholder="nome do cliente" required><br><br>
 
-        <label for="cliente">Cliente:</label> <!-- pattern="\d{5}[0-9]-{3}" -->
-        <input type="text" name="cliente" id="cliente" oninput="check_cliente(this)"
-             placeholder="nome do cliente" required><br><br>
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>{{ message }}</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {% endfor %}
+            {% endif %}
 
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>{{ message }}</strong>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            {% endfor %}
-        {% endif %}
+            <label for="valor_total">Digite o valor total da carga</label> 
+            <input class = "mask-decimal" type="text" name="valor_total" id='valor_total' oninput="check(this)"
+                placeholder="valor da carga" required> <br><br>
 
-        <label for="valor_total">Digite o valor total da carga</label> 
-        <input class = "mask-decimal" type="text" name="valor_total" id='valor_total' oninput="check(this)"
-            placeholder="valor da carga" required> <br><br>
+            <label for="kg_total">Digite o peso total da carga em kg</label> <!-- pattern="\d{1,6}" -->
+            <input class = "mask-inteiro" type="text" name="kg_total" id='kg_total' oninput="check(this)" 
+                placeholder="peso da carga" required><br><br>
 
-        <label for="kg_total">Digite o peso total da carga em kg</label> <!-- pattern="\d{1,6}" -->
-        <input class = "mask-inteiro" type="text" name="kg_total" id='kg_total' oninput="check(this)" 
-            placeholder="peso da carga" required><br><br>
-
-        <input type="submit" style="border-radius:5px" name="btn_submit" id="btn_submit" accesskey="m"
-            value="Avançar [ALT + m]">
-    </form>
-</div>
+            <input type="submit" style="border-radius:5px" name="btn_submit" id="btn_submit" accesskey="m"
+                value="Avançar [ALT + m]">
+        </form>
+    </div>
+<div>
 <br>
 
 {% endblock %}

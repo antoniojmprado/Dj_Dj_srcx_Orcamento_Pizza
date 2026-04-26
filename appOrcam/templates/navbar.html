@@ -29,6 +29,9 @@
                         <a class="nav-link" aria-current="page" href="http://127.0.0.1:8000/admin/">Admin</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'appFrete:calcular_frete_view' %}">Calc_frete</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="{% url 'appFrete:lista_fretes' %}">List_Fretes</a>
                     </li>
                     <li class="nav-item">
@@ -43,7 +46,7 @@
                     </li>
                 </ul>
                
-            </div>  
+            </div>  <!--
             <div class="navbar-text d-flex gap-3 ms-auto">
                 <span class="badge bg-primary">
                     Total: {{ total_geral }}
@@ -52,12 +55,7 @@
                     Hoje: {{ total_hoje }}
                 </span>
                 <span class="badge bg-warning text-dark">Semana Passada (2ª-Sáb): {{ total_semana_passada }}</span>
-            </div> 
+            </div> -->
         </div>         
-    </nav>  
-
-    <div style="color:#FFC107; display: flex; justify-content: center;">
-        <h4>Premissas Senhor Caixa:</h4>    
-    </div>
-    
+    </nav>      
 </div>                             
