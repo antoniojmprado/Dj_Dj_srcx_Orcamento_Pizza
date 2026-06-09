@@ -1,0 +1,45 @@
+{% extends 'base_orcam.html' %}
+{% load static %} {% block title %}
+    Premissas
+{% endblock %}
+
+{% block body %}
+
+<div class="container"> 
+    <div style="display:flex;justify-content: center;"><u><h3>Orçamentos - Premissas</h3></u></div>
+    <div class="row">
+        <div class="col-6">
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center">Premissas para Cálculo de Custos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <ul><strong>Custos agrupados</strong>
+                                    <li>Materiais e Insumos: Papel, Perdas, Tinta</li>
+                                    <li>Fabricação: Impressora + Seladora + Corte Vinco</li>
+                                    <li>Logística / Frete</li>
+                                    <li>% Markup sobre custos</li>
+                                    <li>Preço sem Margem</li>
+                                    <li>Preço Final</li>
+                                </ul>  
+                                <ul><strong>Custos variáveis</strong>
+                                    <li>Preço Onda B: R$ {{ preco_ondaB }}/m2</li>
+                                    <li>Preço Onda C: R$ {{ preco_ondaE }}/m2</li>
+                                    <li>Preço Tinta: R$ {{ preco_tinta }}/caixa - conforme informações obtidas na Sr. Caixa</li>
+                                </ul>   
+                            </td>
+                        </tr>
+                        <tr><td>Dados Custos Fixos e Produção: R$ {{ total_custo_fixo }}/mês</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

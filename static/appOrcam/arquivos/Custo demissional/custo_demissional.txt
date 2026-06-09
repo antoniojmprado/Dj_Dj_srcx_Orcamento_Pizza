@@ -1,0 +1,13 @@
+O Método de Cálculo de DemissãoBasicamente, o custo de uma demissão sem justa causa se divide em dois grandes blocos:
+
+1. Verbas Rescisórias (O Desembolso Imediato)É o que a empresa paga no ato, composto por:
+Saldo de Salário (dias trabalhados no mês).
+Aviso Prévio Indenizado (30 dias + 3 dias por ano trabalhado).
+13º Salário Proporcional.Férias Vencidas e Proporcionais + 
+1/3 Constitucional.
+Multa de 40% sobre o FGTS (Este é o grande vilão do fluxo de caixa).
+
+2. O Período de Recuperação (Payback)
+A empresa só começa a "recuperar" esse dinheiro quando a soma dos salários e encargos que ela deixou de pagar (porque o funcionário saiu) iguala o valor gasto na rescisão.
+Como estruturar isso no seu Django (Sugestão de Lógica)Se você quiser ter essa informação, poderíamos criar uma função ou uma nova View chamada analise_rescisao(funcionario_id). 
+A lógica matemática seria:$$CustoTotal = \text{Verbas Rescisórias} + \text{Multa FGTS} + \text{Custo de Recrutamento/Treinamento de Substituto}$$$$\text{Meses para Recuperação} = \frac{CustoTotal}{\text{Custo Mensal do Funcionário (Salário + Encargos + Benefícios)}}$$Por que os "6 meses" fazem sentido?Se considerarmos que uma rescisão custa, em média, entre 3 a 5 salários brutos (devido à multa do FGTS e aviso prévio), e que a empresa economiza o valor do salário + encargos todo mês, o ponto de equilíbrio costuma ficar entre o 5º e o 7º mês.Um ponto de atenção para a sua fábrica:Como corrigimos a fórmula de encargos para ser em "cascata" ($(1+encargos) \times (1+beneficios)$), você vai perceber que o custo mensal do funcionário é maior do que você imaginava. Isso é bom! Significa que o seu sistema vai mostrar que a empresa recupera o custo da demissão mais rápido do que se calculasse pelo método antigo.Falta "amarrar" algo?

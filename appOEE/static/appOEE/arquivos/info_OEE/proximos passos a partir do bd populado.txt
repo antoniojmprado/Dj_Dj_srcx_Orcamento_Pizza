@@ -1,0 +1,48 @@
+Próximos passos naturais (quando você quiser)
+
+Sem pressa — só para deixar o mapa claro:
+
+KPI de OEE
+
+Disponibilidade (a partir das paradas)
+
+Performance (já modelada)
+
+Qualidade (já modelada)
+
+Gráficos por máquina
+
+OEE ao longo do tempo
+
+Pareto de paradas
+
+Heatmap de perdas por turno
+
+Estudos por motivo
+
+Frequência × tempo parado
+
+Impacto financeiro estimado
+
+“Top 3 perdas invisíveis”
+
+Teste de performance
+
+volume maior (milhares de ocorrências)
+
+índices e consultas agregadas
+
+comportamento realista sob carga
+
+E, talvez o mais importante no seu caso:
+👉 transformar isso numa demonstração que fale a linguagem do pequeno empresário: dinheiro perdido por desconhecimento.
+
+Quando quiser, podemos:
+
+construir o cálculo formal do OEE
+
+gerar queries prontas
+
+ou desenhar a narrativa da apresentação (DuPont → chão de fábrica → ROCE)
+
+Parabéns pelo avanço. Isso já está em nível profissional.

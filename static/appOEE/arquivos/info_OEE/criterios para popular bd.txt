@@ -1,0 +1,122 @@
+Através do você eu tenha um banco de dados populado para prosseguir no meu projeto sobre OEE. Resolvi me aprofundar nos resultados na coluna tempo_parado e para máquina 1 (Flexo Xitian), maquina_id =1 na tabela 'ocorrencias', o total somado é de '3969960000000 microsegundo' que corresponde a aproximadamente 1.128h. Lembrando que são dois meses (novembro e dezembro de 2025) e que estão disponíveis 528h/mês por máquina o total disponível é de 1.056 h, portanto as 1.128h representam um número incompatível. 
+Percebi que o número excessivo de tempo_parada se estende também para outras máquinas. TEntei achar um critério para os números terem chegado á estas magnitudes mas não o encontrei. Tentei examinar o código para mudar algo, mas está acima do meu conhecimento e mexer nele não ajudaria, talvez pior.
+Logicamente, este resultado se deu pelos próprios critérios que eu mesmo estabeleci, mas pela sua rapidez em preparar um modelo vou pedir um novo modelo, lembrando que não fosse a distorção eu já estaria muito satisfeito com o que já tenho para trabalhar. A seguir o modelo
+
+
+from appOEE.scripts.popula_ocorrencias import popula
+popula()
+'16.680.000.000'
+'3969.960.000.000'
+
+Boa tarde!
+Eu gostaria de popular "artificialmente" meu banco de dados "oee_bd" com registros baseados nos seguintes critérios:
+Tempo disponível: 528 h disponível/mês/máquina.
+Todos os dias de 2a feira à 6a feira, cada máquina no mínimo 2 à 5 paralisações/turno e o tempo restante, geralmente maior ou igual a zero, mas pode ocorrer de não ser, será sempre (numero de turnos x horas por turno (8.8) - tempo_parado)
+Exemplo:
+maquina_id =1 - Flexo
+Período: novembro de 2025 à dezembro de 2025
+Para cada máquina, em cada dia útil (2ª a 6ª):
+O total de tempo parado ≤ 24h
+Cada paralisação:
+duração > 0
+início e fim no mesmo dia
+
+As paralisações não se sobrepõem
+Podem ter:
+o mesmo motivo
+durações diferentes
+soma total ≤ tempo destinado à máquina naquele dia
+
+Exemplo dos resultados esperados
+Máquinas
+Flexo Xintian = (30% do tempo disponível/dia * numero de turnos * 8.8 horas/turno) com os motivos, relacionados a seguir, aleatoriamente distribuídos.
+
+Wonder 1 = 40% do tempo total disponível/dia * numero de turnos * 8.8 horas/turno) com os motivos, relacionados a seguir, aleatoriamente distribuídos.
+
+Wonder 2 = 90% do tempo total disponível/dia * numero de turnos * 8.8 horas/turno) com os motivos, relacionados a seguir, aleatoriamente distribuídos.
+
+Century  = 20% do tempo total disponível/dia * numero de turnos * 8.8 horas/turno) com os motivos, relacionados a seguir, aleatoriamente distribuídos.
+
+Seladora  = 5% do tempo total disponível/dia * numero de turnos * 8.8 horas/turno) com os motivos, relacionados a seguir, aleatoriamente distribuídos.
+
+Boca de Sapo= 5% do tempo total disponível/dia * numero de turnos * 8.8 horas/turno) com os motivos, relacionados a seguir, aleatoriamente distribuídos.
+
+Motivos de paralisações
+motivo_id (critérios acima):
+	13	falta de operador
+	12	manutenção preventiva
+	11	falta de programação
+	10	falta de matéria-prima
+	9	falta de insumos
+	8	falta de energia, ar, agua etc
+	7	falha eletroeletron
+	6	falha mecânica
+	5	falha de operador
+	4	treinamento/ferias
+	3	refeições
+	2	reajuste de setup
+	1	setup
+-----------------------------
+Máquinas cadastradas
+
+ID
+Nome
+	6	Boca de Sapo
+	5	Seladora
+	4	Century
+	3	Wonder 2
+	2	Wonder 1
+	1	Flexo Xintian
+
+Motivos acima:
+
+No caso da Máquina Flexo Xitian:
+30% do total disponível sendo 
+a)15% (pontos percentuais) aproximadamente para setup
+b)10% (pontos percentuais) aproximadamente para manutenções
+c) 5% restante aleatoriamente entre os demais motivos.
+
+No caso da Máquina Wonder 1:
+a) 15% (pontos percentuais) falta de insumos
+b) 10% (pontos percentuais) para reajuste de setup
+c) 10% (pontos percentuais) para falta de operadores
+d) 5% (pontos percentuais) para falta de programação
+
+No caso da Máquina Wonder 2:
+a) 10% (pontos percentuais) para falta de operadores
+b) 90% (pontos percentuais) para falta de programação
+
+No caso da Century:
+a) 5% (pontos percentuais) para setup
+b) 10% (pontos percentuais) para reajuste de setup
+c) 5% (pontos percentuais) para falta de operadores
+d) 5% (pontos percentuais) para falta de programação
+
+No caso da boca de sapo:
+a) 5% (pontos percentuais) para setup
+b) 5% (pontos percentuais) para reajuste de setup
+c) 5% (pontos percentuais) para falta de operadores
+
+No caso da seladora:
+a) 5% (pontos percentuais) para setup
+b) 5% (pontos percentuais) para falta de operadores
+c) 5% manutenções 
+
+Tabela
+'data_inicio - formato DATETIME(6)
+'data_fim - formato DATETIME(6)
+'empresa_id: 60% das ocorrências valor = 1, o restante aleatoriamente 
+'maquina_id  70% das ocorrências valor = 1, o restante aleatoriamente 
+
+'tempo_parado = data_fim - data_inicio em microsegundos
+
+'tipo_parada, 
+motivo_id 1 = produtiva
+motivo_id 3 = programada
+motivo_id 4 = programada
+todos os demais motivo_id, ou seja: 2,5,6,7,8,9,10,11,12,13 = improdutiva   
+    
+'horas_turno = 8.8
+'turnos_dia  = 2
+'qualidade   = 90%
+'performance = 85%

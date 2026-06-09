@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}Dashboard{% endblock %}
+
+
+
+{% block body %}
+<style>
+    .card-sucesso { background-color: #28a745 !important; color: white; }
+    .card-alerta { background-color: #ffc107 !important; color: black; }
+    .card-perigo { background-color: #dc3545 !important; color: white; }
+    .dupont-card:hover { transform: translateY(-5px); transition: 0.3s; }
+</style>
+
+<div class="card {% if roce > 15 %}card-sucesso{% elif roce > 8 %}card-alerta{% else %}card-perigo{% endif %} shadow">
+<div class="row">
+    <div class="col-md-4">
+        <div class="card bg-danger text-white shadow">
+            <div class="card-body">
+                <h5 class="card-title">Prejuízo por Ociosidade (Mês)</h5>
+                <h2 class="display-4">R$ {{ total_prejuizo|floatformat:"2g" }}</h2>
+                <p class="card-text">Baseado no custo fixo das máquinas paradas.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Máquina</th>
+                    <th>Perda Estimada</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for maquina, valor in dados_maquinas %}
+                <tr>
+                    <td>{{ maquina }}</td>
+                    <td class="text-danger">R$ {{ valor|floatformat:"2g" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="row mt-5">
+    <div class="col-12">
+        <h4 class="mb-3">Top 5 Vilões do Lucro (Paradas por Máquina)</h4>
+        <table class="table table-hover shadow-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th>Máquina</th>
+                    <th>Tempo Total (Min)</th>
+                    <th>Impacto Financeiro</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Wonder 1</td>
+                    <td>120 min</td>
+                    <td class="text-danger">R$ 908,40</td>
+                </tr>
+                <tr>
+                    <td>Wonder 2</td>
+                    <td>45 min</td>
+                    <td class="text-danger">R$ 340,65</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

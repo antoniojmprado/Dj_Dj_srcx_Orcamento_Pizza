@@ -1,0 +1,51 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+*.manifest
+*.spec
+
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+
+# Environments
+.env
+
+# Folders
+venv/
+media/
+staticfiles/
+
+
+# Arquivos de dados
+#*.xlsx
+*.csv
+*.CSV
+*.png
+*.PNG
+*.jpg
+*.JPG
+*.mp3
+*.MP3
+*.mov
+*.MOV
+*.mp4
+*.MP4
+*.pdf
+*.PDF
+*.jpeg
+*.JPEG
+*.gif
+*.GIFv e n v / 
+ 
+ 

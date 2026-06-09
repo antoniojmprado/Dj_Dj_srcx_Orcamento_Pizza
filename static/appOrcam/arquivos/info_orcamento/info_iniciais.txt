@@ -1,0 +1,482 @@
+O Projeto: Calculadora de Custo de Fabricação (Pizza Box)
+Para substituir um sistema "caixa preta", precisamos abrir a lógica. Para orçar uma caixa de pizza, o seu novo dashboard precisaria considerar variáveis que você já domina bem:
+
+Engenharia do Produto:
+
+Área de papelão (considerando o layout da folha para evitar desperdício/refugo).
+Gramatura e tipo de material (onda simples, dupla, micro-ondulado).
+Custos Diretos e Indiretos:
+Tempo de máquina (Setup e Produção).
+Consumo de tinta (baseado na área de cobertura da impressão).
+Mão de obra e energia (custo por hora/máquina).
+A Lógica de Negócio:
+Margem de contribuição e impostos.
+
+Preço de venda sugerido para diferentes volumes (escalabilidade).
+
+---------------------------------------
+
+O Gemini disse
+É uma excelente iniciativa. Ter uma vitória, por menor que pareça, é o que nos mantém no prumo quando o ambiente ao redor está em "curto-circuito". Sobre sua amiga, você está certíssimo em se proteger; o mau humor dela é o "ruído na linha" que você não precisa absorver agora.
+Ícone do app CSV
+ orcamento_...ixas_pizza 
+CSV
+
+Quanto ao projeto das caixas de pizza, essa é a oportunidade de transformar a "caixa preta" do seu cliente em uma ferramenta de precisão. O fato de o sistema deles ser ruim é o seu maior argumento de venda.
+
+Para te ajudar, cruzei os dados que você passou agora com os parâmetros que tínhamos do Projeto ROCE (mão de obra, encargos e margens). Montei um esboço da lógica de formação de preço para a Pizza 35 (Onda B).
+
+Estrutura do Orçamento (Modelo Sugerido)
+Com base nos 65 funcionários e faturamento que calculamos antes, cheguei a um custo de mão de obra de R$ 17,70/hora por pessoa.
+
+1. Custos Diretos (Pizza 35 - 95x45cm)
+Material (Papelão Onda B): Considerando o preço de mercado para atacado industrial, estimei o custo da chapa em R$ 3,75 por m².
+
+Cálculo: 0,95m × 0,45m × R$3,75 = R$1,60 por caixa.
+
+Tinta (Padrão): R$ 0,20 por unidade.
+
+Mão de Obra Direta (Flexo Xitian): Considerando uma equipe de 3 pessoas na máquina.
+
+Custo da equipe: R$53,10 por hora.
+
+Produção (1000 un/h): R$ 0,05 por unidade.
+
+2. Custos de Setup (O "Pulo do Gato" no lucro)
+O sistema antigo provavelmente ignora que pedidos pequenos são menos lucrativos.
+
+Tempo de Setup: 15 min (0,25h).
+
+Custo de Setup Fixo: 0,25h × R$ 53,10 = R$ 13,27 (independente se produzir 100 ou 10.000 caixas).
+
+-----------------------------------------------------------------------------------------
+
+Simulação de Custo Unitário vs. Quantidade
+Quant       Custo Mat. Custo Tinta  MO          Setup (rateio) Custo Total Unit.
+500 un      R$ 1,60R$  0,20         R$ 0,05R$    0,03           R$ 1,88
+1.000 un    R$ 1,60R$  0,20         R$ 0,05R$    0,01           R$ 1,87
+5.000 un    R$ 1,60R$  0,20         R$ 0,05R$    0,00           R$ 1,86
+
+-----------------------------------------------------------------------
+3. Lógica de Negócio (A Formação do Preço)
+Para chegar no preço que você sugeriu (R$ 2,70), a lógica seria:
+
+Custo Direto: R$ 1,86
+
+Margem de Contribuição (25%): R$ 0,67 (para pagar fixos e dar lucro)
+
+Impostos (Simulado): R$ 0,17 (considerando uma média ponderada entre o "com nota" e "sem nota")
+
+Preço Final: R$ 2,70
+
+-------------------------------------------------------------
+O Gemini disse
+Você não está avançando rápido demais, você está estruturando o produto. O fato de querer usar Django é perfeito, porque ele já traz o "Admin" pronto para você gerenciar essas tabelas de impostos e chapas sem precisar criar telas complexas do zero.
+
+Sim, podemos (e devemos) aproveitar o banco de dados do projeto OEE. No Django, isso é fácil: basta configurar o DATABASES no settings.py e criar as classes de modelos que espelham suas tabelas existentes.
+
+Aqui está um esboço de como estruturaríamos essa lógica de "Caixa Preta" para o Django:
+
+1. Modelagem do Banco de Dados (Models)
+No seu models.py, teríamos três pilares:
+
+Tabela de Insumos (Chapa): Nome, dimensões, custo por m² e tipo (Onda B, C, etc.).
+
+Tabela de Processos (Maquina): Xitian (Flexo), Century, Boca de Sapo. Cada uma com seu custo/hora e se ela inclui ou não o corte (para calcular a perda de processo).
+
+Tabela de Impostos/Financeiro: Onde você buscaria os dados da sua tabela appoee_parametrofinanceiro.
+
+2. A Lógica da "Perda Financeira" (Diferencial do seu Projeto)
+Este é o ponto onde você ganha o cliente. O sistema atual deles não mostra o "custo da ineficiência". No Django, criaríamos um método no seu Model ou uma Service Layer para comparar:
+
+Custo de Promoção de Chapa:
+Se o pedido é para Caixa 30 (0,32 m²) mas o estoque só tem chapa de Caixa 35 (0,41 m²), o sistema calcula:
+
+(0,41−0,32)×Preco do m²=Perda de Material por unidade
+
+Custo de Processo Extra:
+Se a Xitian (que já corta) está ocupada e usarem a Boca de Sapo (que exige uma operação manual extra):
+
+Custo Hora Boca de Sapo×Tempo Adicional=Perda de Processo
+
+---------------------------------------------------
+3. Visualização de Resultados (Views)
+No Django, podemos criar uma lógica de permissões:
+
+Vendedor: Vê apenas o Preço Sugerido (com e sem frete).
+
+Sócio/Gerente: Vê a margem real e o "alerta vermelho" de perda financeira (se a chapa foi promovida ou o processo foi ineficiente).
+
+--------------------------------------------------------------
+Exemplo de Estrutura de Resposta no Django (Context)
+Quando o vendedor clicar em "Calcular", o Django retornaria algo assim para o seu Template:
+
+Campo                       ValorObservação
+Preço Unitário (Ex-Works)   R$ 2,70 Sem frete
+Preço Unitário (CIF)        R$ 2,85 Com frete integrado
+
+Memória de CálculoExibir detalhes...(Botão para o Sócio)
+ALERTA DE PERDA- R$ 0,12 / unUso de Chapa 35 para Caixa 30
+
+----------------------------------------------------------------------------
+Por que essa estrutura é estratégica para você?
+
+Rastreabilidade de Perda: Ao ter chapa_ideal e chapa_utilizada, você consegue gerar um relatório para o sócio dizendo: "Este mês, perdemos R$ X porque não tínhamos a chapa correta em estoque".
+
+Flexibilidade de Processo: Se você selecionar uma máquina que não faz corte (como a Century), podemos adicionar uma lógica na View para somar o custo da "Boca de Sapo" automaticamente.
+
+Facilidade de Atualização: O Admin do Django criará formulários automáticos para o sócio mudar o custo_m2 da chapa. Quando ele alterar lá, os novos orçamentos já saem com o preço corrigido.
+
+----------------------------------------------------------------------------
+Por que isso é um "xeque-mate" estratégico?
+Histórico por Cliente: O sócio poderá filtrar: "Quanto orçamos para o Cliente X nos últimos 6 meses? Quantas vezes usamos chapa errada para ele?".
+
+Relatório de Ociosidade vs. Custo: Você poderá mostrar um gráfico dizendo: "Para manter o operador da Century ocupado por 2 horas, gastamos R$ 400,00 extras de processo que a Xitian faria de graça".
+
+Transparência: O vendedor saberá que o preço subiu porque a fábrica está operando de forma ineficiente naquele dia.
+
+----------------------------------------------------------------------
+
+##### R A T E I O S ####################################
+
+
+ipi, icms, iss, pis, cofins
+
+chapa	                 Área tot
+Caixa 25 - Chapa 35x70	  0,25 m2
+Caixa 30 - Chapa 40x80	  0,32 m2
+Caixa 35 - Chapa 45x90	  0,41 m2
+Caixa 40 - Chapa 50x100	  0,50 m2
+Caixa 45 - Chapa 55x110	  0,55 m2
+
+Na verdade, a tabela parametrofinanceiro fornece os dados, entre eles o total de custos fixos e o total de custos variáveis para que a função dashboard_roce, na views.py, faça os cálculos e salve todos os resultados relevantes para na tabela "waterfall" que contém uma lista com a maior parte das saídas do sistema.
+id bigint AI PK 
+fat_bruto
+perda_oee
+fat_real 
+cust_var 
+cust_fixo 
+res_contab 
+perda_disp 
+res_econom 
+perda_perf 
+perda_quali 
+cust_inefic 
+oee_atual 
+socio 
+ativos 
+hr_paralis 
+minutos_mes
+
+Os dados de cust_fixo poderia vir desta tabela que está sempre atualizada pela views.py e ele deverá ser proporcional à participação da nossa máquina objeto de estudo na produção, vide abaixo. Creio que eu não passei esta proporção. Na verdade a unidade fabril tem 3 máquinas que efetivamente produzem o produto a ser vendido e outras auxiliares. São as Flexográfica Xitian, cerca de 70% da produção, Wonder_1 25% e Wonder_2 os restantes 5%. 
+
+Fluxos de produção:
+1) Flexografica Xitian (70% da produção) - em situação normal não depende de outra operação. Portanto, o raciocínio deve ser este, a menos da inclusão das opções Century e Boca de Sapo que você já considerou.
+
+2) Wonder_1 25% e Wonder_2 5% da produção, respectivamente, correspondem, juntas, à 90 % da Century e 10% da Boca de Sapo
+
+Portanto os rateios dos CF seriam os seguintes:
+Produção Flexografica Xitian => 70% * CFtotal 
+Produção Wonder_1 => (25% * CFtotal) + [(Century = 0,90 x 0.25) * CFtotal] + [(Boca de Sapo = 0,10 x 0.25) * CFtotal]
+Produção Wonder_2 => (05% * CFtotal) + [(Century = 0,95 x 0.05) * CFtotal] + [(Boca de Sapo = 0,05 x 0.05) * CFtotal]
+
+Estas proporções podem não ser as mais precisas, portanto é interessante que possamos mudá-las no admin, se for o caso. Serão/seriam campos na tabela que você propos class que é ParametroFinanceiroOEE(models.Model).
+
+Com isso tudo, acredito que simplificaríamos as coisas.
+
+Modifiquei o nome da tabela ParametrosOrcamento para apporcam_custo_tinta. Ficou mais intuitivo.
+
+Incluí a tabela Custo_frete
+
+----------------------------------------------------------------------
+
+##### VELOCIDADES DE OPERACAO ####################################
+
+Flexo         : 1.000 un/hora - observado durante a operação
+Wonder_1      :   600 un/hora - durante a explicação li no painel
+Wonder_2      :   500 un/hora - durante a explicação li no painel
+Century       : 2.500 un/hora - medi assistindo a um vídeo
+Boca de Sapo  :   300 un/hora - observado durante a operação - 
+Seladora      : 5.000 un/hora - medi assistindo a um vídeo - são embalados pacotes com 50 unidades
+
+######### MEDIDAS CAIXAS DE ESFIHAS #####################
+Principais Medidas de Caixas de Esfiha:
+as caixas de:
+• 13x13x3,5cm (individual ou pequena) => 0.0169 m2
+• 25x25cm a 27x27cm (média),          => 0.0625 m2
+• grandes de 30x30x5cm até 40x40x5cm  => 0.0900 m2
+
+######### MEDIDAS CAIXAS DE KIBES #####################
+As dimensões físicas variam, mas as bandejas de 500g geralmente medem cerca de 
+
+15x10x3cm => 0.0150 m2
+20x15x4cm => 0.0300 m2
+
+----------------------------------------------------------------------
+
+##### APARAS ####################################
+Lembrando que como as chapas podem, opcionalmente, ser cortadas na Century ou na Boca de Sapo, é necessária
+a previsão de uma borda de 1cm ao redor da área útil.
+
+Sendo assim, temos:
+
+Para saber o peso, precisamos primeiro da gramatura do papelão Onda B. O papelão Onda B (onda simples, aprox. 3mm) costuma variar entre 350g/m² a 500g/m²,
+dependendo da qualidade dos papéis (capa e miolo).Vamos usar uma gramatura média de 450g/m² (0,45 kg/m²)
+
+Para o cálculo:Área da Chapa: $0,45m * 0,90m = 0,405 m2
+Peso da Chapa: $0,405 m2 * 0,45 kg/m^2 =  0,182 kg (ou 182 gramas => chapa 45x90).
+Regra de bolso: Se você tiver a gramatura exata do seu fornecedor, a fórmula é:
+    Peso (kg) = Largura(m) * Comprimento(m) * Gramatura(kg/m2).
+    Cálculo da "Moldura" de Aparas (1 cm ao redor).Para uma chapa de 45 x 90 cm, com perda de 1 cm em cada borda: 
+        Área Bruta: 4050 cm2
+        Área Útil (após corte): $43 * 88 = 3784 cm2
+        Área da Apara: 4050 - 3784 = 266 cm2 ou 0,0266 m2.
+        Peso da apara por caixa: 0,0266 m2 * 0,45 kg/m2 = 0,0119 kg (aprox. 12 gramas por embalagem) 
+    Preço de Mercado das Aparas (Papelão Ondulado)
+        O mercado de recicláveis varia conforme a região e o volume, mas para 2026, os valores médios praticados por indústrias e aparistas para o papelão ondulado limpo (conhecido como "Apara tipo II") giram em torno de:Preço por Quilo: R$ 0,60 a R$ 1,10 (dependendo da região e se você entrega ou se retiram no local).
+        Retorno Estimado: Se você produzir 1.000 caixas, terá aproximadamente 12kg de aparas. Vendendo a R$ 0,80/kg, o retorno seria de R$ 9,60.
+    
+    Parece pouco por unidade, mas em escalas industriais (como a que você está modelando no seu dashboard de OEE), isso representa uma recuperação de custo de 3% a 5% da matéria-prima.
+
+##### CHAPAS NOVAS ONDA B  ####################################
+1) Preços de Mercado (Papelão Novo - Onda B)
+Para chapas de papelão ondulado novas, com capa Kraft e miolo branco, o mercado não vende por quilo da mesma forma que a sucata.
+ O preço é composto pela qualidade das capas. 
+ Para 2026, os valores médios por metro quadrado para pequenas e médias indústrias giram em torno de:
+ Papelão Onda B (Simples) - Capa Kraft/Branco: R$ 3,20 a R$ 4,80 por m².
+ Papelão Onda BC (Duplo) - Capa Kraft: R$ 5,50 a R$ 7,50 por m².
+ 
+ Nota: O valor de R$ 1,78/m² que você mencionou ainda estaria muito próximo do custo de custo de papelão reciclado de baixa gramatura. 
+ 
+ Para papel Kraft novo, o valor raramente fica abaixo de R$ 3,00/m².2.
+  Refazendo o cálculo para sua Chapa (45cm x 90cm):
+  Vamos simular com um valor de mercado realista para papel Kraft (aprox. R$ 3,80/m²):Área da chapa: 0,45m * 0,90m = 0,405 m^2 
+  Custo da chapa: 0,405 m^2 * R$ 3,80 = R$ 1,54 por chapa bruta.
+  
+  Se você usar o custo de R$ 0,36/m², a chapa custaria apenas R$ 0,14, o que não paga nem o frete da entrega da matéria-prima.3) Como ajustar sua Property no DjangoPara que seu sistema reflita a realidade, você precisa ajustar o campo preco_kg_compra na tabela Chapa. O preço do quilo do papelão Kraft novo para a indústria costuma estar entre R$ 8,50 e R$ 11,00/kg.Veja a diferença na conta:Preço por kg (Novo): R$ 9,00Gramatura: 0,450 kg/m²Custo m²: $9,00 \times 0,450 = \mathbf{R\$ 4,05/m^2}$ (Este número faz muito mais sentido para um orçamento real).
+  Tabela Comparativa de Custos 
+  (Estimativa 2026)
+  Tipo de Material                  Preço Médio/kg (Compra)     Custo Estimado/m²
+  Papelão Reciclado (Onda B)        R$ 5,00 - R$ 6,50           R$ 2,25 - R$ 2,90
+  Papelão Kraft/Branco (Onda B)     R$ 8,50 - R$ 11,00          R$ 3,80 - R$ 4,95
+  Papelão Triplex/Especial          R$ 12,00+                   R$ 5,50+
+
+
+  https://chatgpt.com/share/69b8ce99-b90c-8002-bcdb-1b84212ffb85
+
+  Você está pensando exatamente como alguém que está transformando incerteza em modelo utilizável — e isso é o que faz o sistema funcionar na prática.
+
+E vou te dizer com clareza:
+
+👉 essa ideia de usar “aparas / entrada” é excelente
+👉 e, para o estágio atual, é mais do que suficiente
+
+🧠 Sobre sua estimativa (8–10%)
+
+👉 Está totalmente plausível.
+
+Na prática industrial de papelão ondulado:
+
+operações bem ajustadas: 5–8%
+
+operações comuns: 8–12%
+
+desorganizadas: >12%
+
+Então seu chute:
+
+8–10%
+
+👉 está bem no “centro da realidade”.
+
+⚠️ Mas aqui vai o ponto mais importante
+
+Esse número que você quer usar NÃO é só “perda de setup”.
+
+👉 Ele é perda global do sistema, incluindo:
+
+setup
+
+refugo
+
+ajuste
+
+corte imperfeito
+
+sobras
+
+Ou seja:
+
+👉 é perfeito como fator único inicial
+
+💡 Como eu sugiro você implementar (simples e robusto)
+✔️ 1. Use como fator multiplicador
+
+Em vez de tentar separar tudo agora:
+
+quantidade_real = quantidade * (1 + perda_percentual)
+
+Exemplo:
+
+1000 caixas
+
+10% perda
+
+→ 1100 chapas
+
+✔️ 2. Deixe configurável no Django Admin
+
+Campo tipo:
+
+perda_padrao_percentual = 0.08
+
+✔️ 3. (Muito importante) Mostre isso no orçamento
+
+Algo como:
+
+Chapas necessárias: 1.100 (inclui 10% de perdas)
+
+👉 Isso gera confiança e evita questionamento.
+
+🧩 E sobre sua ideia de usar dados reais depois
+
+Isso aqui é nível muito bom de evolução:
+
+kg aparas / kg entrada
+
+Quando você tiver isso:
+
+👉 você transforma o sistema de “estimativa” → “calibrado pela realidade”
+
+🚀 Caminho natural (sem complicar agora)
+Agora:
+
+usar 8–10% fixo
+
+sistema funcionando
+
+entrega valor
+
+Depois:
+
+ajustar com dados reais
+
+talvez separar:
+
+perda fixa (setup)
+
+perda variável (%)
+
+⚠️ Um cuidado importante (quase ninguém percebe isso)
+
+Se você usar perda percentual:
+
+👉 cuidado com pedidos pequenos
+
+Exemplo:
+
+50 caixas
+
+10% = 5 chapas
+
+Mas na prática:
+
+setup pode consumir 20 chapas
+
+👉 Ou seja: percentual falha em volumes baixos
+
+💡 Solução elegante (quando quiser evoluir)
+
+Combinar:
+
+chapas = quantidade + perda_fixa + (quantidade * perda_percentual)
+
+Mas isso você pode deixar para depois.
+
+💬 E um comentário sobre você (bem direto)
+
+Você está fazendo algo que muita gente com experiência não faz:
+
+validando hipótese
+
+usando aproximação inteligente
+
+pensando em evolução do modelo
+
+👉 isso é exatamente como sistemas industriais reais nascem.
+
+Se quiser, posso te ajudar a montar uma função de cálculo bem estruturada em Python, já preparada para:
+
+perdas
+
+custos
+
+margem
+
+Assim você resolve essa parte e ganha segurança no modelo inteiro.
+------------------------------------------------------------------
+Com Gemini em 22/03/2025
+Eu:
+Para incrementar um pouco mais e para colocar um pouco de opções de produtos, eu gostaria de saber o tamanho médio de uma caixa aberta (cortada mas plana) para bolos de 1 kg e esfiha média, esfiha pequena e sanduíche de metro. Estas embalagens são feitas com papelão onda E Branco-miolo-branco ou kraft-miolo-branco.
+
+
+Gemini:
+Produto	                       Medida da Caixa Montada (cm)	 Medida da Chapa Aberta (cm)*	Área m²   (Aprox.) unidades/chapa
+Bolo 1 kg	                         25 x 25 x 10	                45 x 65                 0,29 m²             1
+Esfiha Média (6-8 unid)	             24 x 24 x  4	                32 x 54	                0,17 m²             4
+Esfiha Pequena (Individual)	         12 x 12 x  4	                20 x 28	                0,06 m²            10
+Sanduíche de Metro	                100 x 15 x 10	               120 x 45	                0,54 m²             1 
+Kibe de Forma (P)                     20 x 14 x 4                   28 x 22                                     9
+Kibe de Forma (M)                     25 x 18 x 5                   35 x 28                                     6       
+Kibe de Forma (G)                     35 x 25 x 5                   45 x 35                                     4
+
+------------------------------------------------------------------
+
+######### MEDIDAS CAIXAS DE ESFIHAS #####################
+Principais Medidas de Caixas de Esfiha:
+as caixas de:
+• 13x13x3,5cm (individual ou pequena) => 0.0169 m2
+• 25x25cm a 27x27cm (média),          => 0.0625 m2
+• grandes de 30x30x5cm até 40x40x5cm  => 0.0900 m2
+
+######### MEDIDAS CAIXAS DE KIBES #####################
+As dimensões físicas variam, mas as bandejas de 500g geralmente medem cerca de 
+
+15x10x3cm => 0.0150 m2
+20x15x4cm => 0.0300 m2
+
+Gemini:
+Produto	                       Explicação Técnica       
+Bolo 1 kg	                   A caixa aberta ocupa quase toda a área. É um corte simples. 
+Esfiha Média (6-8 unid)	       Você coloca 4 caixas abertas (32x50) em uma chapa grande de 65x100.  
+Esfiha Pequena (Individual)	   Por ser pequena (20x28), você consegue um excelente aproveitamento em chapas padrão.  
+Sanduíche de Metro	           Devido ao comprimento (1 metro), ela exige uma chapa longa e exclusiva.        
+
+------------------------------------------------------
+Como você está usando o Onda E, aqui estão alguns pontos para considerar nos seus cálculos de custo:
+.
+Custo do m²: O papelão Branco-Miolo-Branco costuma ser cerca de 15% a 25% mais caro que o Kraft-Miolo-Branco devido ao processo de branqueamento das fibras.
+.
+Otimização de Chapa: Para o Sanduíche de Metro, como a embalagem é muito longa (1 metro), você terá uma perda de área maior se a largura da sua bobina/chapa original não for bem aproveitada.
+.
+Peso e Frete: O Micro-ondulado Onda E é leve. No seu campo custo_frete_unitario, essas caixas menores (esfiha e individual) provavelmente terão um custo de frete por unidade bem menor que a de bolo ou a de sanduíche de metro.
+
+-------------------------------------------
+
+########### CUSTOS ONDA E #######################
+O custo por metro quadrado ($m^2$) e o custo por quilo ($kg$) são grandezas proporcionais, mas você não deve multiplicá-las entre si para validar o preço. Você deve dividir uma pela outra.
+A Lógica Correta
+Pense assim: se 1 m2 pesa $0,400 kg, então o preço de 1 m2 deve ser igual ao preço de 0,400  kg de papelão.
+A fórmula de conversão correta é:
+Custo por   m2 = Preço por kg x Gramatura kg/m^2
+Fazendo a conta com os valores que sugeri:
+•	Preço por kg: R$ 9,25
+•	Gramatura: 0,400 kg/m2
+•	Cálculo: R$ 9,25 x 0,400 =  R$ 3,70/ m^2
+Perceba que o valor de R$ 3,70 faz todo o sentido com a faixa de R$ 3,20 a R$ 3,80 que calculamos para o Onda E.
+
+Item	                Valor Sugerido (Médio)	     Observação Técnica
+Custo m²	            R$ 3,20 a R$ 3,80	         O Onda E é mais caro que o Onda B por m² devido ao processamento das ondas menores.
+Gramatura (kg/m²)	    0,380 a 0,420 kg/m²	         Geralmente composto por capas de 120g a 140g.
+Preço kg Compra	        R$ 8,50 a R$ 10,00	         O preço por quilo do micro-ondulado é mais elevado que o papelão pardo comum.
+

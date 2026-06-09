@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cadastrar Reclamação{% endblock %}
+
+
+{% block body %}
+<div class="container mt-4">
+
+    <button class="btn btn-secondary" type="button"><h4>Cadastrar Reclamação</h4></button>  
+    <hr>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Campos normais do ModelForm -->
+        <div class="row">
+            {% for field in form %}
+                {% if field.name != 'arquivos' %}
+                    <div class="mb-3">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger">
+                                {{ field.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Campo de upload múltiplo -->
+        <div class="mb-3">
+            <label for="{{ form.arquivos.id_for_label }}">
+                Anexos
+            </label>
+            {{ form.arquivos }}
+            <small class="form-text text-muted">
+                {{ form.arquivos.help_text }}
+            </small>
+
+            {% if form.arquivos.errors %}
+                <div class="text-danger">
+                    {{ form.arquivos.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <hr>
+            <div class="d-grid gap-2">
+                <button class="btn btn-success" type="submit">Salvar</button>
+            </div>
+        <hr>
+    </form>
+
+</div>
+
+{% endblock %}

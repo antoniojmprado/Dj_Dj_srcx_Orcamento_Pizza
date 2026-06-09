@@ -1,0 +1,83 @@
+{% load static %}
+
+<style>
+
+li a.nav-link{
+    color:white;
+}
+
+li a.nav-link.hover{
+    color:yellow;
+}
+
+.nav-link{
+    font-size: 30px;
+}
+
+
+</style>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" id = "acesso_navBar">    
+  <div class="container">    
+        <a class="navbar-brand"  href="https://senhorcaixa.com.br/" target="_blank">
+            <img src="{% static 'images/logo-senhor-caixa_branco (1).png' %}" alt="" width="300" height="120">
+        </a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="http://127.0.0.1:8000/admin/">Admin</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="{% url 'home' %}">Home</a>
+            </li>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="{% url 'reclamacoes_list' %}">Listar</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'reclam_cliente' %}">Cadastrar</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id = "abre_modal_reclamantes">+Reclam</a>
+            </li>            
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id = "abre_modal_semanAno">Ano_Sem</a>
+            </li>
+        </ul>
+            <p><h6><span class="navbar-text" id="ult_reg"></span></h6></p>
+    </div>
+  </div>
+</nav>
+<!-- Modal modal -->
+ <!-- data-bs-backdrop="static" (retirado linha abaixo): nesta condição pode-se o modal com  um click fora do mesmo -->
+ <!-- data-bs-keyboard="true" (venha linha abaixo) : click ESC para fechar o modal -->
+<div class="modal fade" id="modal_reclamantes" data-bs-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark">
+                <div class="modal-title" id="staticBackdropLabel;"><h3>Maiores Reclamantes</h3></div>                  
+                <button type="button" class="btn-close buttonModal" data-bs-dismiss="modal" aria-label="Close" ></button>
+            </div>                
+            <div class="modal-body" id = "maiores_reclamantes_modal">                    
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal modal -->
+ <!-- data-bs-backdrop="static" (retirado linha abaixo): nesta condição pode-se o modal com  um click fora do mesmo -->
+ <!-- data-bs-keyboard="true" (venha linha abaixo) : click ESC para fechar o modal -->
+<div class="modal fade" id="modal_semanAno" data-bs-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark">
+                <div class="modal-title" id="staticBackdropLabel;"><h3>Pesquisa Semana Ano</h3></div>                  
+                <button type="button" class="btn-close buttonModal" data-bs-dismiss="modal" aria-label="Close" ></button>
+            </div>        
+            <div class="modal-body" id = "recebe_semanAno_modelForm">
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,31 @@
+{% extends 'base_orcam.html' %}
+
+{% block title %}
+{% endblock %}
+
+{% block body %}
+
+
+<div class="container">
+    <h2>Inserir Informações</h2>
+     
+    <form action="" method = "POST" >
+
+        {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <table class='form_cotar'>
+                {{ form.as_table }}
+            </table>
+        <hr>
+
+        <input type="submit"  value = "Gerar Orçamento">
+    </form>
+
+</div>
+
+{% endblock %}

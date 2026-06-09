@@ -1,0 +1,275 @@
+[
+  {
+    "model": "appOEE.empresa",
+    "pk": 1,
+    "fields": {
+      "nome": "Senhor Caixa"
+    }
+  },
+  {
+    "model": "appOEE.empresa",
+    "pk": 2,
+    "fields": {
+      "nome": "Doutor Caixa"
+    }
+  },
+  {
+    "model": "appOEE.maquina",
+    "pk": 1,
+    "fields": {
+      "nome": "Flexo Xintian"
+    }
+  },
+  {
+    "model": "appOEE.maquina",
+    "pk": 2,
+    "fields": {
+      "nome": "Wonder 1"
+    }
+  },
+  {
+    "model": "appOEE.maquina",
+    "pk": 3,
+    "fields": {
+      "nome": "Wonder 2"
+    }
+  },
+  {
+    "model": "appOEE.maquina",
+    "pk": 4,
+    "fields": {
+      "nome": "Century"
+    }
+  },
+  {
+   "model": "appOEE.maquina",
+   "pk": 5,
+   "fields": {
+     "nome": "Seladora"
+	}
+  }, 
+  {
+   "model": "appOEE.maquina",
+   "pk": 6,
+    "fields": {
+	"nome": "Boca de Sapo"
+	}
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 1,
+    "fields": {
+      "nome": "setup"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 2,
+    "fields": {
+      "nome": "reajuste de setup"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 3,
+    "fields": {
+      "nome": "refeições"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 4,
+    "fields": {
+      "nome": "treinamento/ferias"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 5,
+    "fields": {
+      "nome": "falha de operador"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 6,
+    "fields": {
+      "nome": "falha mecânica"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 7,
+    "fields": {
+      "nome": "falha eletroeletron"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 8,
+    "fields": {
+      "nome": "falta de energia, ar, agua etc"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 9,
+    "fields": {
+      "nome": "falta de insumos"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 10,
+    "fields": {
+      "nome": "falta de matéria-prima"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 11,
+    "fields": {
+      "nome": "falta de programação"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 12,
+    "fields": {
+      "nome": "manutenção preventiva"
+    }
+  },
+  {
+    "model": "appOEE.motivo",
+    "pk": 13,
+    "fields": {
+      "nome": "falta de operador"
+    }
+  },
+  {
+    "model": "appOEE.tipo_parada",
+    "pk": 1,
+    "fields": {
+      "descricao": "programada"
+    }
+  },
+  {
+    "model": "appOEE.tipo_parada",
+    "pk": 2,
+    "fields": {
+      "descricao": "improdutiva"
+    }
+  },
+  {
+    "model": "appOEE.tipo_parada",
+    "pk": 3,
+    "fields": {
+      "descricao": "produtiva"
+    }
+  },
+  {
+    "model": "appOEE.horas_dia_decimal",
+    "pk": 1,
+    "fields": {
+      "qt_horas_dia": 8.8
+    }
+  },
+  {
+    "model": "appOEE.horas_dia_decimal",
+    "pk": 2,
+    "fields": {
+      "qt_horas_dia": 8.8
+    }
+  },
+  {
+    "model": "appOEE.horas_dia_decimal",
+    "pk": 3,
+    "fields": {
+      "qt_horas_dia": 8.8
+    }
+  },
+  {
+    "model": "appOEE.turnos_dia",
+    "pk": 1,
+    "fields": {
+      "qt_turnos_dia": 1
+    }
+  },
+  {
+    "model": "appOEE.turnos_dia",
+    "pk": 2,
+    "fields": {
+      "qt_turnos_dia": 2
+    }
+  },
+  {
+    "model": "appOEE.turnos_dia",
+    "pk": 3,
+    "fields": {
+      "qt_turnos_dia": 3
+    }
+  },
+  {
+    "model": "appOEE.dias_semana",
+    "pk": 1,
+    "fields": {
+      "qt_dias_semana": 5
+    }
+  },
+  {
+    "model": "appOEE.dias_semana",
+    "pk": 2,
+    "fields": {
+      "qt_dias_semana": 5
+    }
+  },
+  {
+    "model": "appOEE.dias_semana",
+    "pk": 3,
+    "fields": {
+      "qt_dias_semana": 5
+    }
+  },
+  {
+    "model": "appOEE.horas_semana",
+    "pk": 1,
+    "fields": {
+      "qt_horas_semana": 44
+    }
+  },
+  {
+    "model": "appOEE.horas_semana",
+    "pk": 2,
+    "fields": {
+      "qt_horas_semana": 88
+    }
+  },
+  {
+    "model": "appOEE.horas_semana",
+    "pk": 3,
+    "fields": {
+      "qt_horas_semana": 132
+    }
+  },
+  {
+    "model": "appOEE.semanas_mes",
+    "pk": 1,
+    "fields": {
+      "qt_semanas_mes": 4.3
+    }
+  },
+  {
+    "model": "appOEE.semanas_mes",
+    "pk": 2,
+    "fields": {
+      "qt_semanas_mes": 4.3
+    }
+  },
+  {
+    "model": "appOEE.semanas_mes",
+    "pk": 3,
+    "fields": {
+      "qt_semanas_mes": 4.3
+    }
+  }
+]

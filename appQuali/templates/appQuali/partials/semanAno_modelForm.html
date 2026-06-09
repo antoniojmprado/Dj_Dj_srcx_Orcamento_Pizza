@@ -1,0 +1,21 @@
+
+ <form method="post" id="form-semana-ano">
+    {% csrf_token %}
+
+    <table>
+    {{ form.as_table }}
+    </table>
+
+    <button type="submit" class="btn btn-primary">
+        Salvar
+    </button>
+
+    {% if object %}
+        <div class="alert alert-success mt-3">
+            <b>Semana {{ object.semana }}/{{ object.ano }}</b><br>
+            De {{ object.data_inicio|date:"d/m/Y" }}
+            até {{ object.data_fim|date:"d/m/Y" }}
+        </div>
+    {% endif %}
+</form>
+

@@ -1,0 +1,153 @@
+{% extends 'base_quali.html' %}
+{% load static %}
+
+
+{% block titulo %}{% endblock %}
+
+
+{% block body %}
+
+
+
+<div class="container">
+
+    <hr>
+    <div class="row">
+        <div class="col graficos">Reclamações por mês<canvas id="defeitosPorMes"></canvas></div>
+        <div class="col graficos">Reclamações por dia<canvas id="defeitosPorDiaHistorico30"></canvas></div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col graficos">7 Tipos de Recl. mais frequentes <canvas id="tiposMaisFrequentes"></canvas></div>
+        <div class="col graficos" id ="defeitoMesEscolhido"></div> <p style="text-align: right;"><button id = "selecionaMesAno" ></button></p>
+    </div>
+    <hr>
+    <div class="row"> 
+         <div class="col graficos" id="defeitosPorSemana"></div>
+
+         <div class="col graficos" id="tiposDefeitosPorSemana"></div><p style="text-align: right;"><button id = "listaDefeitos" ></button></p>
+    </div>
+    <hr>
+
+        <div class="row">
+            <div><canvas style="height: 450px; text-align: margin-auto;" id="grafico"></canvas></div>
+        </div>
+        <br>
+        <br>
+
+    <div id="msg"></div>
+
+    <h3 id = "qt_reclamantes"><u>Listagem de Reclamações</u></h3><br>
+
+    <table
+        id="mytable"
+        class="display nowrap table table-bordered table-striped table-hover align-middle" style="width:100%">
+        <thead class="table-dark" style="text-align:center;">
+            <tr>
+                <th>ID_recl</th>
+                <th>sem</th>
+                <th>Data <br>(a/m/d)</th>
+                <th>Fabricante</th>
+                <th>Tecnologia</th>
+                <th>Vend.</th>
+                <th>Cliente</th>
+                <th>Produto</th>
+                <th>Defeito</th>
+                <th>Descrição</th>
+                <th>Anexos</th>
+                <th class="primary">Comentários</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for r in lista_recl_sql %}
+            <tr>
+                <td>{{ r.reclam_id }}</td>
+                <td>{{ r.sem }}</td>
+                <td>{{ r.data_ocor }}</td>
+                <td>{{ r.fabricante }}</td>
+                <td>{{ r.tecnol }}</td>
+                <td>{{ r.vendedor }}</td>
+                <td class="maiusculo">{{ r.cliente }}</td>
+                <td class="maiusculo">{{ r.produto }}</td>
+                <td class="maiusculo">{{ r.defeito }}</td>
+
+                <td>
+                    <div class="texto-limitado">{{ r.descricao }}</div>
+                    <button class="btn-leia-mais">Ler mais...</button>
+                </td>
+
+                <td class="text-center">
+                    {% if r.anexos %}
+                        {% for arquivo in r.anexos %}
+                            <a href="/media/{{ arquivo }}" target="_blank">
+                                Anexo {{ forloop.counter }}
+                            </a><br>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <div class="texto-limitado">{{ r.coment }}</div>
+                    <button class="btn-leia-mais">Ler mais...</button>
+                </td>
+
+                <td>
+                    <button type="button"
+                        class="btn btn-danger btn-sm  delete-btn"
+                        onclick="return confirm('Confirma exclusão?');" data-id="{{ r.reclam_id }}">
+                        Excluir
+                    </button> <!-- classe delete-btn chama funcao ajax jquery $(.delete-btn)... -->
+                </td>                
+                </td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+        <tfoot class="table-dark" >
+            <th>ID_recl</th>
+            <th>sem</th>
+            <th>Data</th>
+            <th>Fabricante</th>
+            <th>Tecnologia</th>
+            <th>Vend.</th>
+            <th>Cliente</th>
+            <th>Produto</th>
+            <th>Defeito</th>
+            <th>Descrição</th>
+            <th>Anexos</th>
+            <th>Comentários</th>
+            <th>Ações</th>
+        </tfoot>
+    </table>
+    <hr>
+</div>
+
+<script>
+    window.onload = function(event){ 
+        //data_primeiro_registro("{% url 'appQuali:data_primeiro_registro' %}");
+        data_ultimo_registro("{% url 'appQuali:data_ultimo_registro' %}");
+        defeitosPorMes("{% url 'appQuali:defeitosPorMes' %}");         
+        defeitosPorDiaHistorico30("{% url 'appQuali:defeitosPorDiaHistorico30' %}");  
+        
+        qt_reclamantes("{% url 'appQuali:qt_reclamantes'%}")
+        maioresReclamantes("{% url 'appQuali:maioresReclamantes'%}")
+        week_modal("{% url 'appQuali:week_modal'%}")
+
+
+        defeitosPorTipoMaisFrequentes("{% url 'appQuali:defeitosPorTipoMaisFrequentes' %}"); 
+        defeitosPorMaisFrequentesMesAnterior("{% url 'appQuali:defeitosPorMaisFrequentesMesAnterior' %}"); 
+        selecionaMesAno("{% url 'appQuali:selecionaMesAno' %}"); 
+        defeitosPorSemana("{% url 'appQuali:defeitosPorSemana' %}"); 
+        listaDefeitos("{% url 'appQuali:listaDefeitos' %}"); 
+        reclamacoes_list("{% url 'appQuali:reclamacoes_list' %}"); 
+        grafico_defeitos("{% url 'appQuali:grafico_defeitos' %}"); 
+
+        tiposDefeitosPorSemana("{% url 'appQuali:tiposDefeitosPorSemana' %}"); 
+    }    
+</script>
+
+{% endblock %}

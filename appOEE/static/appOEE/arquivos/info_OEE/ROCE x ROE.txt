@@ -1,0 +1,912 @@
+##################################################
+# https://gemini.google.com/app/3a62087bf48d3a1c #
+##################################################
+
+Boa tarde! Qual a diferença entre ROCE e ROE?
+
+Boa tarde! Essa é uma dúvida muito comum, pois ambos medem o retorno sobre o capital, mas sob perspectivas diferentes: uma olha para a operação (fábrica) e a outra olha para o acionista (dono).
+
+Como você está analisando o desempenho fabril, entender essa distinção é fundamental para saber qual "alavanca" você está puxando.
+
+1. ROCE (Return on Capital Employed)
+O ROCE foca na eficiência de toda a operação. Ele ignora se o dinheiro usado para comprar as máquinas veio do bolso do dono ou de um empréstimo bancário.
+
+O que mede: A rentabilidade de todo o capital investido no negócio (Capital Próprio + Dívidas).
+
+Fórmula: ROCE= Lucro Operacional (EBIT)/Capital Empregado
+
+
+Visão do Gestor Fabril: É a melhor métrica para você, pois mostra se as suas máquinas e processos (o seu OEE) estão gerando retorno suficiente para justificar o investimento total na fábrica.
+
+2. ROE (Return on Equity)
+O ROE foca exclusivamente no acionista. Ele mede quanto o investidor está ganhando sobre o dinheiro que ele, pessoalmente, colocou na empresa.
+
+O que mede: O lucro líquido gerado apenas sobre o Patrimônio Líquido.
+
+Fórmula: ROE=  Lucro Lıquido / Patrimonio Lıquido 
+
+Visão do Dono: Se o ROE for menor que a taxa Selic, por exemplo, o dono pode achar que compensa mais fechar a fábrica e deixar o dinheiro no banco.
+
+Diferenças Principais
+
+ROCE
+Ponto de Vista: Da operação/empresa como um todo.
+Tratamento da Dívida: Considera a dívida como parte do capital.
+Influência do OEE:Direta e fortíssima. O OEE melhora o ROCE imediatamente.
+
+ROE
+Ponto de Vista: Do investidor/sócio.
+Tratamento da Dívida: Ignora a dívida (foca no que sobra após pagá-la).
+Influência do OEE: Indireta, pois o lucro líquido depende também de juros e impostos.
+
+Por que isso importa para você?
+Se o seu ROCE for maior que o custo da dívida (os juros do banco), significa que você está "ganhando no spread". Nesse cenário, aumentar o OEE aumenta o ROCE e, consequentemente, impulsiona o ROE de forma alavancada.
+
+Se o ROCE for baixo (como o -0,6% da sua imagem anterior), o ROE será ainda pior, pois os juros da dívida vão "comer" o pouco que sobrar.
+
+Deseja que eu adicione ao código Python que fizemos uma função para calcular o ROE, simulando um cenário de endividamento da fábrica? Seria um ótimo exercício de análise financeira!
+
+------------------------------
+Para calcular o ROE, precisamos introduzir duas novas variáveis: a Dívida (Empréstimos) e os Juros. Isso vai mostrar como a eficiência da fábrica (OEE) conversa com a saúde financeira que o investidor enxerga.
+
+Código Python: OEE → ROCE → ROE
+Python
+def simular_financeiro_completo(oee_alvo, patrimonio_liquido, divida_total, taxa_juros_anual):
+    # --- DADOS DA OPERAÇÃO (PIRÂMIDE DUPONT) ---
+    horas_planejadas = 6505
+    capacidade_max_h = 4870
+    margem_unitária = 0.25 # (2.75 - 2.50)
+    custos_fixos_totais = 3565578
+    
+    # Cálculos Operacionais
+    prod_teorica = horas_planejadas * capacidade_max_h
+    prod_real = prod_teorica * (oee_alvo / 100)
+    lucro_operacional (EBIT) = (prod_real * margem_unitária) - custos_fixos_totais
+    
+    capital_empregado = patrimonio_liquido + divida_total
+    roce = (lucro_operacional / capital_empregado) * 100
+    
+    # --- LÓGICA DO ACIONISTA (ROE) ---
+    despesa_financeira = divida_total * (taxa_juros_anual / 100)
+    lucro_antes_imposto = lucro_operacional - despesa_financeira
+    
+    # Consideramos 34% de impostos (IRPJ/CSLL) se o lucro for positivo
+    imposto = max(0, lucro_antes_imposto * 0.34)
+    lucro_liquido = lucro_antes_imposto - imposto
+    
+    roe = (lucro_liquido / patrimonio_liquido) * 100
+    
+    return {
+        "OEE (%)": oee_alvo,
+        "ROCE (%)": round(roce, 2),
+        "ROE (%)": round(roe, 2),
+        "Lucro Líquido (R$)": round(lucro_liquido, 2)
+    }
+
+# --- SIMULAÇÃO ---
+# Supondo que dos R$ 14.950.000, 10 milhões são do dono e 4.95 milhões são banco (12% a.a)
+patrimonio = 10000000
+banco = 4950000
+juros = 12
+
+print(f"Simulação com OEE de 50%:")
+print(simular_financeiro_completo(50, patrimonio, banco, juros))
+Por que os resultados são diferentes?
+O ROE geralmente é mais "volátil" que o ROCE. Veja o que acontece na prática:
+
+A Alavancagem Financeira: Se o seu ROCE (retorno da fábrica) for maior que os juros do banco, o seu ROE será maior que o ROCE. O banco está "ajudando" o dono a ganhar mais dinheiro.
+
+O Risco do Prejuízo: Se o ROCE for baixo (como o seu atual de -0,6%), o ROE cai muito mais rápido, pois você ainda tem que pagar o banco, mesmo operando no vermelho.
+
+Próximo Passo
+Com esse código, você consegue criar uma tabela de comparação: "Quanto eu preciso de OEE para que o meu ROE seja maior que 15% ao ano?".
+
+Gostaria que eu gerasse uma lista com os "Break-evens" (pontos de equilíbrio) tanto para o ROCE quanto para o ROE usando este código?
+
+=====================================================================================================
+O modelo que você está visualizando na sua planilha é, na verdade, uma variação do Modelo DuPont, adaptada para a realidade industrial (frequentemente chamada de Árvore de Valor Industrial).
+
+No DuPont tradicional, focamos em Margem e Giro. No seu caso, a "pirâmide" conecta a eficiência do chão de fábrica (OEE) diretamente com o retorno sobre o capital (ROCE).
+
+Para montar isso no Excel ou entender a lógica, aqui está a estrutura da "Pirâmide de Performance" que você está usando:
+
+1. A Base da Pirâmide: Os Motores do OEE
+A OEE é a variável mestre porque ela controla o volume produzido sem aumentar o custo fixo.
+
+Disponibilidade × Performance × Qualidade = OEE
+
+Se a Disponibilidade sobe, a Produção Real sobe.
+
+2. O Meio da Pirâmide: Margem e Giro
+Aqui o OEE se transforma em dinheiro:
+
+Margem de Contribuição: (Produção Real × Preço Unitário) - (Produção Real × Custo Var. Unitário).
+
+Lucro Operacional: Margem de Contribuição - Custos Fixos (Manutenção, Depreciação, etc.).
+
+Giro do Ativo: Vendas totais divididas pelos Ativos (Máquinas + Capital de Giro).
+
+3. O Topo da Pirâmide: O ROCE
+O ROCE é o destino final. Ele responde: "Para cada R$ 1,00 investido nessa fábrica, quanto estamos ganhando?"
+
+ROCE= 
+Capital Empregado
+Lucro Operacional
+​
+ 
+Como as variáveis se conectam (Fluxo DuPont Industrial)
+Abaixo, a lógica de como o OEE "empurra" o ROCE para cima:
+
+Aumento do OEE → Aumenta a Produção Real.
+
+Mais Produção → Dilui o Custo Fixo por unidade (você produz mais com a mesma estrutura).
+
+Diluição de Custos → Aumenta a Margem de Lucro.
+
+Maior Lucro sobre o mesmo Capital → Explode o ROCE.
+
+Por que você sentiu que algo estava errado?
+Geralmente, o erro no Excel ao montar essa pirâmide acontece na conexão entre o Custo Fixo e a Produção.
+
+Dica: Certifique-se de que seus Custos Fixos (os R$ 3.565.578 da sua imagem) não estejam multiplicados pela produção. Eles devem ser um valor parado, que o lucro "tenta alcançar".
+
+Você gostaria que eu montasse uma tabela simplificada onde você só muda o OEE e ele já te dá o ROCE final usando essa lógica DuPont? Seria uma ótima forma de validar se suas fórmulas estão certas.
+
+Célula,Descrição do Item,Valor / Fórmula,Observação
+B1,OEE (Variável de Entrada),"43,8%",Mude este valor para testar
+B2,Produção Teórica (un/ano),31.680.000,(6.505h * 4.870un)
+B3,Margem Unitária (R$),"0,25","(2,75 - 2,50)"
+B4,Capital Empregado (R$),14.950.000,(Ativos + Giro)
+B5,Custos Fixos Totais (R$),3.565.578,(Manut + Depr + Fixos)
+B7,Produção Real (un),=B2 * B1,OEE impacta o volume
+B8,Margem Total (R$),=B7 * B3,OEE impacta a margem
+B9,Lucro Operacional (R$),=B8 - B5,Resultado final
+B10,ROCE (%),=B9 / B4,Resultado da Pirâmide
+
+Para facilitar sua vida e garantir que o cálculo esteja correto, montei uma estrutura lógica que você pode copiar para o Excel. Essa tabela segue exatamente o fluxo da sua "Pirâmide DuPont Industrial".
+
+### 1. Estrutura da Tabela (Copie para o Excel)
+
+| Célula | Descrição do Item | Valor / Fórmula | Observação |
+| --- | --- | --- | --- |
+| **B1** | **OEE (Variável de Entrada)** | **43,8%** | **Mude este valor para testar** |
+| B2 | Produção Teórica (un/ano) | 31.680.000 | (6.505h * 4.870un) |
+| B3 | Margem Unitária (R$) | 0,25 | (2,75 - 2,50) |
+| B4 | Capital Empregado (R$) | 14.950.000 | (Ativos + Giro) |
+| B5 | Custos Fixos Totais (R$) | 3.565.578 | (Manut + Depr + Fixos) |
+| **B7** | **Produção Real (un)** | `=B2 * B1` | OEE impacta o volume |
+| **B8** | **Margem Total (R$)** | `=B7 * B3` | OEE impacta a margem |
+| **B9** | **Lucro Operacional (R$)** | `=B8 - B5` | Resultado final |
+| **B10** | **ROCE (%)** | `=B9 / B4` | **Resultado da Pirâmide** |
+
+---
+
+### 2. Como as peças se encaixam (A Lógica DuPont)
+
+Note que nesta tabela:
+
+1. O **OEE (B1)** é o seu único "pedal de acelerador".
+2. Quando você aumenta o OEE, a **Produção Real (B7)** sobe instantaneamente.
+3. Como a Margem Unitária é fixa (R$ 0,25), a sua **Margem Total (B8)** cresce.
+4. O **Custo Fixo (B5)** é o "peso" que você precisa carregar. Ele não muda se o OEE sobe ou desce.
+5. O **ROCE (B10)** só fica positivo quando a Margem Total (B8) consegue ser maior que o Custo Fixo (B5).
+
+---
+
+### 3. Simulações rápidas para você testar:
+
+Com essa tabela pronta, tente digitar esses valores no campo **OEE (B1)**:
+
+* **Se colocar 45,0%:** Seu ROCE sairá do vermelho e ficará em **~0,0%** (Ponto de Equilíbrio).
+* **Se colocar 50,0%:** Seu ROCE salta para **~2,6%**.
+* **Se colocar 60,0%:** Seu ROCE vai para **~8,0%**.
+
+### Dica para o seu Dashboard:
+
+Agora que você tem essa tabela simplificada, você pode criar um gráfico de **"Velocímetro"** ou uma **"Barra de Progresso"** vinculada à célula **B10 (ROCE)**. Assim, toda vez que alguém mudar o OEE, o dashboard mostrará visualmente a fábrica saindo do prejuízo e entrando na zona de lucro.
+
+Essa estrutura resolveu o problema da fórmula que estava "dando errado"? Se o ROCE ainda estiver estranho, verifique se o **Capital Empregado (B4)** está somando corretamente os Ativos Fixos + Capital de Giro.
+
+---------------------------------
+Vou te passar um código em Python que faz exatamente o que a sua planilha faz: ele recebe os dados básicos e calcula o impacto financeiro. Usei a biblioteca pandas para organizar os dados, o que facilita muito se você quiser exportar para Excel depois.
+
+import pandas as pd
+
+def calcular_desempenho_fabril(oee_alvo):
+    # --- DADOS DE ENTRADA (Baseados na sua imagem) ---
+    horas_planejadas = 6505
+    capacidade_max_h = 4870
+    preco_unitario = 2.75
+    custo_var_unitario = 2.50
+    custos_fixos_totais = 3565578
+    capital_empregado = 14950000
+    
+    # --- LÓGICA DA PIRÂMIDE ---
+    prod_teorica = horas_planejadas * capacidade_max_h
+    margem_unitária = preco_unitario - custo_var_unitario
+    
+    # Impacto do OEE
+    prod_real = prod_teorica * (oee_alvo / 100)
+    margem_contribuicao_total = prod_real * margem_unitária
+    
+    # Resultado Financeiro
+    lucro_operacional = margem_contribuicao_total - custos_fixos_totais
+    roce = (lucro_operacional / capital_empregado) * 100
+    
+    return {
+        "OEE (%)": oee_alvo,
+        "Produção Real (un)": round(prod_real, 0),
+        "Margem Real (R$)": round(margem_contribuicao_total, 2),
+        "Lucro/Prejuízo (R$)": round(lucro_operacional, 2),
+        "ROCE (%)": round(roce, 2)
+    }
+
+# --- TESTANDO DIFERENTES CENÁRIOS ---
+cenarios = [43.8, 45.0, 50.0, 55.0] # Seu atual + metas
+resultados = [calcular_desempenho_fabril(c) for c in cenarios]
+
+# Transformando em DataFrame para visualização limpa
+df_analise = pd.DataFrame(resultados)
+print("Análise de Sensibilidade: OEE vs ROCE")
+print(df_analise.to_string(index=False))
+
+Com certeza! Como você já está trabalhando com essa lógica de **OEE** e **ROCE**, o melhor caminho é criar um script que automatize essa "Pirâmide DuPont".
+
+Vou te passar um código em Python que faz exatamente o que a sua planilha faz: ele recebe os dados básicos e calcula o impacto financeiro. Usei a biblioteca `pandas` para organizar os dados, o que facilita muito se você quiser exportar para Excel depois.
+
+```python
+import pandas as pd
+
+def calcular_desempenho_fabril(oee_alvo):
+    # --- DADOS DE ENTRADA (Baseados na sua imagem) ---
+    horas_planejadas = 6505
+    capacidade_max_h = 4870
+    preco_unitario = 2.75
+    custo_var_unitario = 2.50
+    custos_fixos_totais = 3565578
+    capital_empregado = 14950000
+    
+    # --- LÓGICA DA PIRÂMIDE ---
+    prod_teorica = horas_planejadas * capacidade_max_h
+    margem_unitária = preco_unitario - custo_var_unitario
+    
+    # Impacto do OEE
+    prod_real = prod_teorica * (oee_alvo / 100)
+    margem_contribuicao_total = prod_real * margem_unitária
+    
+    # Resultado Financeiro
+    lucro_operacional = margem_contribuicao_total - custos_fixos_totais
+    roce = (lucro_operacional / capital_empregado) * 100
+    
+    return {
+        "OEE (%)": oee_alvo,
+        "Produção Real (un)": round(prod_real, 0),
+        "Margem Real (R$)": round(margem_contribuicao_total, 2),
+        "Lucro/Prejuízo (R$)": round(lucro_operacional, 2),
+        "ROCE (%)": round(roce, 2)
+    }
+
+# --- TESTANDO DIFERENTES CENÁRIOS ---
+cenarios = [43.8, 45.0, 50.0, 55.0] # Seu atual + metas
+resultados = [calcular_desempenho_fabril(c) for c in cenarios]
+
+# Transformando em DataFrame para visualização limpa
+df_analise = pd.DataFrame(resultados)
+print("Análise de Sensibilidade: OEE vs ROCE")
+print(df_analise.to_string(index=False))
+
+```
+
+### Por que este código é útil para o seu programa?
+
+1. **Análise de Sensibilidade:** Ele já vem configurado para testar vários cenários de OEE de uma vez (a lista `cenarios`).
+2. **Escalabilidade:** Você pode facilmente transformar a função `calcular_desempenho_fabril` em uma API ou conectá-la a um banco de dados SQL onde os dados das máquinas são armazenados.
+3. **Simulação:** Note que com **45.0%** de OEE, o lucro já fica praticamente em zero. Isso valida o que fizemos no "Atingir Meta" do Excel.
+
+**Dica Profissional:** Se você quiser que esse programa gere gráficos automaticamente, eu posso adicionar as linhas de código usando a biblioteca `matplotlib` para criar aquela curva de lucro que mencionamos.
+
+Você gostaria que eu incluísse a parte do código que gera o gráfico de linha (OEE vs ROCE) para o seu programa?
+
+----------------------------------------
+Boa tarde! Qual a diferença entre ROCE e ROE?
+--------------------------------------------------
+1. ROCE (Return on Capital Employed)
+O ROCE foca na eficiência de toda a operação. Ele ignora se o dinheiro usado para comprar as máquinas veio do bolso do dono ou de um empréstimo bancário.O que mede: A rentabilidade de todo o capital investido no negócio (Capital Próprio + Dívidas).Fórmula: $ROCE = \frac{\text{Lucro Operacional (EBIT)}}{\text{Capital Empregado}}$Visão do Gestor Fabril: É a melhor métrica para você, pois mostra se as suas máquinas e processos (o seu OEE) estão gerando retorno suficiente para justificar o investimento total na fábrica.
+
+2. ROE (Return on Equity)
+O ROE foca exclusivamente no acionista. Ele mede quanto o investidor está ganhando sobre o dinheiro que ele, pessoalmente, colocou na empresa.O que mede: O lucro líquido gerado apenas sobre o Patrimônio Líquido.Fórmula: $ROE = \frac{\text{Lucro Líquido}}{\text{Patrimônio Líquido}}$Visão do Dono: Se o ROE for menor que a taxa Selic, por exemplo, o dono pode achar que compensa mais fechar a fábrica e deixar o dinheiro no banco.
+
+Característica,ROCE,
+ROCE
+Ponto de Vista:Da operação/empresa como um todo.,
+Tratamento da Dívida: Considera a dívida como parte do capital.
+Influência do OEE: Direta e fortíssima. O OEE melhora o ROCE imediatamente.
+
+ROE
+Ponto de Vista: Do investidor/sócio.
+Tratamento da Dívida: Ignora a dívida (foca no que sobra após pagá-la).
+Influência do OEE:"Indireta, pois o lucro líquido depende também de juros e impostos."
+
+Boa tarde! Essa é uma dúvida muito comum, pois ambos medem o retorno sobre o capital, mas sob perspectivas diferentes: uma olha para a **operação (fábrica)** e a outra olha para o **acionista (dono)**.
+
+Como você está analisando o desempenho fabril, entender essa distinção é fundamental para saber qual "alavanca" você está puxando.
+
+---
+
+### 1. ROCE (Return on Capital Employed)
+
+O **ROCE** foca na eficiência de **toda a operação**. Ele ignora se o dinheiro usado para comprar as máquinas veio do bolso do dono ou de um empréstimo bancário.
+
+* **O que mede:** A rentabilidade de todo o capital investido no negócio (Capital Próprio + Dívidas).
+* **Fórmula:** 
+* **Visão do Gestor Fabril:** É a melhor métrica para você, pois mostra se as suas máquinas e processos (o seu OEE) estão gerando retorno suficiente para justificar o investimento total na fábrica.
+
+### 2. ROE (Return on Equity)
+
+O **ROE** foca exclusivamente no **acionista**. Ele mede quanto o investidor está ganhando sobre o dinheiro que ele, pessoalmente, colocou na empresa.
+
+* **O que mede:** O lucro líquido gerado apenas sobre o Patrimônio Líquido.
+* **Fórmula:** 
+* **Visão do Dono:** Se o ROE for menor que a taxa Selic, por exemplo, o dono pode achar que compensa mais fechar a fábrica e deixar o dinheiro no banco.
+
+---
+
+
+### Por que isso importa para você?
+
+Se o seu **ROCE** for maior que o custo da dívida (os juros do banco), significa que você está "ganhando no spread". Nesse cenário, aumentar o OEE aumenta o ROCE e, consequentemente, impulsiona o ROE de forma alavancada.
+
+Se o ROCE for baixo (como o **-0,6%** da sua imagem anterior), o ROE será ainda pior, pois os juros da dívida vão "comer" o pouco que sobrar.
+
+**Deseja que eu adicione ao código Python que fizemos uma função para calcular o ROE, simulando um cenário de endividamento da fábrica?** Seria um ótimo exercício de análise financeira!
+
+def simular_financeiro_completo(oee_alvo, patrimonio_liquido, divida_total, taxa_juros_anual):
+    # --- DADOS DA OPERAÇÃO (PIRÂMIDE DUPONT) ---
+    horas_planejadas = 6505
+    capacidade_max_h = 4870
+    margem_unitária = 0.25 # (2.75 - 2.50)
+    custos_fixos_totais = 3565578
+    
+    # Cálculos Operacionais
+    prod_teorica = horas_planejadas * capacidade_max_h
+    prod_real = prod_teorica * (oee_alvo / 100)
+    lucro_operacional (EBIT) = (prod_real * margem_unitária) - custos_fixos_totais
+    
+    capital_empregado = patrimonio_liquido + divida_total
+    roce = (lucro_operacional / capital_empregado) * 100
+    
+    # --- LÓGICA DO ACIONISTA (ROE) ---
+    despesa_financeira = divida_total * (taxa_juros_anual / 100)
+    lucro_antes_imposto = lucro_operacional - despesa_financeira
+    
+    # Consideramos 34% de impostos (IRPJ/CSLL) se o lucro for positivo
+    imposto = max(0, lucro_antes_imposto * 0.34)
+    lucro_liquido = lucro_antes_imposto - imposto
+    
+    roe = (lucro_liquido / patrimonio_liquido) * 100
+    
+    return {
+        "OEE (%)": oee_alvo,
+        "ROCE (%)": round(roce, 2),
+        "ROE (%)": round(roe, 2),
+        "Lucro Líquido (R$)": round(lucro_liquido, 2)
+    }
+
+# --- SIMULAÇÃO ---
+# Supondo que dos R$ 14.950.000, 10 milhões são do dono e 4.95 milhões são banco (12% a.a)
+patrimonio = 10000000
+banco = 4950000
+juros = 12
+
+print(f"Simulação com OEE de 50%:")
+print(simular_financeiro_completo(50, patrimonio, banco, juros))
+
+Excelente! Vamos expandir o código Python para incluir essa camada financeira extra.
+
+Para calcular o **ROE**, precisamos introduzir duas novas variáveis: a **Dívida (Empréstimos)** e os **Juros**. Isso vai mostrar como a eficiência da fábrica (OEE) conversa com a saúde financeira que o investidor enxerga.
+
+### Código Python: OEE  ROCE  ROE
+
+```python
+def simular_financeiro_completo(oee_alvo, patrimonio_liquido, divida_total, taxa_juros_anual):
+    # --- DADOS DA OPERAÇÃO (PIRÂMIDE DUPONT) ---
+    horas_planejadas = 6505
+    capacidade_max_h = 4870
+    margem_unitária = 0.25 # (2.75 - 2.50)
+    custos_fixos_totais = 3565578
+    
+    # Cálculos Operacionais
+    prod_teorica = horas_planejadas * capacidade_max_h
+    prod_real = prod_teorica * (oee_alvo / 100)
+    lucro_operacional (EBIT) = (prod_real * margem_unitária) - custos_fixos_totais
+    
+    capital_empregado = patrimonio_liquido + divida_total
+    roce = (lucro_operacional / capital_empregado) * 100
+    
+    # --- LÓGICA DO ACIONISTA (ROE) ---
+    despesa_financeira = divida_total * (taxa_juros_anual / 100)
+    lucro_antes_imposto = lucro_operacional - despesa_financeira
+    
+    # Consideramos 34% de impostos (IRPJ/CSLL) se o lucro for positivo
+    imposto = max(0, lucro_antes_imposto * 0.34)
+    lucro_liquido = lucro_antes_imposto - imposto
+    
+    roe = (lucro_liquido / patrimonio_liquido) * 100
+    
+    return {
+        "OEE (%)": oee_alvo,
+        "ROCE (%)": round(roce, 2),
+        "ROE (%)": round(roe, 2),
+        "Lucro Líquido (R$)": round(lucro_liquido, 2)
+    }
+
+# --- SIMULAÇÃO ---
+# Supondo que dos R$ 14.950.000, 10 milhões são do dono e 4.95 milhões são banco (12% a.a)
+patrimonio = 10000000
+banco = 4950000
+juros = 12
+
+print(f"Simulação com OEE de 50%:")
+print(simular_financeiro_completo(50, patrimonio, banco, juros))
+
+```
+
+---
+
+### Por que os resultados são diferentes?
+
+O **ROE** geralmente é mais "volátil" que o **ROCE**. Veja o que acontece na prática:
+
+1. **A Alavancagem Financeira:** Se o seu **ROCE (retorno da fábrica)** for maior que os **juros do banco**, o seu **ROE** será maior que o ROCE. O banco está "ajudando" o dono a ganhar mais dinheiro.
+2. **O Risco do Prejuízo:** Se o ROCE for baixo (como o seu atual de -0,6%), o ROE cai muito mais rápido, pois você ainda tem que pagar o banco, mesmo operando no vermelho.
+
+### Próximo Passo
+
+Com esse código, você consegue criar uma tabela de comparação: **"Quanto eu preciso de OEE para que o meu ROE seja maior que 15% ao ano?"**.
+
+Gostaria que eu gerasse uma lista com os "Break-evens" (pontos de equilíbrio) tanto para o ROCE quanto para o ROE usando este código?
+
+--------------
+Excelente. Vamos calcular os dois Break-evens (Pontos de Equilíbrio). No mundo industrial, o break-even do ROCE te diz quando a fábrica para de dar prejuízo operacional, e o break-even do ROE te diz quando o acionista começa a ganhar dinheiro de verdade (após pagar o banco e os impostos).
+
+O Código de Simulação de Alvos
+Este script percorre diferentes níveis de OEE para encontrar exatamente onde os ponteiros viram para o positivo.
+
+import pandas as pd
+
+def encontrar_break_evens():
+    # Parâmetros base
+    patrimonio = 10000000
+    divida = 4950000
+    juros = 12 / 100
+    capital_total = patrimonio + divida
+    
+    custos_fixos = 3565578
+    margem_unit = 0.25
+    prod_teorica = 31680000
+    
+    resultados = []
+    
+    # Testando OEE de 40% a 60% com passo de 0.1% para precisão
+    for oee in [x * 0.1 for x in range(400, 610)]:
+        prod_real = prod_teorica * (oee / 100)
+        ebit = (prod_real * margem_unit) - custos_fixos
+        
+        # Cálculo ROCE
+        roce = (ebit / capital_total) * 100
+        
+        # Cálculo ROE
+        lucro_antes_imp = ebit - (divida * juros)
+        imposto = max(0, lucro_antes_imp * 0.34)
+        lucro_liquido = lucro_antes_imp - imposto
+        roe = (lucro_liquido / patrimonio) * 100
+        
+        resultados.append({'OEE': oee, 'ROCE': roce, 'ROE': roe})
+    
+    df = pd.DataFrame(resultados)
+    
+    # Encontrando os pontos onde cruzam o zero
+    be_roce = df[df['ROCE'] >= 0].iloc[0]['OEE']
+    be_roe = df[df['ROE'] >= 0].iloc[0]['OEE']
+    
+    return be_roce, be_roe
+
+be_roce, be_roe = encontrar_break_evens()
+
+print(f"--- RELATÓRIO DE METAS ---")
+print(f"Ponto de Equilíbrio Operacional (ROCE = 0%): OEE de {be_roce:.2f}%")
+print(f"Ponto de Equilíbrio do Acionista (ROE = 0%): OEE de {be_roe:.2f}%")
+
+-------------------------
+
+Meta,OEE Necessário,Por que este valor?
+Break-even ROCE,"~45,0%","É o momento em que a produção gera margem suficiente para cobrir os R$ 3,56 milhões de custos fixos."
+Break-even ROE,"~52,5%",Não basta cobrir o custo fixo; você precisa de fôlego extra para pagar os juros da dívida e o IR.
+
+----------------------------
+Excelente. Vamos calcular os dois **Break-evens** (Pontos de Equilíbrio). No mundo industrial, o break-even do ROCE te diz quando a fábrica para de dar prejuízo operacional, e o break-even do ROE te diz quando o acionista começa a ganhar dinheiro de verdade (após pagar o banco e os impostos).
+
+### O Código de Simulação de Alvos
+
+Este script percorre diferentes níveis de OEE para encontrar exatamente onde os ponteiros viram para o positivo.
+
+```python
+import pandas as pd
+
+def encontrar_break_evens():
+    # Parâmetros base
+    patrimonio = 10000000
+    divida = 4950000
+    juros = 12 / 100
+    capital_total = patrimonio + divida
+    
+    custos_fixos = 3565578
+    margem_unit = 0.25
+    prod_teorica = 31680000
+    
+    resultados = []
+    
+    # Testando OEE de 40% a 60% com passo de 0.1% para precisão
+    for oee in [x * 0.1 for x in range(400, 610)]:
+        prod_real = prod_teorica * (oee / 100)
+        ebit = (prod_real * margem_unit) - custos_fixos
+        
+        # Cálculo ROCE
+        roce = (ebit / capital_total) * 100
+        
+        # Cálculo ROE
+        lucro_antes_imp = ebit - (divida * juros)
+        imposto = max(0, lucro_antes_imp * 0.34)
+        lucro_liquido = lucro_antes_imp - imposto
+        roe = (lucro_liquido / patrimonio) * 100
+        
+        resultados.append({'OEE': oee, 'ROCE': roce, 'ROE': roe})
+    
+    df = pd.DataFrame(resultados)
+    
+    # Encontrando os pontos onde cruzam o zero
+    be_roce = df[df['ROCE'] >= 0].iloc[0]['OEE']
+    be_roe = df[df['ROE'] >= 0].iloc[0]['OEE']
+    
+    return be_roce, be_roe
+
+be_roce, be_roe = encontrar_break_evens()
+
+print(f"--- RELATÓRIO DE METAS ---")
+print(f"Ponto de Equilíbrio Operacional (ROCE = 0%): OEE de {be_roce:.2f}%")
+print(f"Ponto de Equilíbrio do Acionista (ROE = 0%): OEE de {be_roe:.2f}%")
+
+```
+
+---
+
+### Análise dos Resultados
+
+Com base nos dados da sua planilha, os alvos reais seriam aproximadamente:
+
+| Meta | OEE Necessário | Por que este valor? |
+| --- | --- | --- |
+| **Break-even ROCE** | **~45,0%** | É o momento em que a produção gera margem suficiente para cobrir os R$ 3,56 milhões de custos fixos. |
+| **Break-even ROE** | **~52,5%** | Não basta cobrir o custo fixo; você precisa de fôlego extra para pagar os juros da dívida e o IR. |
+
+### Por que o OEE do ROE é tão mais alto?
+
+Isso acontece por causa do **Custo do Capital**. Se você tem uma dívida, a sua fábrica precisa ser "mais eficiente que os juros do banco".
+
+* Com **45% de OEE**, a fábrica se paga, mas você ainda está tirando dinheiro do bolso para pagar o banco.
+* Somente acima de **~53% de OEE** é que o negócio se torna verdadeiramente lucrativo para o dono.
+
+---
+
+### Próxima etapa sugerida:
+
+Agora que temos os números, você gostaria que eu ajudasse a montar a **lógica de cores (semáforo)** para o seu programa em Python ou Excel?
+
+* **Vermelho:** OEE < 45% (Prejuízo total)
+* **Amarelo:** 45% < OEE < 53% (Operação paga, mas acionista perde)
+* **Verde:** OEE > 53% (Criação de valor real)
+
+Deseja avançar na interface visual desses indicadores?
+
+------------------------------------------
+
+Para criar essa interface visual, vamos usar a lógica de "Gestão à Vista". O objetivo é que qualquer pessoa que olhe para o seu programa ou planilha entenda instantaneamente a saúde financeira da fábrica sem precisar ler números pequenos.
+
+Abaixo, apresento como implementar isso tanto no Python (usando cores no terminal) quanto a lógica para o Excel.
+
+from colorama import Fore, Style, init
+
+init(autoreset=True)
+
+def exibir_dashboard(oee_atual):
+    # Definimos os limites baseados nos cálculos anteriores
+    BE_OPERACIONAL = 45.0  # Break-even ROCE
+    BE_ACIONISTA = 52.5    # Break-even ROE
+
+    print(f"\n--- DASHBOARD DE PERFORMANCE: OEE {oee_atual}% ---")
+    
+    # Lógica do Semáforo
+    if oee_atual < BE_OPERACIONAL:
+        cor = Fore.RED
+        status = "CRÍTICO: Operação em Prejuízo"
+    elif oee_atual < BE_ACIONISTA:
+        cor = Fore.YELLOW
+        status = "ALERTA: Operação paga, mas Acionista no vermelho"
+    else:
+        cor = Fore.GREEN
+        status = "EXCELENTE: Gerando Valor para o Acionista"
+
+    print(f"STATUS: {cor}{Style.BRIGHT}{status}")
+    print(f"{cor}Dica: {'Aumentar disponibilidade' if oee_atual < BE_OPERACIONAL else 'Otimizar custos fixos'}")
+
+Para criar essa interface visual, vamos usar a lógica de **"Gestão à Vista"**. O objetivo é que qualquer pessoa que olhe para o seu programa ou planilha entenda instantaneamente a saúde financeira da fábrica sem precisar ler números pequenos.
+
+Abaixo, apresento como implementar isso tanto no **Python** (usando cores no terminal) quanto a lógica para o **Excel**.
+
+---
+
+### 1. No Python: Interface com Cores (Biblioteca Colorama)
+
+Para o seu programa em Python, podemos usar cores para destacar o status. Se você não tiver a biblioteca instalada, use `pip install colorama`.
+
+```python
+from colorama import Fore, Style, init
+
+init(autoreset=True)
+
+def exibir_dashboard(oee_atual):
+    # Definimos os limites baseados nos cálculos anteriores
+    BE_OPERACIONAL = 45.0  # Break-even ROCE
+    BE_ACIONISTA = 52.5    # Break-even ROE
+
+    print(f"\n--- DASHBOARD DE PERFORMANCE: OEE {oee_atual}% ---")
+    
+    # Lógica do Semáforo
+    if oee_atual < BE_OPERACIONAL:
+        cor = Fore.RED
+        status = "CRÍTICO: Operação em Prejuízo"
+    elif oee_atual < BE_ACIONISTA:
+        cor = Fore.YELLOW
+        status = "ALERTA: Operação paga, mas Acionista no vermelho"
+    else:
+        cor = Fore.GREEN
+        status = "EXCELENTE: Gerando Valor para o Acionista"
+
+    print(f"STATUS: {cor}{Style.BRIGHT}{status}")
+    print(f"{cor}Dica: {'Aumentar disponibilidade' if oee_atual < BE_OPERACIONAL else 'Otimizar custos fixos'}")
+
+```
+
+---
+
+### 2. No Excel: Formatação Condicional "Semáforo"
+
+Para a sua planilha, você pode usar ícones ou cores de fundo na célula do **ROCE** ou do **OEE**.
+
+1. Selecione a célula do **OEE**.
+2. Vá em **Página Inicial** > **Formatação Condicional** > **Nova Regra**.
+3. Escolha **"Formatar todas as células com base em seus valores"**.
+4. Em **Estilo de Formatação**, escolha **Conjunto de Ícones** (as 3 luzes do semáforo).
+5. Configure os valores:
+* **Verde (Círculo):** Quando o valor for `>= 0,525` (Tipo: Número).
+* **Amarelo (Triângulo):** Quando for `< 0,525` e `>= 0,45` (Tipo: Número).
+* **Vermelho (Losango):** Quando for `< 0,45`.
+
+
+
+---
+
+### 3. Por que essa segmentação é estratégica?
+
+Essa divisão ajuda a separar a **responsabilidade técnica** da **responsabilidade financeira**:
+
+* **Zona Vermelha:** Problema de Engenharia/Manutenção (OEE muito baixo, a fábrica não se sustenta).
+* **Zona Amarela:** Problema de Escala (A fábrica opera bem, mas precisa de mais volume para cobrir o custo do capital/banco).
+* **Zona Verde:** Sucesso Empresarial (Eficiência convertida em lucro líquido).
+
+### Próximo Passo
+
+Agora que temos a lógica visual, você gostaria que eu ajudasse a criar uma **tabela de metas semanais**? Podemos calcular quanto de OEE você precisa subir por semana para sair do Vermelho e chegar no Verde em, por exemplo, 2 meses. Seria um bom plano de ação?
+
+----------------------------------------------------
+Excelente observação! Essa é a dúvida que separa quem apenas "vê os números" de quem realmente entende a DRE (Demonstração de Resultados).
+
+Direto ao ponto: EBIT não é o mesmo que Lucro Bruto. Vamos organizar essa "escada" de resultados para você nunca mais esquecer onde cada peça se encaixa, especialmente no contexto fabril.
+--------------------------------------------------------------------------
+Excelente observação! Essa é a dúvida que separa quem apenas "vê os números" de quem realmente entende a **DRE (Demonstração de Resultados)**.
+
+Direto ao ponto: **EBIT não é o mesmo que Lucro Bruto.** Vamos organizar essa "escada" de resultados para você nunca mais esquecer onde cada peça se encaixa, especialmente no contexto fabril.
+
+---
+
+### 1. A Diferença entre Lucro Bruto e EBIT
+
+O **Lucro Bruto** olha apenas para a produção. O **EBIT** olha para a empresa inteira antes dos juros e impostos.
+
+* **Lucro Bruto:** É o que sobra depois que você tira apenas os custos de fabricação (matéria-prima, energia da máquina, mão de obra direta).
+* **EBIT (Lucro Operacional):** É o Lucro Bruto menos as despesas administrativas, comerciais e de vendas. No seu código, usamos o EBIT porque ele representa o resultado real da **operação** que o capital investido gerou.
+
+> **Regra de bolso:** Se a sua fábrica produziu bem (Lucro Bruto alto), mas o escritório gasta demais em marketing e aluguel, seu EBIT será baixo e seu ROCE sofrerá.
+
+---
+
+### 2. E o tal do EBITDA?
+
+O **EBITDA** (em português, LAJIDA) é o "queridinho" dos investidores e gerentes de fábrica por um motivo especial: **ele foca no caixa operacional**.
+
+A fórmula é:
+
+
+#### Por que ele é importante para você?
+
+Na sua planilha, você tem uma linha de **Depreciação** dentro dos custos fixos. A depreciação não é um dinheiro que "sai" do seu bolso todo mês; é apenas uma reserva contábil para quando você precisar trocar a máquina no futuro.
+
+* **O EBIT** (que usamos no ROCE) considera a depreciação (mostra o lucro "contábil").
+* **O EBITDA** "devolve" a depreciação (mostra quanto **dinheiro vivo** a fábrica gerou no mês).
+
+---
+
+### 3. Atualizando a lógica da sua Pirâmide
+
+Se quisermos ser bem rigorosos no seu programa em Python, a estrutura seria esta:
+
+1. **Receita Total:** (Preço x Produção)
+2. **(-) Custos Variáveis:** (Matéria-prima, etc.)
+3. **(=) Lucro Bruto (Margem)**
+4. **(-) Despesas Operacionais Fixas:** (Salários, Aluguel, etc. **SEM** depreciação)
+5. **(=) EBITDA** (O que a fábrica gerou de caixa)
+6. **(-) Depreciação/Amortização:** (O desgaste das máquinas)
+7. **(=) EBIT** (O que usamos para o **ROCE**)
+8. **(-) Juros e Impostos**
+9. **(=) Lucro Líquido** (O que usamos para o **ROE**)
+
+---
+
+### Qual a vantagem de olhar o EBITDA no seu caso?
+
+Se o seu **EBIT** está negativo (-R$ 93 mil), mas o seu **EBITDA** for positivo, significa que a fábrica está gerando dinheiro para pagar as contas do dia a dia, mas não está gerando o suficiente para repor as máquinas no futuro. É um "sinal amarelo" clássico.
+
+**Gostaria que eu atualizasse o código Python para separar a Depreciação e mostrar o EBITDA, o EBIT e o Lucro Líquido lado a lado?** Isso daria uma visão completa de "DRE Profissional" para o seu programa.
+
+***********************************************************
+Sim. Seria o ideal.
+
+Perfeito. Vamos estruturar o código para que ele funcione como um verdadeiro simulador financeiro industrial. Agora, o programa vai separar o que é desembolso de caixa (EBITDA) do que é desgaste contábil (EBIT) e resultado do acionista (Lucro Líquido).
+
+Para isso, vamos assumir que dentro dos seus Custos Fixos de R$ 3.565.578, uma parte é Depreciação (ex: 15% do valor das máquinas por ano).
+
+def simulador_dre_industrial(oee_alvo):
+    # --- DADOS DE ENTRADA ---
+    prod_teorica = 31680000
+    margem_unit = 0.25
+    custos_fixos_totais = 3565578
+    depreciacao_anual = 850000  # Estimativa de desgaste das máquinas
+    
+    patrimonio_liquido = 10000000
+    divida = 4950000
+    juros_anuais = 0.12 # 12% a.a.
+    capital_empregado = patrimonio_liquido + divida
+
+    # --- CÁLCULOS ---
+    # 1. Produção e Margem
+    prod_real = prod_teorica * (oee_alvo / 100)
+    margem_total = prod_real * margem_unit
+    
+    # 2. EBITDA (Margem - Custos Fixos que saem do caixa)
+    custos_fixos_caixa = custos_fixos_totais - depreciacao_anual
+    ebitda = margem_total - custos_fixos_caixa
+    
+    # 3. EBIT (EBITDA - Depreciação)
+    ebit = ebitda - depreciacao_anual
+    
+    # 4. Lucro Líquido (EBIT - Juros - Impostos)
+    despesa_financeira = divida * juros_anuais
+    ebt = ebit - despesa_financeira # Lucro antes do Imposto
+    imposto = max(0, ebt * 0.34)
+    lucro_liquido = ebt - imposto
+
+    # --- INDICADORES ---
+    roce = (ebit / capital_empregado) * 100
+    roe = (lucro_liquido / patrimonio_liquido) * 100
+
+    return {
+        "OEE (%)": oee_alvo,
+        "EBITDA (Caixa)": round(ebitda, 2),
+        "EBIT (Operacional)": round(ebit, 2),
+        "Lucro Líquido": round(lucro_liquido, 2),
+        "ROCE (%)": round(roce, 2),
+        "ROE (%)": round(roe, 2)
+    }
+
+# Exemplo com seu OEE atual de 43.8%
+resultado = simulador_dre_industrial(43.8)
+for k, v in resultado.items():
+    print(f"{k}: {v}")
+
+==========================================================
+Perfeito. Vamos estruturar o código para que ele funcione como um verdadeiro simulador financeiro industrial. Agora, o programa vai separar o que é **desembolso de caixa** (EBITDA) do que é **desgaste contábil** (EBIT) e **resultado do acionista** (Lucro Líquido).
+
+Para isso, vamos assumir que dentro dos seus **Custos Fixos de R$ 3.565.578**, uma parte é **Depreciação** (ex: 15% do valor das máquinas por ano).
+
+### Código Python: Simulador DRE Industrial Completo
+
+```python
+def simulador_dre_industrial(oee_alvo):
+    # --- DADOS DE ENTRADA ---
+    prod_teorica = 31680000
+    margem_unit = 0.25
+    custos_fixos_totais = 3565578
+    depreciacao_anual = 850000  # Estimativa de desgaste das máquinas
+    
+    patrimonio_liquido = 10000000
+    divida = 4950000
+    juros_anuais = 0.12 # 12% a.a.
+    capital_empregado = patrimonio_liquido + divida
+
+    # --- CÁLCULOS ---
+    # 1. Produção e Margem
+    prod_real = prod_teorica * (oee_alvo / 100)
+    margem_total = prod_real * margem_unit
+    
+    # 2. EBITDA (Margem - Custos Fixos que saem do caixa)
+    custos_fixos_caixa = custos_fixos_totais - depreciacao_anual
+    ebitda = margem_total - custos_fixos_caixa
+    
+    # 3. EBIT (EBITDA - Depreciação)
+    ebit = ebitda - depreciacao_anual
+    
+    # 4. Lucro Líquido (EBIT - Juros - Impostos)
+    despesa_financeira = divida * juros_anuais
+    ebt = ebit - despesa_financeira # Lucro antes do Imposto
+    imposto = max(0, ebt * 0.34)
+    lucro_liquido = ebt - imposto
+
+    # --- INDICADORES ---
+    roce = (ebit / capital_empregado) * 100
+    roe = (lucro_liquido / patrimonio_liquido) * 100
+
+    return {
+        "OEE (%)": oee_alvo,
+        "EBITDA (Caixa)": round(ebitda, 2),
+        "EBIT (Operacional)": round(ebit, 2),
+        "Lucro Líquido": round(lucro_liquido, 2),
+        "ROCE (%)": round(roce, 2),
+        "ROE (%)": round(roe, 2)
+    }
+
+# Exemplo com seu OEE atual de 43.8%
+resultado = simulador_dre_industrial(43.8)
+for k, v in resultado.items():
+    print(f"{k}: {v}")
+
+```
+
+---
+
+### Entendendo a Hierarquia dos Resultados
+
+Nesta nova estrutura, você terá três visões diferentes do mesmo negócio:
+
+1. **Visão do Chão de Fábrica (EBITDA):** Mostra se a operação é "viável". Se o EBITDA for negativo, a fábrica está "pagando para trabalhar". No seu caso, o EBITDA provavelmente será positivo, indicando que a operação gera caixa, mas não o suficiente para tudo.
+2. **Visão do Gerente (EBIT/ROCE):** É aqui que entra a **Depreciação**. Ela mostra se a operação é eficiente o suficiente para se pagar e ainda sobrar dinheiro para comprar novas máquinas no futuro.
+3. **Visão do Dono (Lucro Líquido/ROE):** A última linha. É o que sobra depois de pagar o banco (juros) e o governo (impostos).
+
+---
+
+### Resumo dos Termos para sua Reunião
+
+Para não restar dúvidas quando você apresentar:
+
+* **Margem de Contribuição:** Receita menos custos variáveis (o que sobra de cada peça vendida).
+* **EBITDA:** Margem menos custos fixos desembolsáveis (poder de geração de caixa).
+* **EBIT:** EBITDA menos depreciação (lucro da operação pura).
+* **EBT:** EBIT menos juros (lucro antes dos impostos).
+* **Lucro Líquido:** O que sobra para o bolso do acionista.
+
+---
+
+### O que você pode fazer agora?
+
+Com esse código, você pode criar uma **tabela comparativa** para mostrar para a diretoria: "Se subirmos o OEE em 2%, nosso EBITDA cresce X, mas nosso Lucro Líquido cresce 2X (devido à alavancagem)".
+
+Gostaria que eu criasse uma função que gere essa **tabela de ganhos marginais** (ex: o impacto de cada +1% de OEE em cada linha do resultado)? Seria um argumento de venda fortíssimo para aprovar investimentos em melhorias.

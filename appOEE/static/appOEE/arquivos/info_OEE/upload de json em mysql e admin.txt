@@ -1,0 +1,42 @@
+4️⃣ Carregando os dados (o momento mágico ✨)
+
+Depois de migrate:
+
+python manage.py loaddata initial_data
+
+Ou explícito:
+
+python manage.py loaddata appOEE/fixtures/initial_data.json
+
+--------------------------------------
+
+Quer gerar fixtures automaticamente? (muito útil)
+
+Se você já populou pelo admin:
+
+python manage.py dumpdata appOEE.empresa appOEE.maquina appOEE.motivo appOEE.tipoparada --indent 2 > appOEE/fixtures/initial_data.json
+
+
+🔥 Isso é ouro:
+
+você cadastra uma vez
+
+exporta
+
+nunca mais perde
+
+---------------------------
+
+# appOEE/apps.py
+from django.apps import AppConfig
+from django.core.management import call_command
+
+class AppoeeConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'appOEE'
+
+    def ready(self):
+        try:
+            call_command('loaddata', 'initial_data', verbosity=0)
+        except Exception:
+            pass

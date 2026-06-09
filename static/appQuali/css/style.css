@@ -1,0 +1,191 @@
+body {
+    background-image: url("../images/background-full (1).png");
+    background-size: cover;/* cobre toda a tela */
+    background-repeat: no-repeat;  /* não repete */
+    background-position: center; /* centraliza */
+    background-attachment: fixed; /* efeito "parallax" leve */
+   
+}
+a.nav-link:hover{
+    text-decoration-line: underline;
+}
+
+
+.btn{
+    border-radius: 6px;
+}
+
+.btn-sombra {
+    background-color: success;
+    color: #fff;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-sombra:hover {
+    box-shadow: 0 8px 14px rgba(0, 0, 0, 0.3);        
+    transform: translateY(-2px);
+}
+
+.btn-leia-mais{
+    background-color: transparent;
+    color: #007BFF;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+button{
+    border:0
+}
+
+.col.graficos {
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+}
+
+div.dt-container {
+    margin: 0 auto;
+    width: 80%;
+}
+
+h3 u{
+    color:black
+}
+
+.maiusculo {
+    text-transform: uppercase;
+}
+
+.modal-header
+{
+    color:#fff
+}
+
+button.btn-close.buttonModal
+{
+    background-color: white;
+}
+
+select {
+    text-transform: none;
+    border: 0;
+    padding: 2px;
+    border-radius: 6px;
+}
+
+#selAnoMes{
+    background-color: #FFCA2C;
+    padding: 10px;
+    border:0;
+    color:black
+}
+
+select#selTipoDefeito.form.btn-sombra{
+    background-color: #FFCA2C;
+    color: black;
+    border:0
+}
+
+.texto-limitado.expandido {
+    max-height: none;
+}
+
+.texto-limitado {
+    max-height: 6em;
+    /* 3 linhas (3 × line-height) */
+    line-height: 1.5em;
+    overflow: hidden;
+}
+
+u{
+    color:red
+}
+
+
+
+
+th.sorting.sorting.dtfc-fixed-left,
+th.sorting.sorting.dtfc-fixed-right
+{
+    background-color: #000;
+}
+
+table.dataTable tfoot tr>.dtfc-fixed-left,
+table.dataTable tfoot tr>.dtfc-fixed-right {
+    top: 0;
+    bottom: 0;
+    z-index: 3;
+    background-color: #000;
+}
+
+button.dt-button.buttons-copy.buttons-html5 {
+    background-color: black;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-excel.buttons-html5 {
+    background-color: black;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-csv.buttons-html5 {
+    background-color: black;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-csv.buttons-html5 {
+    background-color: black;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-pdf.buttons-html5 {
+    background-color: black;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+button.dt-button.buttons-collection.buttons-colvis{
+    background-color: black;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+
+}
+
+a.paginate_button.current{
+    background-color: rgb(168, 14, 14);
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+#prim_reg{
+    color:#fff
+}
+
+#modal_semanAno{
+    display: none;
+}
+
+#id_data_inicio,
+#id_data_fim {
+    display: none;
+}
