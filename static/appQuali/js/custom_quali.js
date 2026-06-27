@@ -664,36 +664,49 @@ $(function () { // faz parte do conjto de acoes para deletar registros
 
     const csrftoken = getCookie('csrftoken');
 
-    $('.delete-btn').click(function () {
-        const id = $(this).data('id');
+    $('.delete-btn').click(function (e) {
+    e.preventDefault(); // Garante que o botão não faça nenhum comportamento nativo
+    const id = $(this).data('id');
 
-        if (!confirm('Deseja excluir mesmo o registro id = '+ id + '?' )) return;
+    // O JS cuida sozinho do Alerta de confirmação agora
+    if (!confirm('Deseja excluir mesmo o registro id = ' + id + '?')) return;
 
-        $.ajax({
-            url: '/qualidade/reclamacao/excluir/' + id + '/',
-            type: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken
-            },
-            success: function (response) {
-                const html = `
-                <div class="alert alert-danger alert-dismissible fade show">
-                    ${response.message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>                
-                 `;
+    const btn = $(this); // Guarda o botão clicado para sumir com a linha depois
 
-                const audio = new Audio("{% static 'sounds/ding-101492.mp3' %}");
-                audio.play();
+    $.ajax({
+        // Certifique-se de que a rota começa com a barra inicial correta
+        url: '/qualidade/reclamacao/excluir/' + id + '/', 
+        type: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        success: function (response) {
+            const html = `
+            <div class="alert alert-danger alert-dismissible fade show">
+                ${response.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
 
-                document.getElementById('msg').innerHTML = html;
-            },
-            error: function (xhr) {
-                console.error(xhr.responseText);
-                alert('Erro ao excluir');
+            // 1. Injeta a mensagem de sucesso na tela no elemento 'msg'
+            const msgElement = document.getElementById('msg');
+            if (msgElement) {
+                msgElement.innerHTML = html;
             }
-        });
+
+            // 2. Remove a linha da tabela na hora usando o ID único
+            $('#linha-' + id).fadeOut(500, function() {
+                $(this).remove();
+            });
+        },
+        error: function (xhr) {
+            console.error(xhr.responseText);
+            alert('Erro ao excluir: Verifique o console do navegador.');
+        }
     });
+});
+
+    
+
 
 });
 
@@ -718,7 +731,7 @@ const table = $(document).ready(function () {
                 footer: true
             },
             language: {
-                url: "{% static 'datatables/pt-BR.json' %}"
+                url: '/static/datatables/pt-BR.json'
             },
             scrollX: true,
             scrollY: 450,

@@ -29,6 +29,7 @@
                 <th>Total Orçado R$</th>
                 <th></th>
                 <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -67,6 +68,11 @@
                 <td>
                     <a class="btn btn-outline-secondary" href="{% url 'listar_roteiros_producao' orc.id %}" ><strong>Roteiros</strong></a>
                 </td>
+                <td>
+                    <a href="{% url 'simulacoes_orcamentos' orc.id %}" class="btn btn-sm btn-info text-white" title="Simulação de BI (Excel)">
+                        <i class="bi bi-graph-up-arrow"></i> Simular Margens
+                    </a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -88,6 +94,7 @@
                 <th>Margem</th>
                 <th>R$/un + Marg</th>
                 <th>Total Orçado R$</th>
+            <th></th>
             <th></th>
             <th></th>
         </tfoot>  

@@ -62,7 +62,7 @@
 
         <tbody>
             {% for r in lista_recl_sql %}
-            <tr>
+            <tr id="linha-{{ r.reclam_id }}">
                 <td>{{ r.reclam_id }}</td>
                 <td>{{ r.sem }}</td>
                 <td>{{ r.data_ocor }}</td>
@@ -101,8 +101,7 @@
                         onclick="return confirm('Confirma exclusão?');" data-id="{{ r.reclam_id }}">
                         Excluir
                     </button> <!-- classe delete-btn chama funcao ajax jquery $(.delete-btn)... -->
-                </td>                
-                </td>
+                </td>    
             </tr>
 
             {% endfor %}

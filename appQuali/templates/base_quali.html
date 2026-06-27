@@ -31,14 +31,18 @@
               </div>
               
           {% if 'success' in message.tags %}
-            <script>
-                window.addEventListener('DOMContentLoaded', function () {
-                    const audio = new Audio("{% static 'sounds/ding-101492.mp3' %}");
-                    audio.play().catch(function(e){
-                        console.log('Áudio bloqueado:', e);
-                    });
-                });
-            </script>
+                <script>
+                    setTimeout(function() {
+                        var alert = document.querySelector('.alert-success');
+                        if (alert) {
+                            alert.classList.remove('show');
+                            alert.classList.add('hide');
+                            setTimeout(function() {
+                                alert.remove();
+                            }, 500);
+                        }
+                    }, 3000); // 3000ms = 3 segundos
+                </script>                           
           {% endif %}
         {% endfor %}
     {% endif %}

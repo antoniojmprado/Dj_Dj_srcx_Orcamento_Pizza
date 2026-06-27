@@ -47,7 +47,17 @@ class MaquinaFinancas(models.Model):
 
     # Novo campo (Requer migração)
     horas_mes = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True, editable=False)
-    minutos_mes = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, editable=False)
+    minutos_mes = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, editable=False)    
+        
+    # Nova coluna para o nosso fator de equalização comercial
+    fator_k = models.DecimalField(
+        max_digits=4, 
+        decimal_places=2, 
+        default=1.00, 
+        verbose_name="Fator K Comercial",
+        help_text="Multiplicador comercial. Ex: 0.89 para reduzir ou 4.50 para aumentar."
+    )
+    
 
     class Meta:
         # Força o Django a usar a tabela que você já criou

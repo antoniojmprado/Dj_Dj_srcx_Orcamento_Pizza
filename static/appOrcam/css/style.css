@@ -55,19 +55,6 @@ table {
     margin-top: 20px;
 }
 
-/* Inicio estilos para a tabela de orçamento */
-.tabela-composicao {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    font-family: sans-serif;
-}
-
-.tabela-composicao td {
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-    font-size: 13px;
-}
 
 div .header-secao,
 tr.header-secao td,
@@ -81,18 +68,31 @@ tr.header-secao td,
     vertical-align: middle;
 }
 
+.linha-inicial-venda{
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 23px;
+    font-weight: bold;
+    /* color: #3c3333; */
+    color: #3d1b9b;
+    line-height: normal;
+    vertical-align: middle;
+    text-align: center;
+}  
+
 td.col-valor {
     text-align: right;
     font-family: 'Courier New', monospace;
     font-weight: bold;
    
-    width: 120px;
+    width: 150px;
 }
 
 .tabela-composicao td {
-    padding: 8px;
+    /* padding: 8px; */
+    text-align: right;
     border-bottom: 1px solid #eee;
-    font-size: 18px;
+    font-size: 15px;
 }
 
 .linha-subtotal {
@@ -304,6 +304,20 @@ td.td_sutotal {
 }
 
 td.total_margem_lucro{
+    font-size: 22px; 
+    font-weight: bold; 
+    color: #3d1b9b;
+    text-align: right
+}
+
+td.subtotal{
+    font-size: 22px; 
+    font-weight: bold; 
+    color: #3d1b9b;
+    text-align: left
+}
+
+td.subtotal_item{
     font-size: 22px; 
     font-weight: bold; 
     color: #3d1b9b;

@@ -5,6 +5,7 @@ from django.forms import CharField
 from django.shortcuts import render
 import appOEE
 from appOEE.models import Maquina
+from django.db.models import Sum
 
 # appOrcam/models.py
 
@@ -92,7 +93,7 @@ class MaquinaOEE(models.Model):
     # Se não existirem, o Django dará erro 1054.
 
     class Meta:
-        db_table = 'maquina'
+        db_table = 'appOEE_maquina'
         # Isso diz ao Django para NÃO tentar criar ou alterar essa tabela, apenas ler os dados existentes.
         managed = False
 
@@ -118,7 +119,7 @@ class WaterfallOEE(models.Model):
 
 
 class MaquinaFinancasOEE(models.Model):
-    # A PK real da tabela é o campo 'id'
+    # A PK real da tabela é o campo 'id'exit
     # id = models.BigIntegerField(primary_key=True)
 
     # maquina_id = models.BigIntegerField()
@@ -128,7 +129,6 @@ class MaquinaFinancasOEE(models.Model):
         related_name='financas_orcamento',
         db_column='maquina_id'  # Isso resolve o conflito de nomes
     )
-    
          
     valor_reposicao = models.DecimalField(max_digits=12, decimal_places=2)
     custo_minuto = models.DecimalField(max_digits=16, decimal_places=6)
@@ -220,6 +220,8 @@ class Orcamento(models.Model):
 
     # Campos de Custo (Decimal)
     custo_tinta_unitario = models.DecimalField(max_digits=10, decimal_places=4, default=0.20)
+    custo_total_tinta = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Custo Total da Tinta")
+    
     custo_impressao = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     custo_corte = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     custo_seladora = models.DecimalField(max_digits=10, decimal_places=4, default=0)
@@ -239,6 +241,7 @@ class Orcamento(models.Model):
     area_perda_projeto = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     perda_area_total = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     perda_area_excedente = models.DecimalField(max_digits=10, decimal_places=4, default=0)
+    custo_papelao_total = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     custo_perda_total = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     custo_perda_projeto = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     custo_perda_excedente = models.DecimalField(max_digits=10, decimal_places=4, default=0)
@@ -263,6 +266,7 @@ class Orcamento(models.Model):
             
             if fin_corte and fin_corte.producao_nominal_hora > 0:
                 return fin_corte.producao_nominal_hora if fin_corte.producao_nominal_hora else ""
+
 
 
     def save(self, *args, **kwargs):
@@ -297,11 +301,13 @@ class Orcamento(models.Model):
 
                 # 3. DIVISOR E TRAVA PARA PIZZAS
                 divisor = Decimal(str(self.unidades_chapa or '1'))
-                
-                if divisor < 1:
-                    divisor = Decimal('1')
-                if "pizza" in self.produto_nome.lower():
-                    divisor = Decimal('1')
+                    
+                # if self.maquina_corte:
+                #     divisor = Decimal(str(self.unidades_chapa)) / Decimal('2.0')  # Ajuste para máquinas que não são Flexo Xitian     
+                    
+                # if self.maquina_seladora:
+                #     divisor =  Decimal('1.0')  # Ajuste para máquinas que não são Flexo Xitian     
+                    
 
                 # Cálculo do material unitário com rateio
                 if divisor > 1:
@@ -320,6 +326,8 @@ class Orcamento(models.Model):
 
                     self.area_perda_projeto = (Decimal(str(self.chapa_projeto.largura_cm/100)) * Decimal(str(self.chapa_projeto.larg_apara_m * 2))) + ((Decimal(str(self.chapa_projeto.comprimento_cm/100)) * Decimal(str(self.chapa_projeto.larg_apara_m * 2))))
                     
+                    self.custo_papelao_total = (self.area_total * custo_ref)/divisor if divisor > 1 else (self.area_total * custo_ref)
+                    
                     self.perda_area_total = self.area_total - self.area_projeto_liquida
 
                     self.perda_area_excedente = self.perda_area_total - self.area_perda_projeto 
@@ -329,113 +337,182 @@ class Orcamento(models.Model):
                     self.custo_perda_projeto = self.area_perda_projeto * custo_ref
                     
                     self.custo_perda_excedente = self.custo_perda_total - self.custo_perda_projeto
-                            # (Mantive os campos principais para o cálculo final)
+                            # (Mantive os campos principais para o cálculo final)  
+                            
+                                            # BUG #2 CORRIGIDO: quantidade_ajustada definida ANTES do try/except
+                # e FORA do bloco IF da impressão, garantindo disponibilidade
+                # para corte, seladora e qualquer outro cálculo subsequente.
+                qtd_form = self.quantidade if self.quantidade and self.quantidade > 0 else 1
+                quantidade_ajustada = Decimal(str(qtd_form))                          
+                                                    
+                self.custo_total_tinta = Decimal(str(self.custo_tinta_unitario)) * quantidade_ajustada
+
 
                 try:
-                    # --- CÁLCULO DE MÁQUINAS DINÂMICO ---
+                    # --- CÁLCULO DE MÁQUINAS DINÂMICO COM EQUALIZAÇÃO COMERCIAL (SQL BRUTO) ---
                     self.custo_impressao = Decimal('0.0000')
                     self.custo_corte = Decimal('0.0000')
                     self.custo_seladora = Decimal('0.0000')
+
+                    # RESGATE DOS FATORES K COM GOVERNANÇA DIRETO DO BANCO DE DADOS
+                    from django.db import connection
+                    with connection.cursor() as cursor:
+                        cursor.execute("SELECT maquina_id, fator_k FROM appOEE_maquinafinancas")
+                        fatores_banco = cursor.fetchall()
+                        mapa_fatores = {row[0]: float(row[1]) for row in fatores_banco if row[1] is not None}
+
+                    # Captura os fatores usando os maquina_id reais validados no MySQL
+                    fator_wonder1  = Decimal(str(mapa_fatores.get(8, 0.89)))
+                    fator_wonder2  = Decimal(str(mapa_fatores.get(9, 0.89)))
+                    fator_century  = Decimal(str(mapa_fatores.get(10, 0.81)))
+                    fator_flexo    = Decimal(str(mapa_fatores.get(7, 1.00)))
+                    fator_seladora = Decimal(str(mapa_fatores.get(11, 0.09))) # Nosso fator calibrado de 0.09!
+
+                    fator_impressao_medio = (fator_wonder1 + fator_wonder2) / Decimal('2.0')
 
                     # 1. IMPRESSÃO (DINÂMICA)
                     fin_impr = MaquinaFinancasOEE.objects.filter(maquina_id=self.maquina_impressao.id).first()
                     if fin_impr and fin_impr.producao_nominal_hora > 0:
                         tempo_unit = Decimal('60') / Decimal(str(fin_impr.producao_nominal_hora))
-
-                        # Busca na View
                         cb_impr = MemoriaCalculoDinamica.objects.filter(maquina_id=self.maquina_impressao.id).first()
-                        custo_min = Decimal(str(cb_impr.custo_minuto_real)) if cb_impr else 0.0
+                        custo_min = Decimal(str(cb_impr.custo_minuto_real)) if cb_impr else Decimal('0.0')
+                        
+                        if self.maquina_impressao and self.maquina_impressao.nome.lower() == "flexo xitian" and self.categoria_produto_id == 1 and self.unidades_chapa > 1:
+                            divisor = Decimal('1')
+                        elif self.maquina_impressao and self.maquina_impressao.nome.lower() == "flexo xitian" and self.categoria_produto_id != 1 and self.unidades_chapa > 1:
+                            divisor = Decimal(str(self.unidades_chapa)) # Ajuste para máquinas Flexo Xitian com produtos não-pizza    
+                        elif self.maquina_impressao and self.maquina_impressao.nome.lower() != "flexo xitian" and self.unidades_chapa > 1:
+                            divisor = Decimal(str(self.unidades_chapa))                               # Ajuste para máquinas que não são Flexo Xitian     
 
                         custo_base = tempo_unit * custo_min / divisor if divisor > 1 else tempo_unit * custo_min
-                        quantidade_ajustada = Decimal(str(self.quantidade)) 
-                        self.custo_impressao = custo_base * fin_impr.producao_nominal_hora / quantidade_ajustada
                         
-                        self.maquina_impressao.nome = fin_impr.maquina.nome  # Atualiza o nome da máquina de impressão com base na tabela de finanças
+                        # --- CONDIÇÃO DOS FATORES DE IMPRESSÃO ---
+                        id_maquina_atual = self.maquina_impressao.id
+                        
+                        if id_maquina_atual in [8, 9]:
+                            # Se for Wonder 1 ou Wonder 2, aplica a média ponderada comercial
+                            fator_aplicado = fator_impressao_medio
+                        elif id_maquina_atual == 7:
+                            # Se for a Flexo Xitian, aplica o fator cheio (1.00)
+                            fator_aplicado = fator_flexo
+                        else:
+                            # Caso adicione outra máquina no futuro, busca dinamicamente ou assume 1.00 como fallback
+                            fator_aplicado = Decimal(str(mapa_fatores.get(id_maquina_atual, 1.00)))
+                        
+                        # Aplica o fator correto com base na máquina selecionada
+                        # Cuidado com a próxima instrução!!! Trata-se de uma regra de 3
+                        self.custo_impressao = (custo_base * fin_impr.producao_nominal_hora / quantidade_ajustada) * fator_aplicado
+                        self.maquina_impressao.nome = fin_impr.maquina.nome 
 
+                        
                     # 2. CORTE (DINÂMICA)
-                    multiplicador = Decimal('2') if (self.categoria_produto_id == 1 and divisor > 1) else Decimal('1')
+                    # multiplicador = Decimal('2') if (self.categoria_produto_id == 1 and divisor > 1) else Decimal('1')
 
                     if self.maquina_corte:
                         fin_corte = MaquinaFinancasOEE.objects.filter(maquina_id=self.maquina_corte.id).first()
                         if fin_corte and fin_corte.producao_nominal_hora > 0:
                             tempo_unit = Decimal('60') / Decimal(str(fin_corte.producao_nominal_hora))
-
                             cb_corte = MemoriaCalculoDinamica.objects.filter(maquina_id=self.maquina_corte.id).first()
                             custo_min = Decimal(str(cb_corte.custo_minuto_real)) if cb_corte else Decimal(str(fin_corte.custo_minuto))
-
+                            
                             custo_base = tempo_unit * custo_min
-                            self.custo_corte = (custo_base * multiplicador) * fin_corte.producao_nominal_hora / self.quantidade
+                            # Aplica o fator de mercado da Century (0.81)
+                            
+                            if self.unidades_chapa > 1:
+                                divisor = Decimal(str(self.unidades_chapa))     
+                                self.custo_corte = (((custo_base / divisor)* 2) * fin_corte.producao_nominal_hora / quantidade_ajustada) * fator_century
+                            else:
+                                self.custo_corte = (custo_base * fin_corte.producao_nominal_hora / quantidade_ajustada) * fator_century    
 
                     # 3. SELADORA (DINÂMICA - ID 11)
                     fin_seladora = MaquinaFinancasOEE.objects.filter(maquina_id=11).first()
                     if fin_seladora and fin_seladora.producao_nominal_hora > 0:
                         tempo_unit = Decimal('60') / Decimal(str(fin_seladora.producao_nominal_hora))
-
                         cb_sela = MemoriaCalculoDinamica.objects.filter(maquina_id=11).first()
                         custo_min = Decimal(str(cb_sela.custo_minuto_real)) if cb_sela else Decimal(str(fin_seladora.custo_minuto))
 
                         custo_base = tempo_unit * custo_min
-                        self.custo_seladora = (custo_base * multiplicador) * fin_seladora.producao_nominal_hora / self.quantidade
+                        # Aplica o fator de drástico de redução calibrado por você (0.09)
+                        # BUG #3 CORRIGIDO: usar quantidade_ajustada (definida antes do try)
+                        # em vez de self.quantidade, mantendo consistência com corte e impressão
+                        self.custo_seladora = (custo_base * fin_seladora.producao_nominal_hora / quantidade_ajustada) * fator_seladora
 
                     self.custo_maquinas = self.custo_impressao + self.custo_corte + self.custo_seladora
 
                     # 4. LOOP DA FÁBRICA (FLUXOS DE OPERAÇÃO DINÂMICOS)
                     fabrica = MaquinaFinancasOEE.objects.all()
-                    maquinas_dict = {}
+                    # maquinas_dict = {}
 
                     for maq in fabrica:
                         tempo_unit = Decimal('60') / Decimal(str(maq.producao_nominal_hora))
-
-                        # Custo Dinâmico no Loop
                         cb_loop = MemoriaCalculoDinamica.objects.filter(maquina_id=maq.maquina_id).first()
                         custo_min_loop = Decimal(str(cb_loop.custo_minuto_real)) if cb_loop else Decimal(str(maq.custo_minuto))
 
                         custo_base = tempo_unit * custo_min_loop
                         custo_orcado = custo_base * Decimal(str(maq.producao_nominal_hora)) / self.quantidade
 
-                        maquinas_dict[maq.maquina.nome.lower().replace(" ", "_")] = {
-                            'custo': custo_orcado,
-                            'tempo': tempo_unit * self.quantidade
-                        }
+                        # maquinas_dict[maq.maquina.nome.lower().replace(" ", "_")] = {
+                        #     'custo': custo_orcado,
+                        #     'tempo': tempo_unit * self.quantidade
+                        # }
 
                 except Exception as e:
                     print(f"Erro máquinas: {e}")
 
-                # 5. PREÇO FINAL
-                custo_total_sem_margem = (self.custo_material_unitario +
-                                        self.custo_impressao + self.custo_corte +
-                                        self.custo_seladora + self.custo_frete_unitario)
-
-                self.preco_final_unitario = custo_total_sem_margem * (Decimal('1') + (self.margem_real/100)) if self.margem_real > 0 else Decimal('0')
+                # 5. ENGENHARIA DE PREÇO FINAL COM MUDANÇA CONCEITUAL PARA MARKUP DIVISOR
+                custo_unitario_total_sem_margem = (self.custo_material_unitario +
+                                                   self.custo_impressao + self.custo_corte +
+                                                   self.custo_seladora + self.custo_frete_unitario)
                 
-                print(f"Custo Total sem Margem: {custo_total_sem_margem}")
-                print(f"Margem Real: {self.margem_real}%")
-                print(f"Preço Final Unitário (sem nota): {self.preco_final_unitario}")
 
-            # 1. Busca Impostos Ativos (Ex: 28,65%)
-                from django.db.models import Sum
-                total_impostos = Imposto.objects.filter(ativo_no_calculo=True).aggregate(Sum('aliquota'))['aliquota__sum'] or Decimal('0.00')
-                
-                self.aliquota_imposto_aplicada = total_impostos
-
-                imposto_decimal = total_impostos / Decimal('100')
+                # Busca Parâmetro do Pró-labore do Sócio (5%) de forma segura
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT retirada_socio_pct FROM appoee_parametrofinanceiro LIMIT 1")
+                    retirada_banco = cursor.fetchone()
+                    pct_prolabore_socio = Decimal(str(retirada_banco[0])) / Decimal('100.0') if retirada_banco and f"{retirada_banco[0]}" != "None" else Decimal('0.05')
 
                 margem_decimal = self.margem_real / Decimal('100')
 
-                # 2. Cálculo SEM NOTA (Markup só com margem)
-                denominador_sem = Decimal('1') - margem_decimal
-                self.preco_final_sem_nota = self.preco_final_unitario
-
-                # 3. Cálculo COM NOTA (Markup com margem + impostos)
-                denominador_com = Decimal('1') + imposto_decimal
-                self.preco_final_com_nota = self.preco_final_sem_nota * (denominador_com if denominador_com > 0 else Decimal('0.01'))
-
-                # 4. Mantém o preco_final_unitario baseado na escolha do usuário para o valor total
-                if self.venda_com_nota:
-                        self.preco_final_unitario = self.preco_final_com_nota
+                # CÁLCULO DE FORMAÇÃO COM MARKUP REAL (BATE COM O BI DO INSTANTE DE 5.000 UND)
+                # Injeta o Custo Operacional + o Pró-labore embutido no divisor
+                if self.margem_real > 0:
+                    markup_divisor = Decimal('1') - margem_decimal - pct_prolabore_socio
+                    self.preco_final_sem_nota = custo_unitario_total_sem_margem / markup_divisor
+                    
+                    print("custo_unitario_total_sem_margem  ", custo_unitario_total_sem_margem )
+                    print("markup_divisor  ", markup_divisor )
+                    print("preco_total_sem_nota......................: ", self.preco_final_sem_nota)
                 else:
-                        self.preco_final_unitario = self.preco_final_sem_nota
-        
+                    self.preco_final_sem_nota = custo_unitario_total_sem_margem
+                    
+
+                # 1. Busca Impostos Ativos para a Nota Fiscal (Considerando a Alíquota de ICMS deduzida se necessário)
+
+                total_impostos = Imposto.objects.filter(ativo_no_calculo=True).aggregate(Sum('aliquota'))['aliquota__sum'] or Decimal('0.00')
+                self.aliquota_imposto_aplicada = total_impostos
+
+                # Cálculo do Imposto Efetivo igual à View (Dedução do crédito do ICMS se ultrapassar)
+                icms_registro = Imposto.objects.filter(ativo_no_calculo=True, nome__icontains='icms').first()
+                valor_icms = icms_registro.aliquota if icms_registro else Decimal('18.0')
+                
+                total_impostos_calculo = total_impostos
+                if total_impostos_calculo > valor_icms:
+                    total_impostos_calculo = total_impostos_calculo - valor_icms
+                
+                imposto_decimal = total_impostos_calculo / Decimal('100')
+
+                # 3. Cálculo COM NOTA FISCAL (Preço Sem Nota inflado pelo imposto efetivo)
+                self.preco_final_com_nota = self.preco_final_sem_nota * (Decimal('1') + imposto_decimal)
+
+                # 4. Define o preço_final_unitario oficial baseado no clique do usuário
+                if self.venda_com_nota:
+                    self.preco_final_unitario = self.preco_final_com_nota
+                else:
+                    self.preco_final_unitario = self.preco_final_sem_nota
+                
+                print(f"Custo Total sem Margem (Calibrado): {custo_unitario_total_sem_margem}")
+                print(f"Preço Final Sem Nota (Markup): {self.preco_final_sem_nota}")
+                print(f"Preço Final Com Nota (Efetivo): {self.preco_final_com_nota}")
         
                 super().save(*args, **kwargs)
 
@@ -542,6 +619,7 @@ class Orcamento(models.Model):
             qt_chapas = (
                 self.quantidade / self.unidades_chapa) if self.unidades_chapa > 0 else self.quantidade
             return f"{qt_chapas:,.0f}".replace(',', '.') + " chapas(fundos + tampas)"
+       
 
     @property
     def custo_papelao_unitario(self):
@@ -549,24 +627,38 @@ class Orcamento(models.Model):
         considerando o número de unidades por chapa para ratear o custo do papelão entre as unidades produzidas por chapa. Se for corte conjugado (unidades_chapa > 1), o custo de papelão é dividido pelo número de unidades por chapa, caso contrário, o custo de papelão é integral para aquela unidade.
         """
         return self.custo_material_unitario - self.custo_tinta_padrao
+        
 
     @property
     def custo_tinta_padrao(self):
         """Retorna o custo de tinta para o template"""
         params = Custo_tinta.objects.first()
         return params.custo_tinta_unitario if params else Decimal('0.20')
+    
+    @property
+    def custo_perda_total_valor_papelao(self):
+        return self.custo_perda_total * self.quantidade
 
     @property
-    def custo_total_fabricacao(self):
+    def custo_total_unitario_fabricacao(self):
         """Soma de todos os custos reais (Material (perdas inclusas) + Máquinas"""
         return (self.custo_papelao_unitario +
                 self.custo_tinta_padrao +
                 self.custo_impressao +
                 self.custo_corte +
                 self.custo_seladora)
+        
+    @property
+    def custo_total_fabricacao(self):
+        """Soma de todos os custos reais (Material + Máquinas) para toda a produção.
+        BUG #1 CORRIGIDO: todos os campos são unitários; multiplicar apenas por quantidade."""
+        return float(self.custo_papelao_unitario +                
+                self.custo_impressao +
+                self.custo_corte +
+                self.custo_seladora) * self.quantidade + float(self.custo_total_tinta)
 
     @property
-    def custo_total_sem_margem(self):
+    def custo_unitario_total_sem_margem(self):
         """Soma de todos os custos reais (Material (perdas inclusas) + Máquinas + Frete)"""
         return (self.custo_papelao_unitario +
                 self.custo_tinta_padrao +
@@ -574,6 +666,14 @@ class Orcamento(models.Model):
                 self.custo_corte +
                 self.custo_seladora +
                 self.custo_frete_unitario)
+        
+    @property
+    def custo_total_sem_margem(self):
+        """Soma de todos os custos (Material + Máquinas + Frete) para toda a produção.
+        BUG #1 CORRIGIDO: campos são unitários; multiplicar apenas por quantidade."""
+        return float(self.custo_papelao_unitario +
+                     self.custo_impressao + self.custo_corte + 
+                     self.custo_seladora + self.custo_frete_unitario) * self.quantidade + float(self.custo_total_tinta)
 
     @property
     def valor_total_pedido_sem_nota(self):
@@ -586,14 +686,64 @@ class Orcamento(models.Model):
         return self.preco_final_com_nota * self.quantidade
 
     @property
-    def subtotal_materiais(self):
+    def soma_unitario_materiais(self):
         """Soma: Papelão + Perda + Tinta"""
-        return self.custo_papelao_unitario + self.custo_tinta_padrao  # perda de papelão já está embutida no custo do papelao unitário, pois o custo do papelao é calculado considerando as perdas. Portanto, não é necessário somar a perda de papelão separadamente aqui.
+        return float(self.custo_papelao_unitario) + float(self.custo_tinta_padrao)    
+    # perda de papelão já está embutida no custo do papelao unitário, pois o custo do papelao é calculado considerando as perdas. Portanto, não é necessário somar a perda de papelão separadamente aqui.
+    
+    @property
+    def custo_total_papelao(self):
+        """
+        Custo total do papelão para toda a produção.
+        custo_material_unitario já incorpora a lógica do divisor (unidades_chapa)
+        no save(), portanto basta multiplicar pelo total de unidades produzidas.
+        NÃO dividir por unidades_chapa aqui — isso causaria dupla divisão (BUG #1).
+        """
+        # BUG #1 CORRIGIDO: era (qtd / unidades_chapa), agora apenas qtd
+        return (float(self.custo_material_unitario) - float(self.custo_tinta_padrao)) * self.quantidade
+        
+    # @property
+    # def custo_total_tinta(self):
+    #     """
+    #     Custo total de tinta para toda a produção.
+    #     BUG #1 CORRIGIDO: era (qtd / unidades_chapa), agora apenas qtd.
+    #     custo_tinta_unitario é unitário; basta multiplicar por quantidade.
+    #     """
+    #     return float(self.custo_tinta_unitario) * self.quantidade/divisor if self.unidades_chapa > 1 else float(self.custo_tinta_padrao) * self.quantidade/divisor    
+        
 
     @property
-    def subtotal_processos(self):
-        """Soma: Impressão+ Seldora + Corte """
+    def custo_total_materiais(self):
+        """Soma: Papelão + Perda + Tinta"""
+        return float(self.custo_total_papelao) + float(self.custo_total_tinta)  # Formata o resultado como moeda brasileira
+        
+
+    @property
+    def subtotal_processos_unitario(self):
         return self.custo_impressao + self.custo_corte + self.custo_seladora
+
+    @property
+    def custo_total_processos_fabricacao(self):
+        # BUG #1 CORRIGIDO: os campos custo_impressao, custo_corte, custo_seladora
+        # são UNITÁRIOS (o save() já dividiu por unidades_chapa onde necessário).
+        # Multiplicar por (qtd/unid_chapa) causava dupla divisão.
+        return (float(self.custo_impressao) + float(self.custo_corte) + float(self.custo_seladora)) * self.quantidade
+    
+    @property
+    def custo_total_impressao(self):
+        # BUG #1 CORRIGIDO: era * (qtd / unidades_chapa), agora * qtd
+        return float(self.custo_impressao) * self.quantidade
+    
+    @property
+    def custo_total_corte_vinco(self):
+        # BUG #1 CORRIGIDO: era * (qtd / unidades_chapa), agora * qtd
+        return float(self.custo_corte) * self.quantidade
+    
+    @property
+    def custo_total_seladora(self):
+        # BUG #1 CORRIGIDO: era * (qtd / unidades_chapa), agora * qtd
+        return float(self.custo_seladora) * self.quantidade
+
 
     @property
     def margem_percentual_display(self):
@@ -603,7 +753,7 @@ class Orcamento(models.Model):
     @property
     def margem_de_lucro(self):
         """Soma de todos os custos (Materiais + Processos + Logística)"""
-        return self.custo_total_sem_margem * (self.margem_real/100) if self.margem_real > 0 else Decimal('0')
+        return self.custo_unitario_total_sem_margem * (self.margem_real/100) if self.margem_real > 0 else Decimal('0')
 
     @property
     def total_impostos(self):
@@ -618,7 +768,7 @@ class Orcamento(models.Model):
     @property
     def custo_total_com_margem(self):
         """Soma de todos os custos (Materiais + Processos + Logística)"""
-        return self.custo_total_sem_margem * (Decimal('1') + (self.margem_real/100 if self.margem_real >= 0 else self.custo_total_sem_margem))
+        return self.custo_unitario_total_sem_margem * (Decimal('1') + (self.margem_real/100 if self.margem_real >= 0 else self.custo_unitario_total_sem_margem))
 
     # PORCENTAGENS SOBRE CUSTO SEM MARGEM
 
@@ -626,19 +776,19 @@ class Orcamento(models.Model):
     # Porcentagen custo do papelao sobre o custo sem margem
     def custo_papelao_unitario_porc(self):
         params = Custo_tinta.objects.first()
-        return self.custo_papelao_unitario*100/self.custo_total_sem_margem if params else Decimal('0.20')
+        return self.custo_papelao_unitario*100/self.custo_unitario_total_sem_margem if params else Decimal('0.20')
 
     @property
     # Porcentagen da perda do projeto sobre o custo sem margem
     def custo_perda_projeto_porc(self):
-        return (self.custo_perda_projeto + self.custo_perda_excedente) * 100/self.custo_total_sem_margem if self.custo_perda_projeto else Decimal('0.20')
+        return (self.custo_perda_projeto + self.custo_perda_excedente) * 100/self.custo_unitario_total_sem_margem if self.custo_perda_projeto else Decimal('0.20')
 
     @property
     # Porcentagen custo da tinta sobre o custo sem margem
     def custo_tinta_padrao_porc(self):
         """Retorna o custo de tinta para o template"""
         params = Custo_tinta.objects.first()
-        return params.custo_tinta_unitario*100/self.custo_total_sem_margem if params else Decimal('0.20')
+        return params.custo_tinta_unitario*100/self.custo_unitario_total_sem_margem if params else Decimal('0.20')
 
     @property
     # Porcentagen do custo de impressao sobre o custo sem margem
@@ -648,22 +798,28 @@ class Orcamento(models.Model):
     @property
     # Porcentagen do custo de impressao sobre o custo sem margem
     def custo_impressao_porc(self):
-        return self.custo_impressao/self.custo_total_sem_margem * 100 if self.custo_impressao else Decimal('0.20')
+        return self.custo_impressao/self.custo_unitario_total_sem_margem * 100 if self.custo_impressao else Decimal('0.20')
+
 
     @property
     # Porcentagen do custo do corte e vinco sobre o custo sem margem
     def custo_corte_vinco_porc(self):
-        return self.custo_corte/self.custo_total_sem_margem * 100 if self.custo_corte else Decimal('0.20')
+        return self.custo_corte/self.custo_unitario_total_sem_margem * 100 if self.custo_corte else Decimal('0.20')
 
     @property
     # Porcentagen do custo da seladora sobre o custo sem margem
     def custo_seladora_porc(self):
-        return self.custo_seladora/self.custo_total_sem_margem * 100 if self.custo_seladora else Decimal('0.20')
+        return self.custo_seladora/self.custo_unitario_total_sem_margem * 100 if self.custo_seladora else Decimal('0.20')
 
     @property
     # Porcentagen do custo_frete_unitario sobre o custo sem margem
     def custo_frete_unitario_porc(self):
-        return self.custo_frete_unitario/self.custo_total_sem_margem * 100 if self.custo_frete_unitario else Decimal('0.20')
+        return self.custo_frete_unitario/self.custo_unitario_total_sem_margem * 100 if self.custo_frete_unitario else Decimal('0.20')
+    
+    @property
+    # BUG #1 CORRIGIDO: era (qtd / unidades_chapa), agora apenas qtd
+    def custo_total_frete(self):
+        return float(self.custo_frete_unitario) * self.quantidade
 
     @property
     # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem
@@ -673,12 +829,12 @@ class Orcamento(models.Model):
     @property
     # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem
     def subtotal_materiais_insumos_porc(self):
-        return (self.custo_papelao_unitario + self.custo_tinta_padrao) * 100/self.custo_total_sem_margem if self.custo_total_sem_margem else Decimal('0.20')
+        return (self.custo_papelao_unitario + self.custo_tinta_padrao) * 100/self.custo_unitario_total_sem_margem if self.custo_unitario_total_sem_margem else Decimal('0.20')
 
     @property
-    # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem
+    # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem   custo_unitario_total_sem_margem
     def custo_total_sem_margem_porc(self):
-        return (self.custo_total_sem_margem / self.custo_total_sem_margem) * 100
+        return (self.custo_unitario_total_sem_margem / self.custo_unitario_total_sem_margem) * 100
 
     def resumo_composicao(self):
         if not self.preco_final_unitario:
@@ -699,7 +855,21 @@ class Orcamento(models.Model):
             f"✂️ Corte: R$ {self.custo_corte:.2f} | "
             f"🔥 Seladora: R$ {self.custo_seladora:.2f} | "
             f"🚚 Frete: R$ {self.custo_frete_unitario:.2f} | "
-            f"💰 Margem Bruta: R$ {(self.custo_total_com_margem-self.custo_total_sem_margem):.2f}"
+            f"💰 Margem Bruta: R$ {(self.custo_total_com_margem-self.custo_unitario_total_sem_margem):.2f}"
         )
 
     resumo_composicao.short_description = 'Detalhamento de Composição'
+    
+class ComissaoVenda(models.Model):
+    vendedor = models.CharField(max_length=100, verbose_name="Nome do Vendedor")
+    percentual_comissao = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Comissão (%)")
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'appOrcam_comissao_venda'
+        verbose_name = "Comissão de Venda"
+        verbose_name_plural = "Comissões de Vendas"
+
+    def __str__(self):
+        return f"{self.vendedor} - {self.percentual_comissao}%"
+

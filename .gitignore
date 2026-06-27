@@ -24,8 +24,8 @@ db.sqlite3
 # Folders
 venv/
 media/
+static/
 staticfiles/
-
 
 # Arquivos de dados
 #*.xlsx
@@ -46,6 +46,4 @@ staticfiles/
 *.jpeg
 *.JPEG
 *.gif
-*.GIFv e n v / 
- 
- 
+*.GIF

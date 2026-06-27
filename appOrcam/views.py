@@ -12,7 +12,7 @@ from django.db.models import Sum
 from .models import MemoriaCalculoDinamica
 
 import os
-print(f"SISTEMA LENDO DE: {os.path.abspath(__file__)}")
+#print(f"SISTEMA LENDO DE: {os.path.abspath(__file__)}")
 
 # =========================
 # LISTAR PRODUTOS-CHAPAS-PADRÃO
@@ -431,3 +431,128 @@ def orcamento_pdf(request, pk):
         }
         
         return render(request, 'appOrcam/orcamento_pdf.html', context)
+
+
+# =========================
+# SIMULAÇÕES ORÇAMENTOS
+# =========================    
+
+def simulacoes_orcamentos(request, pk):
+    orcamento_base = get_object_or_404(Orcamento, pk=pk)
+    
+    # -------------------------------------------------------------------------
+    # 1. RESGATE DE PARÂMETROS DINÂMICOS DO BANCO DE DADOS
+    # -------------------------------------------------------------------------
+    try:
+        impostos_ativos = Imposto.objects.filter(ativo_no_calculo=True)
+        total_impostos_banco = sum(float(i.aliquota) for i in impostos_ativos)
+        
+        icms_registro = impostos_ativos.filter(nome__icontains='icms').first()
+        valor_icms = float(icms_registro.aliquota) if icms_registro else 18.0
+        
+        if total_impostos_banco > valor_icms:
+            total_impostos_banco = total_impostos_banco - valor_icms # o icms é subtraído do total de impostos ativos para não duplicar o crédito            
+        taxa_imposto_efetivo = total_impostos_banco / 100.0 if total_impostos_banco > 0 else 0.1065
+    except Exception:
+        taxa_imposto_efetivo = 0.1075
+        
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT retirada_socio_pct FROM appoee_parametrofinanceiro LIMIT 1")
+        retirada_banco = cursor.fetchone()
+        pct_prolabore_socio = float(retirada_banco[0]) / 100.0 if retirada_banco and f"{retirada_banco[0]}" != "None" else 0.05
+
+        cursor.execute("SELECT percentual_comissao FROM appOrcam_comissao_venda WHERE ativo = 1 LIMIT 1")
+        comissao_banco = cursor.fetchone()
+        pct_comissao_vendas = float(comissao_banco[0]) / 100.0 if comissao_banco else 0.05
+    
+    # -------------------------------------------------------------------------
+    # 2. CAPTURA DO DIVISOR (SEM A TRAVA RESTRETA DE TEXTO DA PIZZA)
+    # -------------------------------------------------------------------------
+    divisor = float(orcamento_base.unidades_chapa) if hasattr(orcamento_base, 'unidades_chapa') and orcamento_base.unidades_chapa else 1.0
+
+    # -------------------------------------------------------------------------
+    # 3. ENGENHARIA DE CUSTOS UNITÁRIOS REAIS SINCRONIZADA COM A MODEL
+    # -------------------------------------------------------------------------
+    # A) Matéria-prima (Papelão + Tinta) rateada pelo divisor de escala
+    chapa_vinculada = orcamento_base.chapa_utilizada
+    custo_chapa_m2 = float(chapa_vinculada.custo_m2) if chapa_vinculada else 4.50
+    area_total_caixa = float(orcamento_base.area_total) if hasattr(orcamento_base, 'area_total') else 0.4005
+    
+    custo_papelao_unitario = (custo_chapa_m2 * area_total_caixa) / divisor
+    custo_tinta_unitario = float(orcamento_base.custo_tinta_unitario) if hasattr(orcamento_base, 'custo_tinta_unitario') else 0.20
+    custo_material_unitario = custo_papelao_unitario + custo_tinta_unitario 
+    
+    # B) Processos Industriais (Espelhando a dinâmica do multiplicador da Century)
+    custo_impressao = float(orcamento_base.custo_impressao) if hasattr(orcamento_base, 'custo_impressao') else 0.24
+    custo_corte     = float(orcamento_base.custo_corte) if hasattr(orcamento_base, 'custo_corte') else 0.10
+    custo_seladora  = float(orcamento_base.custo_seladora) if hasattr(orcamento_base, 'custo_seladora') else 0.02
+    
+    # SINCRONIA FÍSICA: Impressão e Seladora dividem por chapa física.
+    # O Corte permanece cheio por unidade pois a Century bate peça por peça.
+    custo_impressao_escala = custo_impressao / divisor
+    custo_seladora_escala = custo_seladora / divisor
+    custo_corte_real = custo_corte  # Fica de fora do divisor (Multiplicador implícito)
+    
+    custo_fabricacao_unitario = custo_impressao_escala + custo_corte_real + custo_seladora_escala
+    
+    # C) Logística
+    custo_frete_unitario = float(orcamento_base.custo_frete_unitario) if hasattr(orcamento_base, 'custo_frete_unitario') else 0.30
+    
+    # -------------------------------------------------------------------------
+    # 4. EXECUÇÃO DA MATRIZ DE SIMULAÇÃO PROGRESSIVA
+    # -------------------------------------------------------------------------
+    quantidades = [500, 1000, 1500, 2000, 5000, 10000]
+    margens = [15, 20, 25]
+    
+    matriz_simulacao = []
+    prolabores_fixos = {}
+    
+    # Bloqueio de segurança para o cálculo do pró-labore de referência (5k)
+    for m in margens:
+        markup_divisor = (100 - m) / 100.0
+        custo_operacional_5k = (custo_material_unitario + custo_fabricacao_unitario + custo_frete_unitario) * 5000
+        divisor_com_prolabore = markup_divisor - pct_prolabore_socio
+        preco_sem_nf_5k_real = custo_operacional_5k / divisor_com_prolabore
+        prolabores_fixos[m] = preco_sem_nf_5k_real * pct_prolabore_socio
+
+    for q in quantidades:
+        for m in margens:
+            markup_divisor = (100 - m) / 100.0
+            prolabore_lote_fixo = prolabores_fixos[25] # Trava na margem padrão de 25%
+            
+            custo_materiais_total = custo_material_unitario * q
+            custo_fabricacao_total = custo_fabricacao_unitario * q
+            custo_logistica_total = custo_frete_unitario * q
+            custo_operacional_total = custo_materiais_total + custo_fabricacao_total + custo_logistica_total
+            
+            preco_sem_nf_total = (custo_operacional_total + prolabore_lote_fixo) / markup_divisor
+            preco_com_nf_total = preco_sem_nf_total * (1.0 + taxa_imposto_efetivo)
+            
+            margem_lucro_total = preco_sem_nf_total * (m / 100.0)
+            custo_vendas_total = preco_sem_nf_total * pct_comissao_vendas
+            custo_impostos_total = preco_sem_nf_total * taxa_imposto_efetivo
+
+            matriz_simulacao.append({
+                'quantidade': q,
+                'custo_materiais_total': custo_materiais_total,
+                'custo_fabricacao_total': custo_fabricacao_total,
+                'custo_logistica_total': custo_logistica_total,
+                'custo_operacional_total': custo_operacional_total,
+                'margem_percentual': m,
+                'margem_lucro_total': margem_lucro_total,
+                'custo_impostos_total': custo_impostos_total,
+                'custo_vendas_total': custo_vendas_total,
+                'prolabore_total': prolabore_lote_fixo,
+                'prolabore_unit': prolabore_lote_fixo / q,
+                'preco_sem_nf_total': preco_sem_nf_total,
+                'preco_sem_nf_unit': preco_sem_nf_total / q,
+                'preco_com_nf_total': preco_com_nf_total,
+                'preco_com_nf_unit': preco_com_nf_total / q,
+            })
+
+    context = {
+        'orcamento': orcamento_base,
+        'simulacoes': matriz_simulacao,
+    }
+    return render(request, 'simulacoes_de_orçamentos.html', context)
+

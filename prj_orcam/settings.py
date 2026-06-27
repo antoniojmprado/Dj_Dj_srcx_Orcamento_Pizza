@@ -166,3 +166,7 @@ CACHES = {
 }
 
 SESSION_SAVE_EVERY_REQUEST = False
+
+# Configuração oficial para o Django salvar os anexos na pasta que o Nginx lê
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/var/www/joinvia/media/'

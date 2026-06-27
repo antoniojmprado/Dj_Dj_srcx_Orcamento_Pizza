@@ -19,7 +19,6 @@ $(document).ready(function () {
                 { extend: 'pdfHtml5', orientation: 'landscape', pageSize: 'A4' },
                 'colvis'
             ],
-            fixedHeader: true,
             scrollX: true,
             scrollY: 450,
             scrollCollapse: true,

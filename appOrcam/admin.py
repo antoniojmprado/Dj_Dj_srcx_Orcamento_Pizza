@@ -1,7 +1,7 @@
 from django.urls import reverse
 from django.contrib import admin
 from django.utils.html import format_html
-from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, EncargosTrabalhistas, Orcamento, Chapa, CategoriaProduto, Imposto
+from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, EncargosTrabalhistas, Orcamento, Chapa, CategoriaProduto, Imposto, ComissaoVenda
 
 
 @admin.register(Imposto)
@@ -97,6 +97,7 @@ class OrcamentoAdmin(admin.ModelAdmin):
         'custo_perda_total',
         'custo_perda_projeto',
         'custo_perda_excedente',
+        'custo_papelao_total',
         'imprimir_orcamento_btn',  # Botão para imprimir o orçamento em PDF
     )
 
@@ -115,7 +116,7 @@ class OrcamentoAdmin(admin.ModelAdmin):
             'fields': ('cliente', 'produto_nome', 'categoria_produto', 'quantidade')
         }),
         ('Configuração de Produção', {
-            'fields': ('chapa_projeto', 'chapa_utilizada', 'unidades_chapa', 'maquina_impressao', 'maquina_corte', 'margem_real')
+            'fields': ('custo_papelao_total','chapa_projeto', 'chapa_utilizada', 'unidades_chapa', 'maquina_impressao', 'maquina_corte', 'margem_real')
         }),
         ('Valor do frete por unidade ("Frete por Unidade" no calculador de Fretes)', {
             'fields': ('custo_frete_unitario',)
@@ -127,3 +128,7 @@ class OrcamentoAdmin(admin.ModelAdmin):
 
     list_filter = ('maquina_impressao', 'data_criacao')
     search_fields = ('cliente', 'produto_nome')
+
+@admin.register(ComissaoVenda)
+class ComissaoVendaAdmin(admin.ModelAdmin):
+    list_display = ('vendedor', 'percentual_comissao', 'ativo')

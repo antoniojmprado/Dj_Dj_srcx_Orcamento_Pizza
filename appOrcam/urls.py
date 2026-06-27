@@ -13,4 +13,6 @@ urlpatterns = [
     
     path('orcamento_pdf_view/<int:pk>/', views.orcamento_pdf,name='orcamento_pdf_view'),
     path('frete/', include('appFrete.urls')),
+        
+    path('orcamento/<int:pk>/simulacao/', views.simulacoes_orcamentos, name='simulacoes_orcamentos'),
 ]

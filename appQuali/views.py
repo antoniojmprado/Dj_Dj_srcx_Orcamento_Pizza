@@ -18,17 +18,23 @@ from datetime import date, timedelta
 def home(request):
     return render(request, 'home.html')
 
-
 def reclam_cliente(request):
     if request.method == "POST":
         form = ReclamacoesForm(request.POST, request.FILES)
 
         if form.is_valid():
-            # salva a reclamação principal
-            reclamacao = form.save()
+            # 💡 EM VEZ DE: reclamacao = form.save()
+            # FAZEMOS ASSIM PARA FORÇAR O MODEL CORRETO:
+            dados = form.cleaned_data
+            
+            # Removemos 'arquivos' dos dados se ele existir no formulário, pois salvamos depois
+            if 'arquivos' in dados:
+                dados.pop('arquivos')
+                
+            # Cria a reclamação usando o gerenciador do Model limpo
+            reclamacao = Reclamacoes.objects.create(**dados)
             
             messages.success(request, 'Reclamação cadastrada com sucesso!')
-            # return redirect('reclamacao_create')  # ou outra página
 
             # pega os arquivos (pode vir vazio!)
             arquivos = request.FILES.getlist('arquivos')
@@ -47,46 +53,45 @@ def reclam_cliente(request):
                         itens=arquivo
                     )
 
-            return redirect('reclamacoes_list')
+            return redirect('appQuali:reclamacoes_list')
 
     else:
         form = ReclamacoesForm()
 
     return render(request, 'adiciona_reclam.html', { 'form': form })
 
-
 def reclamacoes_list(request):
     sql = """
-    SELECT 
-        r.id AS reclam_id,
-        WEEK(DATE_FORMAT(MAX(SUBSTRING(a.data_upload,1,10)), "%y/%m/%d"),1)  AS sem,
-        DATE_FORMAT(MAX(SUBSTRING(a.data_upload,1,10)), "%d/%m/%y")  AS data_ocor,
-        e.empresa AS fabricante,
-        t.tecnologia AS tecnol,
-        r.cliente AS cliente,
-        r.vendedora AS vendedor,
-        p.produto AS produto,
-        d.tipo_defeito AS defeito,
-        r.descricao AS descricao,
-        r.comentarios AS coment,
-        GROUP_CONCAT(a.itens ORDER BY a.itens SEPARATOR ' | ') AS anexos
-    FROM qualisrcaixa.reclamacoes r
-    LEFT JOIN qualisrcaixa.appquali_reclamacoesarquivo a ON a.reclamacoes_id = r.id
-    LEFT JOIN qualisrcaixa.empresa e ON e.id = r.id_empresa
-    LEFT JOIN qualisrcaixa.produtos p ON p.id = r.id_produto
-    LEFT JOIN qualisrcaixa.tecnologia t ON t.id = r.id_tecnol
-    LEFT JOIN qualisrcaixa.tipos_defeitos d ON d.id = r.id_defeito
-    GROUP BY 
-        r.id,
-        e.empresa,
-        t.tecnologia,
-        r.cliente,
-        p.produto,
-        d.tipo_defeito,
-        r.descricao,
-        r.comentarios
-    ORDER BY r.id DESC
-    """
+        SELECT 
+            r.id AS reclam_id,
+            WEEK(DATE_FORMAT(MAX(SUBSTRING(a.data_upload,1,10)), "%y/%m/%d"),1)  AS sem,
+            DATE_FORMAT(MAX(SUBSTRING(a.data_upload,1,10)), "%d/%m/%y")  AS data_ocor,
+            e.empresa AS fabricante,
+            t.tecnologia AS tecnol,
+            r.cliente AS cliente,
+            r.vendedora AS vendedor,
+            p.produto AS produto,
+            d.tipo_defeito AS defeito,
+            r.descricao AS descricao,
+            r.comentarios AS coment,
+            GROUP_CONCAT(a.itens ORDER BY a.itens SEPARATOR ' | ') AS anexos
+        FROM oee_bd.reclamacoes r
+        LEFT JOIN oee_bd.appquali_reclamacoesarquivo a ON a.reclamacoes_id = r.id
+        LEFT JOIN oee_bd.empresa e ON e.id = r.id_empresa
+        LEFT JOIN oee_bd.produtos p ON p.id = r.id_produto
+        LEFT JOIN oee_bd.tecnologia t ON t.id = r.id_tecnol
+        LEFT JOIN oee_bd.tipos_defeitos d ON d.id = r.id_defeito
+        GROUP BY 
+            r.id,
+            e.empresa,
+            t.tecnologia,
+            r.cliente,
+            p.produto,
+            d.tipo_defeito,
+            r.descricao,
+            r.comentarios
+        ORDER BY r.id DESC
+        """
 
     with connection.cursor() as cursor:
         # (opcional) aumenta limite do GROUP_CONCAT se houver muitos anexos
@@ -114,6 +119,8 @@ def reclamacoes_list(request):
 
     return render(request, 'listar.html', context)
 
+
+
 def defeitosPorMes(request): # CALIBRADO MINÚSCULO PARA LINUX
     sql = """
          SELECT mesAno, sum(tot) as tot , max(dia) AS dias
@@ -123,9 +130,9 @@ def defeitosPorMes(request): # CALIBRADO MINÚSCULO PARA LINUX
                         SELECT 
                             DATE_FORMAT(SUBSTRING(a.data_upload,1,10), "%y/%b") as mesAno, COUNT(distinct a.reclamacoes_id) as tot,
                             DATE_FORMAT(SUBSTRING(a.data_upload,1,10), "%y/%m/%d") as dia
-                            FROM qualisrcaixa.appquali_reclamacoesarquivo a 
-                            LEFT JOIN qualisrcaixa.reclamacoes r ON r.id = a.reclamacoes_id
-                            INNER JOIN qualisrcaixa.tipos_defeitos AS d ON d.id = r.id_defeito
+                            FROM oee_bd.appquali_reclamacoesarquivo a 
+                            LEFT JOIN oee_bd.reclamacoes r ON r.id = a.reclamacoes_id
+                            INNER JOIN oee_bd.tipos_defeitos AS d ON d.id = r.id_defeito
                             GROUP BY DATE_FORMAT(SUBSTRING(a.data_upload,1,10), "%y/%b"), dia
                         ) AS X
                     ORDER BY mesAno DESC, tot DESC  
@@ -152,9 +159,9 @@ def defeitosPorTipoMaisFrequentes(request): # CALIBRADO MINÚSCULO PARA LINUX
     sql = """
         SELECT ucase(tipo_defeito) as tipoId, count(DISTINCT a.reclamacoes_id) as tot
             FROM 
-            qualisrcaixa.appquali_reclamacoesarquivo a 
-            LEFT JOIN qualisrcaixa.reclamacoes r ON r.id = a.reclamacoes_id
-            INNER JOIN qualisrcaixa.tipos_defeitos AS d ON d.id = r.id_defeito
+            oee_bd.appquali_reclamacoesarquivo a 
+            LEFT JOIN oee_bd.reclamacoes r ON r.id = a.reclamacoes_id
+            INNER JOIN oee_bd.tipos_defeitos AS d ON d.id = r.id_defeito
             WHERE a.reclamacoes_id >= 69
             GROUP BY d.tipo_defeito
         ORDER BY tot DESC
@@ -180,9 +187,9 @@ def defeitoMesEscolhido(request): # CALIBRADO MINÚSCULO PARA LINUX
     
     sql = f"""
         SELECT ucase(tipo_defeito) as tipoId, COUNT(distinct a.reclamacoes_id) as tot 
-        FROM qualisrcaixa.appquali_reclamacoesarquivo a 
-        LEFT JOIN qualisrcaixa.reclamacoes r ON r.id = a.reclamacoes_id 
-        INNER JOIN qualisrcaixa.tipos_defeitos AS d ON d.id = r.id_defeito 
+        FROM oee_bd.appquali_reclamacoesarquivo a 
+        LEFT JOIN oee_bd.reclamacoes r ON r.id = a.reclamacoes_id 
+        INNER JOIN oee_bd.tipos_defeitos AS d ON d.id = r.id_defeito 
         WHERE a.reclamacoes_id >= 69  
           AND DATE_FORMAT(SUBSTRING(a.data_upload,1,10), '%y/%b') = '{anoMes}' 
         GROUP BY d.tipo_defeito 
@@ -512,20 +519,26 @@ def data_ultimo_registro(request):
         })
 
 
-def reclamacao_delete_sql(request, pk): # recebe reclamacoes_list.html o valor de id quem é assumido por pk
-
+def reclamacao_delete_sql(request, pk):
     if request.method == 'POST':
         with connection.cursor() as cursor:
+            # 1. Primeiro deletamos os arquivos vinculados a essa reclamação no banco novo
             cursor.execute(
-                "DELETE FROM qualisrcaixa.reclamacoes WHERE id = %s",
+                "DELETE FROM oee_bd.appquali_reclamacoesarquivo WHERE reclamacoes_id = %s",
                 [pk]
             )
+            # 2. Depois deletamos a reclamação principal
+            cursor.execute(
+                "DELETE FROM oee_bd.reclamacoes WHERE id = %s",
+                [pk]
+            )
+            
         return JsonResponse({
             'success': True,
             'message': 'Registro excluído com sucesso!'
         })
 
-    return redirect('reclamacoes_list')
+    return redirect('appQuali:reclamacoes_list')
 
 
 def grafico_defeitos(request):

@@ -12,9 +12,9 @@ from .models import Waterfall
 
 @admin.register(MaquinaFinancas)
 class MaquinaFinancasAdmin(admin.ModelAdmin):
-    list_display = ('maquina', 'valor_reposicao', 'custo_minuto', 'dias_sem', 'horas_turno', 'sem_mes', 'turnos_dia', 'horas_mes', 'minutos_mes')
+    list_display = ('maquina', 'valor_reposicao', 'custo_minuto', 'fator_k', 'dias_sem', 'horas_turno', 'sem_mes', 'turnos_dia', 'horas_mes', 'minutos_mes')
     # Permite editar direto na lista
-    list_editable = ('valor_reposicao', 'horas_turno','turnos_dia','dias_sem','sem_mes')
+    list_editable = ('valor_reposicao', 'fator_k')
 
 @admin.register(Horas_turno)
 class Horas_turnoAdmin(admin.ModelAdmin):

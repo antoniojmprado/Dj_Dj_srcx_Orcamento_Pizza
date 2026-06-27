@@ -222,7 +222,7 @@ class Reclamacoes(models.Model):
 
      class Meta:
         managed = False
-        db_table = 'Reclamacoes'
+        db_table = 'reclamacoes'
         
      def __str__(self):
          return f" id {self.id} {self.cliente} - {self.descricao} em {self.data_reclam.strftime('%d/%m/%Y')}"
@@ -265,6 +265,9 @@ class ReclamacoesArquivo(models.Model): # relacao 1 (reclamacoes) para N (reclam
     def __str__(self):
         return self.reclamacoes.cliente
     
+    class Meta:
+        managed = False
+        db_table = 'appquali_reclamacoesarquivo' # 👈 Substitua pelo nome REAL da tabela no MySQL
   
 class SemanAno(models.Model):
     semana = models.PositiveIntegerField(
