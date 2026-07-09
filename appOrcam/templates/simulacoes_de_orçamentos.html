@@ -1,13 +1,10 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>BI - Grade de Simulação Dinâmica</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
-    
+{% extends 'base_orcam.html' %}
+
+{% block title %}
+Simulação de Orçamento
+{% endblock %}
+
+{% block body %}
     <style>
         .table-responsive {
             overflow-x: auto;
@@ -17,13 +14,9 @@
         td { white-space: nowrap; text-align: right; }
         .text-center-td { text-align: center; }
     </style>
-</head>
-<body class="bg-light p-4">
 
     <div class="card shadow-sm p-4 mb-4">
-        <h2 class="text-primary">Simulação de Orçamento: {{ orcamento.id }} - data: {{ orcamento.data_criacao }} <br>Cliente:  {{ orcamento.cliente }} - Produto: {{ orcamento.produto_nome }}</h2>
-        <p class="text-muted">Apresentação executiva: Fluxo somatório progressivo de formação de preços.</p>
-        
+        <h4 class="text-primary">Simulação de Orçamentos: {{ orcamento.id }} - data: {{ orcamento.data_criacao }} <br>Cliente:  {{ orcamento.cliente }} - Produto: {{ orcamento.produto_nome }}</h4>
         <div class="table-responsive mt-3">
             <table id="tabelaSimulacao" class="table table-striped table-bordered table-hover w-100">
                 <thead>
@@ -35,7 +28,6 @@
                         <th>Custo Logística</th>
                         <th>Custo Oper. Total</th>
                         <th>Margem Valor</th>
-
                         <th>Impostos</th>
                         <th>Custo Vendas (Comissão)</th>
                         <th>Pró-labore Sócio</th>
@@ -82,47 +74,84 @@
                         <th>Preço c/NF Total</th>
                         <th>Preço c/NF Un.</th>
                     </tr>
+                </tfoot>
             </table>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', function() {
+            // Verifica se o jQuery foi carregado pelo arquivo base
+            if (typeof $ !== 'undefined') {
+                
+                const tituloDocumento = 'Simulações de Orçamentos';
+                const dadosOrcamento = 'Cliente: {{ orcamento.cliente|escapejs }}  |  Produto: {{ orcamento.produto_nome|escapejs }}\nData: {{ orcamento.data_criacao|date:"d/m/Y" }} às {{ orcamento.data_criacao|date:"H:i:s" }}';
+                
+                const table = $('#tabelaSimulacao').DataTable({
+                    dom: 'Bfrtip',
+                    buttons: [
+                        'copyHtml5', 
+                        'excelHtml5', 
+                        'csvHtml5',
+                        { 
+                            extend: 'pdfHtml5', 
+                            orientation: 'landscape', 
+                            pageSize: 'A4',
+                            title: tituloDocumento,    // Título limpo e direto
+                            messageTop: dadosOrcamento, // Injeta os dados do cliente, produto e data embaixo do título
 
-    <script>
-        $(document).ready(function() {
-            $('#tabelaSimulacao').DataTable({
-                dom: 'Bfrtip',
-                buttons: [
-                    { extend: 'copy', text: 'Copiar Dados' },
-                    { extend: 'excel', text: 'Exportar para Excel', title: 'Simulacao_Precos_Packmetric' },
-                    { extend: 'print', text: 'Imprimir Relatório' }
-                ],
-                pageLength: 18,
-                ordering: false,
-                language: {
-                    url: '/static/datatables/pt-BR.json'
-                },
-                            initComplete: function () {
-                this.api().columns([0,1]).every(function () {
-                    const column = this;
-                    const select = $('<select><option value=""></option></select>')
-                        .appendTo($(column.footer()).empty())
-                        .on('change', function () {
-                            const val = $.fn.dataTable.util.escapeRegex($(this).val());
-                            column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            // --- ADICIONADO: Função para colocar numeração de página no rodapé ---
+                            customize: function(doc) {
+                                // Encontra onde o rodapé (footer) deve ser desenhado
+                                doc['header'] = (function(page, pages) {
+                                    return {
+                                        columns: [
+                                            {
+                                                alignment: 'right',
+                                                text: ['Página ', { text: page.toString() }, ' de ', { text: pages.toString() }],
+                                                fontSize: 9,
+                                                margin: [0, 0, 20, 0] // Margem para não ficar colado na borda
+                                            }
+                                        ]
+                                    };
+                                });
+                            },
+                        },
+                        'colvis'
+                    ],
+                    ordering: false,        
+                    scrollX: true,
+                    scrollY: 450,
+                    scrollCollapse: true,
+                    paging: false, // Mantém todas as linhas na tela com rolagem vertical
+                    fixedColumns: {
+                        left: 2
+                    },
+                    language: {
+                        url: '/static/datatables/pt-BR.json'
+                    },
+                    initComplete: function () {
+                        this.api().columns([0,1]).every(function () {
+                            const column = this;
+                            const select = $('<select><option value=""></option></select>')
+                            .appendTo($(column.footer()).empty())
+                            .on('change', function () {
+                                const val = $.fn.dataTable.util.escapeRegex($(this).val());
+                                column.search(val ? '^' + val + '$' : '', true, false).draw();
+                            });
+                            column.data().unique().sort().each(function (d) { 
+                                const cleanText = d.replace(/<[^>]*>/g, '').trim();
+                                select.append(`<option value="${cleanText}">${cleanText}</option>`); 
+                            });
                         });
-                    column.data().unique().sort().each(function (d) { select.append(`<option value="${d}">${d}</option>`); });
+                    }
                 });
+                
+                table.columns.adjust().draw();
+            } else {
+                console.error("O jQuery não foi encontrado. Verifique se ele está sendo carregado no base_orcam.html");
             }
-            });
         });
-    </script>
-</body>
-</html>
+
+</script>
+{% endblock %}
