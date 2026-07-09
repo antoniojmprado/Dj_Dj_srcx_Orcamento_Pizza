@@ -310,6 +310,7 @@ class ParametroFinanceiro(models.Model):
     # Outros
     outros_custos_fixos_pct = models.DecimalField( max_digits=5, decimal_places=2, default=1.00)
     retirada_socio_pct = models.DecimalField( max_digits=5, decimal_places=2, default=5.00)
+    margem_calc_socio_pct = models.DecimalField( max_digits=5, decimal_places=2, default=25.00)
     aluguel_iptu_total = models.DecimalField( max_digits=12, decimal_places=2, default=140000.00)
 
     # Investimentos em equipamentos

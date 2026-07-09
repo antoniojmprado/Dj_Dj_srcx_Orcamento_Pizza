@@ -451,52 +451,48 @@ def simulacoes_orcamentos(request, pk):
         valor_icms = float(icms_registro.aliquota) if icms_registro else 18.0
         
         if total_impostos_banco > valor_icms:
-            total_impostos_banco = total_impostos_banco - valor_icms # o icms é subtraído do total de impostos ativos para não duplicar o crédito            
+            total_impostos_banco = total_impostos_banco - valor_icms 
+            
         taxa_imposto_efetivo = total_impostos_banco / 100.0 if total_impostos_banco > 0 else 0.1065
     except Exception:
         taxa_imposto_efetivo = 0.1075
         
     with connection.cursor() as cursor:
-        cursor.execute("SELECT retirada_socio_pct FROM appoee_parametrofinanceiro LIMIT 1")
+        cursor.execute("SELECT retirada_socio_pct, margem_calc_socio_pct FROM appOEE_parametrofinanceiro LIMIT 1")
         retirada_banco = cursor.fetchone()
         pct_prolabore_socio = float(retirada_banco[0]) / 100.0 if retirada_banco and f"{retirada_banco[0]}" != "None" else 0.05
+        pct_calc_socio = float(retirada_banco[1]) / 100.0 if retirada_banco and f"{retirada_banco[1]}" != "None" else 0.15
 
         cursor.execute("SELECT percentual_comissao FROM appOrcam_comissao_venda WHERE ativo = 1 LIMIT 1")
         comissao_banco = cursor.fetchone()
         pct_comissao_vendas = float(comissao_banco[0]) / 100.0 if comissao_banco else 0.05
     
     # -------------------------------------------------------------------------
-    # 2. CAPTURA DO DIVISOR (SEM A TRAVA RESTRETA DE TEXTO DA PIZZA)
+    # 2. CAPTURA DO DIVISOR
     # -------------------------------------------------------------------------
-    divisor = float(orcamento_base.unidades_chapa) if hasattr(orcamento_base, 'unidades_chapa') and orcamento_base.unidades_chapa else 1.0
+    unidades = float(orcamento_base.unidades_chapa) if hasattr(orcamento_base, 'unidades_chapa') and orcamento_base.unidades_chapa else 1.0
 
     # -------------------------------------------------------------------------
-    # 3. ENGENHARIA DE CUSTOS UNITÁRIOS REAIS SINCRONIZADA COM A MODEL
+    # 3. ENGENHARIA DE CUSTOS UNITÁRIOS BASEADOS NAS REGRAS REAIS DA MODEL
     # -------------------------------------------------------------------------
-    # A) Matéria-prima (Papelão + Tinta) rateada pelo divisor de escala
     chapa_vinculada = orcamento_base.chapa_utilizada
     custo_chapa_m2 = float(chapa_vinculada.custo_m2) if chapa_vinculada else 4.50
     area_total_caixa = float(orcamento_base.area_total) if hasattr(orcamento_base, 'area_total') else 0.4005
     
-    custo_papelao_unitario = (custo_chapa_m2 * area_total_caixa) / divisor
+    # Espelhando a lógica exata de multiplicação do papelão por 2 quando unidades > 1
+    if unidades > 1:
+        custo_papelao_unitario = ((area_total_caixa * custo_chapa_m2) / unidades) * 2.0
+    else:
+        custo_papelao_unitario = area_total_caixa * custo_chapa_m2
+
     custo_tinta_unitario = float(orcamento_base.custo_tinta_unitario) if hasattr(orcamento_base, 'custo_tinta_unitario') else 0.20
     custo_material_unitario = custo_papelao_unitario + custo_tinta_unitario 
     
-    # B) Processos Industriais (Espelhando a dinâmica do multiplicador da Century)
-    custo_impressao = float(orcamento_base.custo_impressao) if hasattr(orcamento_base, 'custo_impressao') else 0.24
-    custo_corte     = float(orcamento_base.custo_corte) if hasattr(orcamento_base, 'custo_corte') else 0.10
-    custo_seladora  = float(orcamento_base.custo_seladora) if hasattr(orcamento_base, 'custo_seladora') else 0.02
-    
-    # SINCRONIA FÍSICA: Impressão e Seladora dividem por chapa física.
-    # O Corte permanece cheio por unidade pois a Century bate peça por peça.
-    custo_impressao_escala = custo_impressao / divisor
-    custo_seladora_escala = custo_seladora / divisor
-    custo_corte_real = custo_corte  # Fica de fora do divisor (Multiplicador implícito)
-    
-    custo_fabricacao_unitario = custo_impressao_escala + custo_corte_real + custo_seladora_escala
-    
-    # C) Logística
-    custo_frete_unitario = float(orcamento_base.custo_frete_unitario) if hasattr(orcamento_base, 'custo_frete_unitario') else 0.30
+    # Custos fixos de máquina vindos da model (que já foram processados unitariamente)
+    custo_imp = float(orcamento_base.custo_impressao) if hasattr(orcamento_base, 'custo_impressao') else 0.24
+    custo_crt = float(orcamento_base.custo_corte) if hasattr(orcamento_base, 'custo_corte') else 0.10
+    custo_sel = float(orcamento_base.custo_seladora) if hasattr(orcamento_base, 'custo_seladora') else 0.02
+    custo_frete_unit = float(orcamento_base.custo_frete_unitario) if hasattr(orcamento_base, 'custo_frete_unitario') else 0.30
     
     # -------------------------------------------------------------------------
     # 4. EXECUÇÃO DA MATRIZ DE SIMULAÇÃO PROGRESSIVA
@@ -507,24 +503,44 @@ def simulacoes_orcamentos(request, pk):
     matriz_simulacao = []
     prolabores_fixos = {}
     
-    # Bloqueio de segurança para o cálculo do pró-labore de referência (5k)
+    # Ajuste na trava de referência de pró-labore para o lote base de 5.000 unidades
+    # utilizando a nova engenharia de markup (Numerador + Pró-labore / Markup)
     for m in margens:
-        markup_divisor = (100 - m) / 100.0
-        custo_operacional_5k = (custo_material_unitario + custo_fabricacao_unitario + custo_frete_unitario) * 5000
-        divisor_com_prolabore = markup_divisor - pct_prolabore_socio
-        preco_sem_nf_5k_real = custo_operacional_5k / divisor_com_prolabore
-        prolabores_fixos[m] = preco_sem_nf_5k_real * pct_prolabore_socio
+        # 1. Cálculo do custo operacional base para 5k unidades estruturado pela model
+        q_ref = 5000.0
+        custo_total_papel_5k = custo_papelao_unitario * q_ref
+        custo_total_tinta_5k = custo_tinta_unitario * q_ref
+        custo_frete_5k = custo_frete_unit * q_ref
+        
+        if unidades > 1:
+            custo_operacional_5k = custo_total_papel_5k + custo_total_tinta_5k + (custo_imp * q_ref / unidades) + (custo_crt * q_ref * 2.0 / unidades) + (custo_sel * q_ref) + custo_frete_5k
+        else:
+            custo_operacional_5k = custo_total_papel_5k + custo_total_tinta_5k + (custo_imp * q_ref) + (custo_crt * q_ref) + (custo_sel * q_ref) + custo_frete_5k
+            
+        # 2. Divisor fixo do sócio para encontrar o pro-labore de referência
+        socio_divisor = (1.0 - pct_calc_socio - pct_prolabore_socio)
+        valor_base_prolabore_5k = custo_operacional_5k / socio_divisor
+        prolabores_fixos[m] = valor_base_prolabore_5k * pct_prolabore_socio
 
+    # Geração dos registros da matriz de simulação
     for q in quantidades:
         for m in margens:
-            markup_divisor = (100 - m) / 100.0
-            prolabore_lote_fixo = prolabores_fixos[25] # Trava na margem padrão de 25%
+            # Nova regra de markup do save da model: 1 - margem_decimal
+            markup_divisor = (100.0 - m) / 100.0
+            prolabore_lote_fixo = prolabores_fixos[25]  # Mantém a trava padrão baseada na margem de 25%
             
             custo_materiais_total = custo_material_unitario * q
-            custo_fabricacao_total = custo_fabricacao_unitario * q
-            custo_logistica_total = custo_frete_unitario * q
+            custo_logistica_total = custo_frete_unit * q
+            
+            # Cálculo do custo de fabricação total obedecendo as regras de unidades/chapa do save
+            if unidades > 1:
+                custo_fabricacao_total = (custo_imp * q / unidades) + (custo_crt * q * 2.0 / unidades) + (custo_sel * q)
+            else:
+                custo_fabricacao_total = (custo_imp * q) + (custo_crt * q) + (custo_sel * q)
+                
             custo_operacional_total = custo_materiais_total + custo_fabricacao_total + custo_logistica_total
             
+            # Aplicação exata da nova fórmula: (Custo + Prolabore) / Markup
             preco_sem_nf_total = (custo_operacional_total + prolabore_lote_fixo) / markup_divisor
             preco_com_nf_total = preco_sem_nf_total * (1.0 + taxa_imposto_efetivo)
             
@@ -555,4 +571,3 @@ def simulacoes_orcamentos(request, pk):
         'simulacoes': matriz_simulacao,
     }
     return render(request, 'simulacoes_de_orçamentos.html', context)
-

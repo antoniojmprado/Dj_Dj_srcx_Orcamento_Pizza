@@ -121,6 +121,9 @@ class OrcamentoAdmin(admin.ModelAdmin):
         ('Valor do frete por unidade ("Frete por Unidade" no calculador de Fretes)', {
             'fields': ('custo_frete_unitario',)
         }),
+        ('Prolabore Sócio (Calculados Automaticamente)', {
+            'fields': ('prolabore_socio',)
+        }),
         ('Resultados (Calculados Automaticamente)', {
             'fields': ('preco_final_unitario', 'resumo_composicao')
         }),
