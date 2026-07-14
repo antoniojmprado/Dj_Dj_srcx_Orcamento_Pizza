@@ -1,139 +1,162 @@
-{% load static %}
-
+{% load static %} 
 <style>
     li a.nav-link{
         color:white;
     }
 
-    li a.nav-link.hover{
+    li a.nav-link:hover{
         color:yellow;
     }
 
-    .nav-link{
+    .nav-link, .dropdown-item {
         font-size: 30px;
     }
+    
+    .dropdown-menu {
+        background-color: #343a40;
+        border: 1px solid rgba(255,255,255,0.15);
+    }
+    
+    .dropdown-item {
+        color: white;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #495057;
+        color: yellow;
+    }
+    
+    .dropdown-header {
+        color: #FFC107;
+        font-size: 20px;
+        font-weight: bold;
+    }
 </style>
-   
-    <div class="jumbotron  bg-dark" style="margin-bottom: 0; padding: 1rem 1rem;text-align: center; color: #FFC107;"> 
-        <div class="container" style="display: flex; justify-content: center;">
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-                <a class="navbar-brand" href="{% url 'appOEE:home' %}">PackMetric</a>
 
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@1,800&display=swap" rel="stylesheet">
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-
-                    <ul class="navbar-nav mr-auto me-auto"> <li class="nav-item">
-                            <a class="nav-link" href="{% url 'form_modelForm' %}">Orçar</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'listar_orcamentos' %}">List_Orçam</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'memoria_calculo_view' %}">Mem.Cálculo</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'appFrete:calcular_frete_view' %}">Calcular Frete</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'appFrete:lista_fretes' %}">Lista Fretes</a>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownOEE" role="button" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Métricas OEE
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="navbarDropdownOEE">
-                                <a class="dropdown-item" href="{% url 'appOEE:dashboard_roce' %}">📈 Dashboard ROCE</a>
-                                <div class="dropdown-divider"></div>
-                                
-                                <h6 class="dropdown-header">Operações</h6>
-                                <a class="dropdown-item" href="{% url 'appOEE:cadastra_ocorrencia' %}">📝 Registrar Ocorrência</a>
-                                <a class="dropdown-item" href="{% url 'appOEE:relatorio_ocorrencias' %}">📋 Listar Ocorrências</a>
-                                <div class="dropdown-divider"></div>
-
-                                <h6 class="dropdown-header">Análises</h6>
-                                <a class="dropdown-item" href="{% url 'appOEE:oee_maquina' %}">🖥️ OEE por Máquina</a>
-                                <a class="dropdown-item" href="{% url 'appOEE:resumo_paralisacoes' %}">⚠️ Resumo de Paralisações</a>
-                                <a class="dropdown-item" href="{% url 'appOEE:detalhe_paralisacoes' %}">💰 Análise Financeira</a>
-                                <div class="dropdown-divider"></div>
-
-                                <h6 class="dropdown-header">Estratégico</h6>
-                                <a class="dropdown-item" href="{% url 'appOEE:simulador' %}">🎛️ Simulador de Cenários</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{% url 'appOEE:apresentacao' %}">OEE_diagr</a>
-                            </div>
-                        </li>
-                        
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownQuali" role="button" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Gestão da Qualidade
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="navbarDropdownQuali">
-                                <!-- <a class="dropdown-item" href="{% url 'appQuali:home' %}">📊 Painel de Indicadores</a> -->
-                                <a class="dropdown-item" href="#">Painel de Indicadores</a>
-                                <div class="dropdown-divider"></div>
-                                
-                                <h6 class="dropdown-header">Reclamações</h6>
-                                <a class="dropdown-item" href="{% url 'appQuali:reclam_cliente' %}">📥 Registrar Reclamação</a>
-                                <a class="dropdown-item" href="#" id="abre_modal_reclamantes">📊  Maiores Reclam</a>
-                                <a class="dropdown-item" href="{% url 'appQuali:reclamacoes_list' %}">🗂️ Histórico / Anexos</a>
-                                
-                            </div>
-                        </li>
-
-                    </ul>
-
-                    <ul class="navbar-nav ml-auto ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin/" target="_blank">Admin</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}" style="color: #ff4d4d; font-weight: bold;">Sair</a>
-                        </li>
-                    </ul><br>
-                     <p><h6><span class="navbar-text" id="ult_reg"></span></h6></p>
-                </div>
-            </nav> 
+<div class="jumbotron bg-dark" style="margin-bottom: 0; padding: 1rem 1rem; text-align: center; color: #FFC107;"> 
+    <div class="container" style="display: flex; justify-content: center;">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             
-            <!-- Modal modal -->
-            <!-- data-bs-backdrop="static" (retirado linha abaixo): nesta condição pode-se o modal com  um click fora do mesmo -->
-            <!-- data-bs-keyboard="true" (venha linha abaixo) : click ESC para fechar o modal -->
-            <div class="modal fade" id="modal_reclamantes" data-bs-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header bg-dark">
-                            <div class="modal-title" id="staticBackdropLabel;"><h3>Maiores Reclamantes</h3></div>                  
-                            <button type="button" class="btn-close buttonModal" data-bs-dismiss="modal" aria-label="Close" ></button>
-                        </div>                
-                        <div class="modal-body" id = "maiores_reclamantes_modal">                    
+            <a class="navbar-brand d-flex align-items-center" href="/frete/inicio/" style="gap: 15px; text-decoration: none; padding-bottom: 5px;">
+                <div class="d-flex align-items-center" style="gap: 15px;">
+                    <svg width="45" height="45" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 3px 6px rgba(0,0,0,0.4));">
+                        <path d="M20 32L50 47V82L20 67V32Z" fill="#0052FF" />
+                        <path d="M50 47L80 32V67L50 82V47Z" fill="#0035A4" />
+                        <path d="M50 15L80 32L50 47L20 32L50 15Z" fill="#00D2FF" />
+                        <path d="M25 60L48 45L62 52L82 28" stroke="#FF8A00" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M70 28H82V40" stroke="#FF8A00" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                
+                <span style="font-size: 32px; font-family: 'Nunito', sans-serif; font-style: italic; font-weight: 800; letter-spacing: -0.3px; line-height: 1;">
+                    <span style="color: #0052FF; text-shadow: 1px 1px 5px rgba(245, 242, 242, 0.985);">Pack</span><span style="color: #FF8A00; text-shadow: 1px 1px 5px rgba(245, 242, 242, 0.985);">Metric</span>
+                </span>
+
+                <img src="{% static 'appOrcam/images/joinvia/joinvia.png' %}" alt="Joinvia" style="height: 38px; width: auto; object-fit: contain; filter: drop-shadow(0px 3px 6px rgba(0,0,0,0.4)); margin-left: 5px;">
+            </a>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto me-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownOrcam" role="button" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Orçamentos
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownOrcam">
+                            <a class="dropdown-item" href="{% url 'form_modelForm' %}">📝 Orçar</a>
+                            <a class="dropdown-item" href="{% url 'listar_orcamentos' %}">🗂️ List_Orçam</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'memoria_calculo_view' %}">📐 Mem.Cálculo</a>
                         </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownFrete" role="button" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Fretes
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownFrete">
+                            <a class="dropdown-item" href="{% url 'appFrete:calcular_frete_view' %}">🧮 Calc.Frete</a>
+                            <a class="dropdown-item" href="{% url 'appFrete:lista_fretes' %}">📋 Lista Fretes</a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownOEE" role="button" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            OEE
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownOEE">
+                            <a class="dropdown-item" href="{% url 'appOEE:dashboard_roce' %}">📈 Dashboard ROCE</a>
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header">Operações</h6>
+                            <a class="dropdown-item" href="{% url 'appOEE:cadastra_ocorrencia' %}">📝 Registrar Ocorrência</a>
+                            <a class="dropdown-item" href="{% url 'appOEE:relatorio_ocorrencias' %}">📋 Listar Ocorrências</a>
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header">Análises</h6>
+                            <a class="dropdown-item" href="{% url 'appOEE:oee_maquina' %}">🖥️ OEE por Máquina</a>
+                            <a class="dropdown-item" href="{% url 'appOEE:resumo_paralisacoes' %}">⚠️ Resumo de Paralisações</a>
+                            <a class="dropdown-item" href="{% url 'appOEE:detalhe_paralisacoes' %}">💰 Análise Financeira</a>
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header">Estratégico</h6>
+                            <a class="dropdown-item" href="{% url 'appOEE:simulador' %}">🎛️ Simulador de Cenários</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'appOEE:apresentacao' %}">OEE_diagr</a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownQuali" role="button" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Qualidade
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownQuali">
+                            <a class="dropdown-item" href="#">📊 Painel de Indicadores</a>
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header">Reclamações</h6>
+                            <a class="dropdown-item" href="{% url 'appQuali:reclam_cliente' %}">📥 Registrar Reclamação</a>
+                            <a class="dropdown-item" href="#" id="abre_modal_reclamantes">📊 Maiores Reclam</a>
+                            <a class="dropdown-item" href="{% url 'appQuali:reclamacoes_list' %}">🗂️ Histórico / Anexos</a>
+                        </div>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav ml-auto ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/" target="_blank">Admin</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}" style="color: #ff4d4d; font-weight: bold;">Sair</a>
+                    </li>
+                </ul><br>
+                <p><h6><span class="navbar-text" id="ult_reg"></span></h6></p>
+            </div>
+        </nav> 
+        
+        <div class="modal fade" id="modal_reclamantes" data-bs-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark">
+                        <div class="modal-title" id="staticBackdropLabel;"><h3>Maiores Reclamantes</h3></div>                  
+                        <button type="button" class="btn-close buttonModal" data-bs-dismiss="modal" aria-label="Close" ></button>
+                    </div>                
+                    <div class="modal-body" id="maiores_reclamantes_modal">                    
                     </div>
                 </div>
             </div>
-
-            <!-- Modal modal -->
-            <!-- data-bs-backdrop="static" (retirado linha abaixo): nesta condição pode-se o modal com  um click fora do mesmo -->
-            <!-- data-bs-keyboard="true" (venha linha abaixo) : click ESC para fechar o modal -->
-            <div class="modal fade" id="modal_semanAno" data-bs-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header bg-dark">
-                            <div class="modal-title" id="staticBackdropLabel;"><h3>Pesquisa Semana Ano</h3></div>                  
-                            <button type="button" class="btn-close buttonModal" data-bs-dismiss="modal" aria-label="Close" ></button>
-                        </div>        
-                        <div class="modal-body" id = "recebe_semanAno_modelForm">
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
+        <div class="modal fade" id="modal_semanAno" data-bs-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark">
+                        <div class="modal-title" id="staticBackdropLabel;"><h3>Pesquisa Semana Ano</h3></div>                  
+                        <button type="button" class="btn-close buttonModal" data-bs-dismiss="modal" aria-label="Close" ></button>
+                    </div>        
+                    <div class="modal-body" id="recebe_semanAno_modelForm">
+                    </div>
+                </div>
+            </div>
+        </div>
 
-
-    </div>    
+    </div>
+</div>
