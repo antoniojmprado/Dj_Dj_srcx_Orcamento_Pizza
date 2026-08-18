@@ -1,4 +1,3 @@
-
 import math
 import time
 from urllib import request
@@ -23,12 +22,16 @@ except:
     locale.setlocale(locale.LC_ALL, 'Portuguese_Brazil.1252')
 
 
+@login_required
+def hub_index(request):
+    return render(request, 'appFrete/index_hub.html')
+
 
 def calcular_frete_view(request, pk=None): 
     tempo_inicio = time.time()
     print(f"\n>>> [DJANGO] Iniciou o cálculo do frete para o usuário {request.user}")   
     
-    caminho_bases = os.path.join(settings.BASE_DIR, 'appFrete', 'tab_bases')
+    # caminho_bases = os.path.join(settings.BASE_DIR, 'appFrete', 'tab_bases')
     agora = datetime.datetime.now().strftime("%d/%b/%Y %H:%M")
     
     # --- NOVO BLOCO: TRATAMENTO DE HISTÓRICO - DADOS QUE VÊM DO BANCO ---
@@ -39,7 +42,7 @@ def calcular_frete_view(request, pk=None):
         peso_cubado_bd = frete_obj.peso_cubado
         peso_informado_bd = frete_obj.peso_informado  
         total_unidades_bd = frete_obj.total_unidades
-        icms = frete_obj.icms  
+        icms = frete_obj.icms
         
         print(f' total_unidades_bd {total_unidades_bd}')
         
@@ -238,7 +241,7 @@ def calcular_frete_view(request, pk=None):
         transp_qs = TransportadoraFrete.objects.filter(estado=uf_coluna).only(
             'transportadora', 'regiao', 'antt', 'fator_excedente', 
             'ad_valor', 'gris', 'pedagio', 'frete_peso', 
-            'cem_kg', 'taxa_emb', 'tas', 'icms'
+            'cem_kg', 'taxa_emb', 'tas', 'icms','prazo'
         )
         
         resultados_frete = []
@@ -259,6 +262,7 @@ def calcular_frete_view(request, pk=None):
             taxa_emb = float(t.taxa_emb)
             tas = float(t.tas)
             icms_taxa = float(t.icms)
+            prazo = float(t.prazo)
 
             # CÁLCULOS MATEMÁTICOS (Agora com floats puros, muito mais rápido)
             peso_cubado_calc = vol_total_m3 * antt
@@ -281,6 +285,7 @@ def calcular_frete_view(request, pk=None):
                 'regiao': t.regiao,
                 'frete_final': frete_final,
                 'frete_unidade': frete_unidade,
+                'prazo': t.prazo
             })
 
         # Ordenar por menor frete por unidade
@@ -312,7 +317,7 @@ def calcular_frete_view(request, pk=None):
     transp_qs = TransportadoraFrete.objects.filter(estado=uf_coluna).only(
         'transportadora', 'regiao', 'antt', 'fator_excedente', 
         'ad_valor', 'gris', 'pedagio', 'frete_peso', 
-        'cem_kg', 'taxa_emb', 'tas', 'icms'
+        'cem_kg', 'taxa_emb', 'tas', 'icms','prazo'
     )
     
     resultados_frete = []
@@ -334,7 +339,7 @@ def calcular_frete_view(request, pk=None):
         taxa_emb = float(t.taxa_emb)
         tas = float(t.tas)
         icms_taxa = float(t.icms)
-
+        prazo = float(t.prazo)
         # CÁLCULOS MATEMÁTICOS (Agora com floats puros, muito mais rápido)
         peso_cubado_calc = vol_total_m3 * antt
         peso_cubado_final = max(kg_informado_float, peso_cubado_calc)
@@ -356,6 +361,7 @@ def calcular_frete_view(request, pk=None):
             'regiao': t.regiao,
             'frete_final': frete_final,
             'frete_unidade': frete_unidade,
+            'prazo': prazo
         })
 
     # 2. GRAVAÇÃO EM LOTE (Apenas agora abrimos o banco para escrita)
@@ -376,7 +382,7 @@ def calcular_frete_view(request, pk=None):
                 peso_cubado=peso_cubado_final,
                 valor_nf=valor_total_nf,
                 # Note: use o valor de ICMS que você calculou no loop ou uma variável fixa
-                icms=icms_taxa * 100  # Convertendo para porcentagem para salvar no banco, se necessário
+                icms=icms_taxa * 100,  # Convertendo para porcentagem para salvar no banco, se necessário
             )
 
             # 2. Itens (Ajuste para usar os campos corretos do seu modelo ItensFrete)
@@ -402,7 +408,8 @@ def calcular_frete_view(request, pk=None):
                     nome_transportadora=item['transportadora'],
                     regiao=item['regiao'],
                     valor_frete=item['frete_final'],
-                    frete_unidade=item['frete_unidade']
+                    frete_unidade=item['frete_unidade'],
+                    prazo=item['prazo']
                 ) for item in resultados_frete
             ]
             TabelaFreteTransportadora.objects.bulk_create(objs_transp, batch_size=50)

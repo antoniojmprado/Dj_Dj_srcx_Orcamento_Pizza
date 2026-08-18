@@ -1,31 +1,49 @@
 {% extends 'base_orcam.html' %}
+{% load static %}
 
-{% block title %}
-{% endblock %}
+{% block title %}Gerar Orçamento{% endblock %}
 
 {% block body %}
+<div class="container mt-4">
 
+    <!-- Cabeçalho padronizado estilo Botão -->
+    <button class="btn btn-primary w-100 text-left mb-3" type="button" style="cursor: default;">
+        <h4 class="margin-bottom: 0;">📝 Gerar Orçamento</h4>
+    </button>  
+    <hr>
 
-<div class="container">
-    <h2>Inserir Informações</h2>
-     
-    <form action="" method = "POST" >
-
+    <form action="" method="POST">
         {% csrf_token %}
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">
-                    {{ form.non_field_errors }}
+
+        <!-- Tratamento de erros gerais do formulário -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- Campos dinâmicos do ModelForm empilhados e estilizados -->
+        <div class="row">
+            {% for field in form %}
+                <div class="col-12 mb-3">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-danger mt-1 small">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
                 </div>
-            {% endif %}
+            {% endfor %}
+        </div>
 
-            <table class='form_cotar'>
-                {{ form.as_table }}
-            </table>
         <hr>
-
-        <input type="submit"  value = "Gerar Orçamento">
+        <!-- Botão de ação principal em bloco -->
+        <div class="d-grid gap-2">
+            <button class="btn btn-success btn-lg btn-block" type="submit">Gerar Orçamento</button>
+        </div>
+        <hr>
     </form>
 
 </div>
-
 {% endblock %}

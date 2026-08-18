@@ -38,6 +38,7 @@ class TabelaFreteTransportadora(models.Model):
     nome_transportadora = models.CharField(max_length=150)
     regiao = models.CharField(max_length=100)
     valor_frete = models.DecimalField(max_digits=12, decimal_places=2)
+    prazo = models.IntegerField(null=True, blank=True, default=3)  # Adicionei um valor padrão para evitar problemas de null
     frete_unidade = models.DecimalField(max_digits=12, decimal_places=2)
 
 # Tabela de Log para Alterações (Opcional, mas recomendado)
@@ -109,7 +110,7 @@ class TransportadoraFrete(models.Model):
     emex = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tax_adm_fin = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     antt = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    prazo = models.IntegerField(null=True, blank=True)   
+    prazo = models.IntegerField(null=True, blank=True, default=3)  # Adicionei um valor padrão para evitar problemas de null
     
      
 

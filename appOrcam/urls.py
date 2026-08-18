@@ -2,6 +2,8 @@ from django.urls import include, path
 from appOrcam import views
 
 urlpatterns = [
+    # Exemplo de rota para a tela intermediária
+    #path('painel/', views.hub_index, name='hub_index'),
     path('', views.inicial, name='inicial'),
     path('orcamento/<int:pk>/', views.orcamento_pdf, name='imprimir_orcamento'),  # Como deve estar no seu urls.py
     path('listar_roteiros_producao/<int:pk>/',views.listar_roteiros_producao, name='listar_roteiros_producao'),

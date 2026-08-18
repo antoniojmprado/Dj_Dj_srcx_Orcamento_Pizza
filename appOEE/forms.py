@@ -27,26 +27,3 @@ class OcorrenciaForm(forms.ModelForm):
             'qualidade',
             'performance'
         ]
-
-
-# class Calc_roceForm(forms.ModelForm):
-
-#     class Meta:
-#         model = Calc_roce
-#         fields = [
-#             'valor_ativos',
-#             'deprec_ano_porc',
-#             'manut_mes',
-#             'qt_pessoas',
-#             'salario_medio',
-#             'encargos_porc',
-#             'benef_porc',
-#             'outros_porc',
-#             'horas_turno',
-#             'dia_mes',
-#             'turnos_dia',
-#             'mes_ano',
-#             'disponibilidade',
-#             'qualidade',
-#             'performance',
-#         ]

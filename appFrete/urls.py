@@ -18,6 +18,6 @@ urlpatterns = [
     # <int:pk> é o ID do frete que você salvou no banco
     path('resultado/<int:pk>/', views.calcular_frete_view, name='calcular_frete_view'),
 
-    # # Rota para a exclusão via AJAX
-    # path('excluir-frete/<int:pk>/', views.excluir_frete, name='excluir_frete'),
+    # Nova rota para a tela intermediária:
+    path('inicio/', views.hub_index, name='hub_index'),
 ]

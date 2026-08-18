@@ -3,25 +3,34 @@
 
 {% block title %}Cadastrar Reclamação{% endblock %}
 
-
 {% block body %}
 <div class="container mt-4">
 
-    <button class="btn btn-secondary" type="button"><h4>Cadastrar Reclamação</h4></button>  
+    <!-- Cabeçalho padronizado estilo Botão (Amarelo/Laranja para Qualidade) -->
+    <button class="btn btn-warning w-100 text-left mb-3" type="button" style="cursor: default;">
+        <h4 class="margin-bottom: 0; color: #212529;">📥 Cadastrar Reclamação de Qualidade</h4>
+    </button>  
     <hr>
 
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <!-- Campos normais do ModelForm -->
+        <!-- Tratamento de erros gerais do formulário -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- Campos normais do ModelForm empilhados e estilizados -->
         <div class="row">
             {% for field in form %}
                 {% if field.name != 'arquivos' %}
-                    <div class="mb-3">
+                    <div class="col-12 mb-3">
                         {{ field.label_tag }}
                         {{ field }}
                         {% if field.errors %}
-                            <div class="text-danger">
+                            <div class="text-danger mt-1 small">
                                 {{ field.errors }}
                             </div>
                         {% endif %}
@@ -30,30 +39,34 @@
             {% endfor %}
         </div>
 
-        <!-- Campo de upload múltiplo -->
-        <div class="mb-3">
-            <label for="{{ form.arquivos.id_for_label }}">
-                Anexos
-            </label>
-            {{ form.arquivos }}
-            <small class="form-text text-muted">
-                {{ form.arquivos.help_text }}
-            </small>
+        <!-- Campo de upload múltiplo destacado -->
+        <div class="row">
+            <div class="col-12 mb-3">
+                <label for="{{ form.arquivos.id_for_label }}" class="form-label font-weight-bold">
+                    Anexos / Documentos de Evidência
+                </label>
+                {{ form.arquivos }}
+                {% if form.arquivos.help_text %}
+                    <small class="form-text text-muted">
+                        {{ form.arquivos.help_text }}
+                    </small>
+                {% endif %}
 
-            {% if form.arquivos.errors %}
-                <div class="text-danger">
-                    {{ form.arquivos.errors }}
-                </div>
-            {% endif %}
+                {% if form.arquivos.errors %}
+                    <div class="text-danger mt-1 small">
+                        {{ form.arquivos.errors }}
+                    </div>
+                {% endif %}
+            </div>
         </div>
 
         <hr>
-            <div class="d-grid gap-2">
-                <button class="btn btn-success" type="submit">Salvar</button>
-            </div>
+        <!-- Botão de submissão padronizado em bloco -->
+        <div class="d-grid gap-2">
+            <button class="btn btn-success btn-lg btn-block" type="submit">Salvar Reclamação</button>
+        </div>
         <hr>
     </form>
 
 </div>
-
 {% endblock %}

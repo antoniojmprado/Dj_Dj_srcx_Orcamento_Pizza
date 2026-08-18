@@ -386,6 +386,52 @@ td.subtotal_item{
     opacity: 1;
 }
 
+/* Adicionado position: relative para ancorar o balão no lugar certo */
+.tooltip-socio {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+/* CORRIGIDO: Adicionado o espaço entre as duas classes */
+.tooltip-socio .tooltiptext {
+    visibility: hidden;
+    width: 220px; /* Reduzi um pouco para ajustar melhor dentro de tabelas */
+    background-color: #212529;
+    color: #fff;
+    text-align: center; /* Centralizado costuma ficar mais elegante */
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 99;
+    bottom: 125%; /* Aparece logo acima do ícone */
+    left: 50%;
+    margin-left: -110px; /* Metade da largura para centralizar perfeitamente */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 14px;
+    line-height: 1.4;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Cria uma setinha charmosa na base do tooltip */
+.tooltip-socio .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #212529 transparent transparent transparent;
+}
+
+.tooltip-socio:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
 /* ESCONDER O TOOLTIP NA IMPRESSÃO */
 @media print {
     .tooltiptext {
@@ -393,6 +439,10 @@ td.subtotal_item{
     }
 
     .tooltip-imposto {
+        text-decoration: none;
+        color: inherit;
+    }
+    .tooltip-socio {
         text-decoration: none;
         color: inherit;
     }

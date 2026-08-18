@@ -1,27 +1,32 @@
 {% extends 'base_orcam.html' %}
 
 {% block title %}
+Orçamento #{{ orcamento.id }}
 {% endblock %}
 
 {% block body %}
 
 <div class="header grid mb-1 mt-10"> 
     <div><h4>ORÇAMENTO #{{ orcamento.id }} <span class="text-danger"><i>(custos/unidade)</i></span></h4></div>
-    <div class = "orc_quantidade"><h4><strong>QUANTIDADE:</strong> {{ orcamento.quantidade|floatformat:"g" }} {{ orcamento.produto_nome }}</h4></div>
-    <div><h4>Data: {{ orcamento.data_criacao|date:"d/m/Y h:s:i" }}</h4></div>        
+    <div class="orc_quantidade"><h4><strong>QUANTIDADE:</strong> {{ orcamento.quantidade|floatformat:"g" }} {{ orcamento.produto_nome }}</h4></div>
+    
+    <div class="d-flex justify-content-between align-items-center">
+        <h4>Data: {{ orcamento.data_criacao|date:"d/m/Y H:i:s" }}</h4>
+        
+        <a href="{% url 'simulacoes_orcamentos' orcamento.id %}" class="btn btn-primary btn-sm ms-2 d-print-none shadow-sm">
+            📊 Ver Simulações
+        </a>
+    </div>        
 </div>
 
-<!-- <div style="font-size: 18px; font-weight: bold; margin:auto">Unidades por chapa: {{ orcamento.self.unidades_por_chapa }}</div> -->
- <div style="font-size: 18px; font-weight: bold; margin:auto">Unidades por chapa: {{ orcamento.unidades_chapa }}</div>
+<div style="font-size: 18px; font-weight: bold; margin:auto">Unidades por chapa: {{ orcamento.unidades_chapa }}</div>
 
 <div class="grid mb-2"> 
-
-    <div  class="header-secao">
+    <div class="header-secao">
        <h5><strong>CLIENTE:</strong> {{ orcamento.cliente }}</h5> 
     </div>
-
     <div class="header-secao">
-       <h5><strong>IMPRESSORA:</strong> {{nome_impressora}} </h5>
+       <h5><strong>IMPRESSORA:</strong> {{ nome_impressora }}</h5>
     </div>
 </div>
 
@@ -33,7 +38,7 @@
         <h5><strong>CHAPA IDEAL:</strong> {{ orcamento.chapa_projeto }}</h5>         
     </div>
     <div class="header-secao">
-        <h5><strong>CHAPA UTILIZADA:</strong> {{ orcamento.chapa_utilizada.largura_cm|floatformat:0  }} x {{ orcamento.chapa_utilizada.comprimento_cm|floatformat:0 }} cm</h5>
+        <h5><strong>CHAPA UTILIZADA:</strong> {{ orcamento.chapa_utilizada.largura_cm|floatformat:0 }} x {{ orcamento.chapa_utilizada.comprimento_cm|floatformat:0 }} cm</h5>
     </div>
 </div>
 
@@ -45,7 +50,7 @@
         <h5><strong>GRAMATURA:</strong> {{ orcamento.gramatura_kg_m2|floatformat:2 }} g/m²</h5>
     </div>
     <div class="header-secao">
-        <h5 class = "preco_compra">
+        <h5 class="preco_compra">
             <strong>PREÇOS COMPRA:</strong> 
             R$ {{ orcamento.chapa_utilizada.custo_m2|floatformat:2 }}/m2 - 
             R$ {{ orcamento.chapa_utilizada.preco_kg_compra|floatformat:2 }}/kg -
@@ -54,25 +59,25 @@
     </div>
 </div>
 
+<div class="container">
     <table> 
         <tbody>        
-
-            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td>
+            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td></tr>
 
             <tr style="font-size: 22px; font-weight:bold; text-align: center;">
-                <td class = "subtotal" >ITEM</td>
+                <td class="subtotal">ITEM</td>
                 <td>R$_unit</td>                 
                 <td>R$_item</td>
                 <td>% s/ Indust</td>
             </tr>
-            <tr >
-                <td class = "subtotal" colspan="1">📦 MATERIAIS E INSUMOS</td>
+            <tr>
+                <td class="subtotal" colspan="1">📦 MATERIAIS E INSUMOS</td>
                 <td></td>
-                <td class = "subtotal_item">R$ {{ orcamento.custo_total_materiais|floatformat:"2g" }}</td>
-                <td class = "subtotal_item">{{ orcamento.subtotal_materiais_insumos_porc|floatformat:0 }} %</td>
+                <td class="subtotal_item">R$ {{ orcamento.custo_total_materials|floatformat:"2g" }}</td>
+                <td class="subtotal_item">{{ orcamento.subtotal_materiais_insumos_porc|floatformat:0 }} %</td>
             </tr>
             <tr>
-                <td>🗑️ Papelão: <span class='bg-warning p-1'><strong>{{ orcamento.total_chapas }}</strong></td><span>
+                <td>🗑️ Papelão: <span class='bg-warning p-1'><strong>{{ orcamento.total_chapas }}</strong></span></td>
                 <td class="col-valor">R$ {{ orcamento.custo_papelao_unitario|floatformat:2 }}</td>
                 <td class="col-valor">R$ {{ orcamento.custo_papelao_total|floatformat:"2g" }}</td>
                 <td class="col-valor">{{ orcamento.custo_papelao_unitario_porc|floatformat:0 }} %</td>
@@ -99,13 +104,13 @@
                 <td class="col-valor text-danger">{{ orcamento.custo_perda_projeto_porc|floatformat:0 }} %</td>
             </tr>
 
-            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td>
+            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td></tr>
 
             <tr style="font-size: 22px; font-weight:bold;">
-                <td  class = "subtotal" colspan="1">⚙️ PROCESSOS INDUSTRIAIS</td>   
+                <td class="subtotal" colspan="1">⚙️ PROCESSOS INDUSTRIAL</td>   
                 <td></td>     
-                <td class = "subtotal_item">R$ {{ orcamento.custo_total_processos_fabricacao|floatformat:"2g" }}</td>
-                <td  class = "subtotal_item">{{ orcamento.proc_industriais_porc|floatformat:0 }} %</td>
+                <td class="subtotal_item">R$ {{ orcamento.custo_total_processos_fabricacao|floatformat:"2g" }}</td>
+                <td class="subtotal_item">{{ orcamento.proc_industriais_porc|floatformat:0 }} %</td>
             </tr>
             <tr>
                 <td>🖨️ Impressão -  Cap. Nominal:  {{ capac_impressao_nominal_hora|floatformat:"g" }} un/h ({{ nome_impressora }})
@@ -113,92 +118,90 @@
                 </td>
                 <td class="col-valor">R$ {{ orcamento.custo_impressao|floatformat:"4g" }} </td>
                 <td class="col-valor">R$ {{ orcamento.custo_total_impressao|floatformat:"2g" }} </td>
-                <td  style="font-size: 22px;text-align: right;">{{ orcamento.custo_impressao_porc|floatformat:0 }} %</td>
+                <td style="font-size: 22px;text-align: right;">{{ orcamento.custo_impressao_porc|floatformat:0 }} %</td>
             </tr>
             <tr>
-                <td>✂️ Corte e Vinco - Cap. Nominal: {{  capac_corte_nominal_hora|floatformat:"g"  | default:""  }} un/h ({{  nome_corte | default:"Corte Interno" }})
+                <td>✂️ Corte e Vinco - Cap. Nominal: {{ capac_corte_nominal_hora|floatformat:"g" | default:"" }} un/h ({{ nome_corte | default:"Corte Interno" }})
                     - Custo Padrão: {{ custo_minuto_corte|floatformat:2 }} /min
                 </td>
                 <td class="col-valor">R$ {{ orcamento.custo_corte|floatformat:"4g" }}</td>
                 <td class="col-valor">R$ {{ orcamento.custo_total_corte_vinco|floatformat:"2g" }}</td>
-                <td  style="font-size: 22px;text-align: right;">{{ orcamento.custo_corte_porc|floatformat:0 }} %</td>
+                <td style="font-size: 22px;text-align: right;">{{ orcamento.custo_corte_porc|floatformat:0 }} %</td>
             </tr>
             <tr>
                 <td>🔥 Seladora - Cap. Nominal:  {{ capac_seladora_nominal_hora|floatformat:"g" }} un/h 
                     ({{ orcamento.nome_maquina_seladora |default:"Seladora" }}) 
-                    - Custo Padrão: {{ orcamento.custo_minuto_seladora|floatformat:2  }} /min
+                    - Custo Padrão: {{ orcamento.custo_minuto_seladora|floatformat:2 }} /min
                 </td>
                 <td class="col-valor">R$ {{ custo_seladora|floatformat:"4g" }}</td>
                 <td class="col-valor">R$ {{ orcamento.custo_total_seladora|floatformat:2 }}</td>
                 <td class="col-valor">{{ orcamento.custo_seladora_porc|floatformat:1 }} %</td>
             </tr>
 
-            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td>
+            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td></tr>
 
-                <tr  style="font-size: 22px; font-weight:bold;">
-                    <td  class = "subtotal" colspan="1">🏭 SUBTOTAL - CUSTO INDUSTRIAL</td>
-                    <td></td>
-                    <td  class = "subtotal_item">R$ {{ orcamento.custo_total_fabricacao|floatformat:2 }}</td>   
-                    <td class =  "subtotal_item">{{ orcamento.custo_total_fabricacao_porc|floatformat:0 }} %</td>
-    
-                </tr>        
-            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td>
-
+            <tr style="font-size: 22px; font-weight:bold;">
+                <td class="subtotal" colspan="1">🏭 SUBTOTAL - CUSTO INDUSTRIAL</td>
+                <td></td>
+                <td class="subtotal_item">R$ {{ orcamento.custo_total_fabricacao|floatformat:"2g" }}</td>   
+                <td class="subtotal_item">{{ orcamento.custo_total_fabricacao_porc|floatformat:0 }} %</td>
+            </tr>        
             
-            <tr  style="font-size: 22px; font-weight:bold;">
-                <td class = "subtotal" colspan="1">🚚 LOGÍSTICA</td><td class = "subtotal_item">R$ {{ orcamento.custo_frete_unitario|floatformat:2 }}</td>
-                <td class = "subtotal_item">R$ {{ orcamento.custo_total_frete|floatformat:2 }}</td> 
-                <td class= "subtotal_item">{{ orcamento.custo_frete_porc|floatformat:0 }} %</td>        
+            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td></tr>
+
+            <tr style="font-size: 22px; font-weight:bold;">
+                <td class="subtotal" colspan="1">🚚 LOGÍSTICA</td><td class="subtotal_item">R$ {{ orcamento.custo_frete_unitario|floatformat:"2g" }}</td>
+                <td class="subtotal_item">R$ {{ orcamento.custo_total_frete|floatformat:"2g" }}</td> 
+                <td class="subtotal_item">{{ orcamento.custo_frete_porc|floatformat:0 }} %</td>        
             </tr>
 
-            
-            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td>
-
+            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td></tr>
                     
             <tr>
-                <td class = "subtotal">TOTAL CUSTO INDUSTRIAL + FRETE (SEM MARGEM)</td>
+                <td class="subtotal">TOTAL CUSTO INDUSTRIAL + FRETE (SEM MARGEM)</td>
                 <td></td>
-                <td class = "subtotal_item">R$ {{ orcamento.custo_industrial_e_frete_sem_margem|floatformat:"2g" }}</td>
-                <td class= "subtotal_item">{{ orcamento.custo_total_sem_margem_porc|floatformat:0 }} %</td>        
+                <td class="subtotal_item">R$ {{ orcamento.custo_industrial_e_frete_sem_margem|floatformat:"2g" }}</td>
+                <td class="subtotal_item">{{ orcamento.custo_total_sem_margem_porc|floatformat:0 }} %</td>        
             </tr>
         
             <tr class="linha-final-venda">    
-                <td>LUCRO <strong>com margem (markup) {{ orcamento.margem_percentual_display|floatformat:0 }}%
-                    </strong>
-                </td>                
-                <td class = "total_margem_lucro">
-                    R$ {{ orcamento.lucro_por_unidade|floatformat:"2g" }}/un
-                </td>
-                <td class='bg-warning p-1 total_margem_lucro'>
-                    R$ {{orcamento.lucro|floatformat:2 }}
-                </td>
+                <td>LUCRO <strong>com margem (markup) {{ orcamento.margem_percentual_display|floatformat:"2g" }}%</strong></td>                
+                <td class="total_margem_lucro">R$ {{ orcamento.lucro_por_unidade|floatformat:"2g" }}/un</td>
+                <td class='bg-warning p-1 total_margem_lucro'>R$ {{ orcamento.lucro|floatformat:"2g" }}</td>
             </tr>
-          <tr>
-            <td class = "subtotal">TOTAL CUSTO INDUSTRIAL + FRETE e MARGEM</td>
-            <td></td>
-            <td class = "subtotal_item">R$ {{ orcamento.custo_total_com_margem|floatformat:"2g" }}</td>
-          </tr>
+            <tr>
+                <td class="subtotal">TOTAL CUSTO INDUSTRIAL + FRETE e MARGEM</td>
+                <td></td>
+                <td class="subtotal_item">R$ {{ orcamento.custo_total_com_margem|floatformat:"2g" }}</td>
+            </tr>
 
-            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td>
-
-
+            <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td></tr>
+            
             <tr class="linha-final-venda">
-                <td style="background-color: #f8f9fa;">
-                    <strong><u>OPÇÕES DE FATURAMENTO</u></strong>
-                </td>
-                <td  class='p-1 total_margem_lucro text-danger linha-final-venda'>R$/un</td>
-                <td  class= 'p-1 total_margem_lucro text-danger linha-final-venda'>R$_tot</td>
+                <td style="background-color: #f8f9fa;"><strong><u>OPÇÕES DE FATURAMENTO</u></strong></td>
+                <td class='p-1 total_margem_lucro text-danger linha-final-venda'>R$/un</td>
+                <td class='p-1 total_margem_lucro text-danger linha-final-venda'>R$_tot</td>
             </tr>
 
             <tr>
-                <td class="bg-light-emphasis text-danger"><strong>💰 A) VENDA SEM NOTA FISCAL</strong> Custo Industrial + Margem: {{ orcamento.margem_percentual_display|floatformat:0 }}% + % Sócio)</td>
+                <td class="bg-light-emphasis text-danger">
+                    <strong>💰 A) VENDA SEM NOTA FISCAL</strong> Custo Industrial +
+                    <span class="tooltip-socio">
+                        <span>Sócio</span>
+                        <span class="tooltiptext">
+                            <strong style="color: #ffc107;">Comissão Sócio</strong>
+                            <hr style="margin: 5px 0; border-color: #444;">          
+                            R$ {{ orcamento.prolaboresocio|floatformat:2 }}
+                        </span>
+                    </span> + Margem: {{ orcamento.margem_percentual_display|floatformat:0 }}% 
+                </td>
                 <td class='bg-warning p-1 total_margem_lucro'><strong>R$ {{ orcamento.preco_final_sem_nota_unitario|floatformat:"2g" }}</strong></td>
                 <td class='bg-warning p-1 total_margem_lucro'><h5><strong>R$ {{ orcamento.preco_final_sem_nota|floatformat:"2g" }}</strong></h5></td>
             </tr>
 
             <tr>
-                <td><strong>💰 B) VENDA COM NOTA FISCAL </strong> 
-                    : VENDA SEM NOTA FISCAL +
+                <td>
+                    <strong>💰 B) VENDA COM NOTA FISCAL </strong> : VENDA SEM NOTA FISCAL +
                     <span class="tooltip-imposto">
                         <strong>Impostos {{ orcamento.aliquota_imposto_aplicada|floatformat:1 }}%</strong>
                         <span class="tooltiptext">
@@ -208,7 +211,7 @@
                                 • {{ imp.nome }}: {{ imp.aliquota }}%<br>
                             {% empty %}
                                 <span style="color: #ff4d4d;">Nenhum imposto ativo no contexto!</span>
-                            -- {% endfor %}
+                            {% endfor %}
                         </span>
                     </span>
                 </td> 
@@ -216,13 +219,18 @@
                 <td class='bg-warning p-1 subtotal_item'>
                     <h5><strong>R$ {{ orcamento.preco_final_com_nota|floatformat:"2g" }}</strong></h5>
                 </td>
-            </tr>
+            </tr>                     
         </tbody>
     </table>
 
-<div class="info-margem">
-    <strong>Nota Técnica:</strong> O preço unitário sugerido foi calculado com base em um Markup de 
-    <strong>{{ orcamento.margem_percentual_display|floatformat:0 }}%</strong> sobre o custo industrial unitário, sem impostos.
-</div>
-{% endblock %}
+    <div class="d-flex justify-content-end mt-2 d-print-none">
+        <button class="btn btn-secondary" onclick="window.print();">🖨️ Imprimir Orçamento</button>
+    </div>
 
+    <div class="info-margem">
+        <strong>Nota Técnica:</strong> O preço unitário sugerido foi calculado com base em um Markup de 
+        <strong>{{ orcamento.margem_percentual_display|floatformat:0 }}%</strong> sobre o custo industrial unitário, sem impostos.
+    </div>    
+</div>
+
+{% endblock %}

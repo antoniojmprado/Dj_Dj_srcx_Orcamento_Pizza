@@ -1,8 +1,7 @@
 
 {% load static %}
 
-
-{% block titulo %}Apresentação{% endblock %}
+{% block titulo %}{% endblock %}
 {% block extra_head %}
 <style>
 
@@ -80,11 +79,9 @@ html, body {
 <div class="content">
     <h1>Bem-vindo ao Sistema ORÇAMENTOS</h1>
     <h3>Gestão Senhor Caixa</h3>
-    <a href="{% url 'listar_orcamentos' %}" class="btn_home">
-        Acessar
-    </a>
+    <a href="{% url 'listar_orcamentos' %}" class="btn_home">Acessar</a>
     <hr>
-    <h4>Marisa Endruveit & Antonio Prado - v Mar/26</h4>
+    <h4>Marisa  & Antonio Prado - v. Jul/26</h4>
 </div>
 
 {% endblock %}

@@ -11,6 +11,7 @@ from django.db import connection
 from django.db.models import Sum
 from .models import MemoriaCalculoDinamica
 
+
 import os
 #print(f"SISTEMA LENDO DE: {os.path.abspath(__file__)}")
 
@@ -102,61 +103,59 @@ def listar_orcamentos(request):
 # LISTAR ORÇAMENTOS x ROTEIROS DE PRODUÇÃO
 # ==========================================
 
+# ==========================================
+# LISTAR ORÇAMENTOS x ROTEIROS DE PRODUÇÃO
+# ==========================================
+
 def listar_roteiros_producao(request, pk):
 
-    # 1. Busca o orçamento específico para obter a quantidade  custo_perda_total
+    # 1. Busca o orçamento específico
     orcamento = get_object_or_404(Orcamento, pk=pk)
-    # 1. Definimos o divisor base vindo do orçamento
     divisor = Decimal(str(orcamento.unidades_chapa or '1'))
     if divisor < 1:
         divisor = Decimal('1')
 
-    # 2. A TRAVA PARA PIZZAS (Adicione este trecho aqui)
-    # Verificamos se a palavra "pizza" está no nome do produto (independente de maiúsculas)
+    # Trava para Pizzas
     if "pizza" in orcamento.produto_nome.lower():
         divisor = Decimal('1')
-        # Isso garante que para qualquer pizza, o rateio de máquina
-        # ignore o 'unidades_chapa' e use sempre 1.
         
     custo_materiais = Decimal(str(orcamento.custo_material_unitario or '0.0000'))
-    print(f'custo_materiais {custo_materiais}')    
-    # Excluímos o custo da tinta para o cálculo dos roteiros, pois ela é um custo fixo por unidade e não varia entre os roteiros.
-    
-    custo_materiais_parcial = custo_materiais - Decimal(str(orcamento.custo_tinta_unitario or '0.0000'))  
-    print(f'custo_materiais_parcial {custo_materiais_parcial}')
-    
+    custo_materiais_parcial = custo_materiais - Decimal(str(orcamento.custo_tinta_unitario or '0.0000')) 
     custo_materiais = custo_materiais_parcial + Decimal(str(orcamento.custo_tinta_unitario or '0.0000'))
-    print(f'custo_materiais {custo_materiais}')
 
-    print(f'Decimal(str(orcamento.custo_tinta_unitario or "0.0000")): {Decimal(str(orcamento.custo_tinta_unitario or "0.0000"))}')
-    
     custo_perda_total = Decimal(str(orcamento.custo_perda_total or '0.0000'))
     quantidade_solicitada = Decimal(str(orcamento.quantidade))
 
     # 2. Busca os dados das máquinas
     fabrica = MaquinaFinancasOEE.objects.select_related('maquina').all()
 
-    # 3. Cria o dicionário de busca com a NOVA LÓGICA
+
+ # 3. Cria o dicionário de busca com a NOVA LÓGICA BLINDADA
     dados_maquinas = {}
     for maq in fabrica:
+        if not maq.producao_nominal_hora or maq.producao_nominal_hora <= 0:
+            continue
+
         tempo_unit = Decimal('60') / Decimal(str(maq.producao_nominal_hora))
+        
+        # Busca na MemoriaCalculoDinamica
         cb_impr = MemoriaCalculoDinamica.objects.filter(maquina_id=maq.maquina.id).first()
-        custo_min = Decimal(str(cb_impr.custo_minuto_real)) if cb_impr else Decimal(str(maq.custo_minuto))
+        
+        # BLINDAGEM: Usa custo_minuto_real apenas se for válido e maior que 0
+        if cb_impr and cb_impr.custo_minuto_real and Decimal(str(cb_impr.custo_minuto_real)) > 0:
+            custo_min = Decimal(str(cb_impr.custo_minuto_real))
+        else:
+            custo_min = Decimal(str(maq.custo_minuto or '0.0000'))
 
         custo_base = tempo_unit * custo_min
+        capacidade_producao = Decimal(str(maq.producao_nominal_hora))
         
-        capacidade_producao = Decimal(str(maq.producao_nominal_hora))  # Capacidade nominal da máquina por hora
-        # Caso do custo de impressão é o custo de impressao normal dividido pela quantidade de unidades por chapa.
-        # Nota: Se a intenção é ratear o custo fixo pela quantidade, a lógica é esta:
         custo_orcado = (custo_base * Decimal(str(maq.producao_nominal_hora))) / quantidade_solicitada
                 
         if maq.maquina.impressora:
             custo_orcado = custo_orcado / divisor if divisor > 1 else custo_orcado
                     
-        # Caso da máquina de corte: se for corte conjugado, o custo é o mesmo do corte normal dividido pela quantidade de unidades por chapa multiplicada por 2 somente SE FOR PIZZA porque, neste caso, os fundos são produzidos em lote separado, mas se for corte simples, o custo é o mesmo do corte normal (sem divisão). 
-        
         if "pizza" not in orcamento.produto_nome.lower() and orcamento.unidades_chapa > 1:
-            # Para Kibe, Esfiha ou outro que não seja pizza (tampa+fundo na mesma folha)
             multiplicador = Decimal('1')
         else:            
             multiplicador = Decimal('2') if maq.maquina.corte else Decimal('1')
@@ -164,62 +163,80 @@ def listar_roteiros_producao(request, pk):
         if maq.maquina.corte:
             custo_orcado = (custo_orcado * multiplicador) if divisor > 1 else custo_orcado
             
-        # Caso da seladora: se for seladora, o custo é o mesmo do corte normal multiplicado por 2 porque os fundos são produzidos em lote separado, mas se for corte simples, o custo é o mesmo do corte normal (sem multiplicação).                
-        if maq.maquina.seladora: custo_orcado = custo_orcado * multiplicador if divisor > 1 and "pizza" in orcamento.produto_nome.lower() else custo_orcado
-                                       
-        dados_maquinas[maq.maquina.nome] = {
-            'nome_maquina': maq.maquina.nome,   
+        if maq.maquina.seladora: 
+            custo_orcado = custo_orcado * multiplicador if divisor > 1 and "pizza" in orcamento.produto_nome.lower() else custo_orcado
+                                        
+        # Nome formatado
+        nome_chave = maq.maquina.nome.strip()
+        
+        # Declaração explícita da variável info_maquina
+        info_maquina = {
+            'nome_maquina': nome_chave,   
             'tempo_maquina': tempo_unit * quantidade_solicitada,
             'custo': custo_orcado,
             'capacidade_producao': capacidade_producao,
         }
+        
+        # Guarda a referência no dicionário
+        dados_maquinas[nome_chave] = info_maquina
+        
+        # Apelidos/Compatibilidade para a máquina Wonder
+        if "wonder" in nome_chave.lower():
+            dados_maquinas["Wonder 1"] = info_maquina
+            dados_maquinas["Wonder"] = info_maquina
 
-    # 4. Roteiros (mantém sua lógica de sequências)
+    # 4. Roteiros ajustados
     roteiros_possiveis = {
         "1) Flexo ► Seladora": ["Flexo Xitian", "Seladora"],
-        "2) Flexo ► Century ► Seladora": ["Flexo Xitian",  "Century", "Seladora"],
-        "3) Flexo ► Boca de Sapo ► Seladora": ["Flexo Xitian",  "Boca de Sapo", "Seladora"],
-        "4)  Wonder 1 ► Century ► Seladora": ["Wonder 1", "Century", "Seladora"],
+        "2) Flexo ► Century ► Seladora": ["Flexo Xitian", "Century", "Seladora"],
+        "3) Flexo ► Boca de Sapo ► Seladora": ["Flexo Xitian", "Boca de Sapo", "Seladora"],
+        "4) Wonder 1 ► Century ► Seladora": ["Wonder 1", "Century", "Seladora"],
         "5) Wonder 1 ► Boca de Sapo ► Seladora": ["Wonder 1", "Boca de Sapo", "Seladora"],
     }
-    tempo_operacao_total = Decimal('0.0000')
-    # 5. Processamento Final (Corrigido)
+    
+    # 5. Processamento Final
     listagem_final = []
     for nome_roteiro, sequencia in roteiros_possiveis.items():
-        custo_total = Decimal('0.0000')
         custo_acumulado = custo_materiais 
         passos = []
+        tempo_operacao_total = Decimal('0.0000')
 
         for nome_m in sequencia:
-            # Buscamos os dados da máquina. Se não achar, o custo é zero.
-            # Não precisamos buscar o nome dentro do 'info', pois já temos o 'nome_m'
-            info = dados_maquinas.get(nome_m, {'custo': Decimal('0.0000')})
+            # Busca com fallback de segurança
+            info = dados_maquinas.get(nome_m)
+            
+            # Se não achar exatamente, tenta achar por aproximação (ex: "Wonder" acha "Wonder 1")
+            if not info:
+                for chave_maq, dados_m in dados_maquinas.items():
+                    if nome_m.lower() in chave_maq.lower() or chave_maq.lower() in nome_m.lower():
+                        info = dados_m
+                        break
+            
+            # Se ainda assim não achar, define padrão com custo zero
+            if not info:
+                info = {'custo': Decimal('0.0000'), 'tempo_maquina': Decimal('0.0000')}
 
             custo_maquina = info['custo']
             custo_acumulado += custo_maquina
                        
             tempo_operacao_minutos = info.get('tempo_maquina', Decimal('0.0000'))   
             tempo_operacao_total += tempo_operacao_minutos
-            # Montamos o dicionário do passo com informações clarasMaquinaFinancas
+
             passos.append({
                 'nome': nome_m,
                 'custo': custo_maquina,
                 'tempo_operacao_minutos': tempo_operacao_minutos,
             })
-       
         
         listagem_final.append({
             'nome_roteiro': nome_roteiro,            
             'custo_materiais_parcial': custo_materiais_parcial,
             'custo_tinta_unitario': Decimal(str(orcamento.custo_tinta_unitario or '0.0000')),
-            'passos': passos,  # Lista de dicionários com nome e custo
+            'passos': passos,
             'custo_minuto_total': custo_acumulado,
-            'custo_perdas': custo_perda_total if nome_m == sequencia[-1] else Decimal('0.0000'),
+            'custo_perdas': custo_perda_total,
             'tempo_operacao_total': tempo_operacao_total
         })
-        
-        # Inicializa o tempo total do roteiro
-        tempo_operacao_total = Decimal('0.0000')
 
     return render(request, 'roteiros.html', {
         'roteiros': listagem_final,
@@ -497,7 +514,7 @@ def simulacoes_orcamentos(request, pk):
     # -------------------------------------------------------------------------
     # 4. EXECUÇÃO DA MATRIZ DE SIMULAÇÃO PROGRESSIVA
     # -------------------------------------------------------------------------
-    quantidades = [500, 1000, 1500, 2000, 5000, 10000]
+    quantidades = [500, 1000, 2000,3000, 4000, 5000, 10000]
     margens = [15, 20, 25]
     
     matriz_simulacao = []

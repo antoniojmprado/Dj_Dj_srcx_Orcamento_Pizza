@@ -155,7 +155,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Informe ao Django qual é a URL de login do seu projeto
 LOGIN_URL = 'login'            # Usamos o 'name' que definimos no urls.py
-LOGIN_REDIRECT_URL = '/frete/' # Aqui está perfeito, manda para o app de frete
+LOGIN_REDIRECT_URL = '/frete/inicio/' # Aqui está perfeito, manda para o app de frete
 LOGOUT_REDIRECT_URL = 'login'  # Ao sair, ele volta para a tela de login
 
 CACHES = {

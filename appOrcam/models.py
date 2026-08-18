@@ -375,25 +375,28 @@ class Orcamento(models.Model):
                 fator_impressao_medio = (fator_wonder1 + fator_wonder2) / Decimal('2.0')
 
                 # 1. IMPRESSÃO (DINÂMICA)
+
                 fin_impr = MaquinaFinancasOEE.objects.filter(maquina_id=self.maquina_impressao.id).first()
                 if fin_impr and fin_impr.producao_nominal_hora > 0:
                     tempo_unit = Decimal('60') / Decimal(str(fin_impr.producao_nominal_hora))
                     cb_impr = MemoriaCalculoDinamica.objects.filter(maquina_id=self.maquina_impressao.id).first()
-                    custo_min = Decimal(str(cb_impr.custo_minuto_real)) if cb_impr else Decimal('0.0')
                     
-                    if self.maquina_impressao and self.maquina_impressao.nome.lower() == "flexo xitian" and self.categoria_produto_id == 1:
-                        divisor_calc = 1
-                        custo_base = tempo_unit * custo_min 
-                    elif self.maquina_impressao and self.maquina_impressao.nome.lower() == "flexo xitian" and self.categoria_produto_id != 1 and self.unidades_chapa > 1:
-                        divisor_calc = Decimal(str(self.unidades_chapa))
-                        custo_base = tempo_unit * custo_min                                      
-                    elif self.maquina_impressao and self.maquina_impressao.nome.lower() != "flexo xitian" and self.unidades_chapa > 1:
-                        divisor_calc = Decimal(str(self.unidades_chapa)) 
-                        custo_base = tempo_unit * custo_min 
+                    # Fallback de custo por minuto
+                    if cb_impr and cb_impr.custo_minuto_real and Decimal(str(cb_impr.custo_minuto_real)) > 0:
+                        custo_min = Decimal(str(cb_impr.custo_minuto_real))
                     else:
-                        custo_base = tempo_unit * custo_min                             
+                        custo_min = Decimal(str(fin_impr.custo_minuto or '0.0'))
 
-                    
+                    custo_base = tempo_unit * custo_min 
+
+                    # INICIALIZAÇÃO OBRIGATÓRIA: Evita o erro quando unidades_chapa == 1
+                    divisor_calc = Decimal('1')
+
+                    if self.maquina_impressao and self.maquina_impressao.nome.lower() == "flexo xitian" and self.categoria_produto_id == 1:
+                        divisor_calc = Decimal('1')
+                    elif self.unidades_chapa and self.unidades_chapa > 1:
+                        divisor_calc = Decimal(str(self.unidades_chapa))
+
                     id_maquina_atual = self.maquina_impressao.id
                     if id_maquina_atual in [8, 9]:
                         fator_aplicado = fator_impressao_medio
@@ -402,7 +405,11 @@ class Orcamento(models.Model):
                     else:
                         fator_aplicado = Decimal(str(mapa_fatores.get(id_maquina_atual, 1.00)))
                     
-                    self.custo_impressao = (custo_base * fin_impr.producao_nominal_hora / (quantidade_formatada/divisor_calc)) * fator_aplicado
+                    # Cálculo seguro com divisor_calc garantido
+                    self.custo_impressao = (custo_base * fin_impr.producao_nominal_hora / (quantidade_formatada / divisor_calc)) * fator_aplicado
+
+                    custo_impressao_5k = (custo_base * fin_impr.producao_nominal_hora / (Decimal(str(q_ref)) / divisor_calc)) * fator_aplicado if divisor_calc > 1 else (custo_base * fin_impr.producao_nominal_hora / Decimal(str(q_ref))) * fator_aplicado
+                    
                     self.maquina_impressao.nome = fin_impr.maquina.nome
 
                     # --- CORRIGIDO: Removido o 'self.' para tornar variável local ---
@@ -1233,6 +1240,10 @@ class Orcamento(models.Model):
     # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem   custo_unitario_total_sem_margem
     def custo_total_sem_margem_porc(self):
         return (float(self.custo_industrial_e_frete_sem_margem) / float(self.custo_industrial_e_frete_sem_margem)) * 100
+    
+    @property
+    def prolaboresocio(self):
+        return self.prolabore_socio if self.prolabore_socio else Decimal(200.00)
 
     def resumo_composicao(self):
         if not self.preco_final_unitario:

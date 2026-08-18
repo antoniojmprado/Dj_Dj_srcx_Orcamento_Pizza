@@ -25,7 +25,7 @@ $(document).ready(function () {
             scrollX: true, // Necessário para colunas fixas
             fixedColumns: {
                 left: 3, // Fixa a primeira coluna à esquerda
-                right: 2 // Fixa a última coluna à direita
+                right: 3 // Fixa a última coluna à direita
             },
             language: { url: "/static/datatables/pt-BR.json" },
             initComplete: function () {

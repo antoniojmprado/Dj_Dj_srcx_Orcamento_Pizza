@@ -19,24 +19,24 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Cidade:</strong> {{ destino_cidade }} - <strong>{{ uf_coluna }}</strong> - <strong>ICMS: {{ icms|floatformat:"g" }} %</strong></p>
+                    <p><strong>Cidade:</strong> {{ destino_cidade }} - <strong>{{ uf_coluna }}</strong> - <strong>ICMS: {{ icms|floatformat:"g" }} % (interestadual)</strong></p>
                     <p><strong>Endereço:</strong> {{ logradouro }} - <strong>Bairro:</strong> {{ bairro }} </p>
                     {% if pk %}
-                        <p><strong>Peso Informado:</strong> {{ peso_informado_bd|floatformat:"g" }} kg</p>
+                        <p><strong>Peso Informado:</strong> {{ peso_informado_bd|floatformat:"0g" }} kg</p>
                         <p><strong>Peso Cubado:</strong> {{ peso_cubado_bd|floatformat:"0g" }} kg</p>
                     {% else %}
-                        <p><strong>Peso Informado:</strong> {{ peso_informado|floatformat:"g" }} kg</p>
+                        <p><strong>Peso Informado:</strong> {{ peso_informado|floatformat:"0g" }} kg</p>
                         <p><strong>Peso Cubado:</strong> {{ peso_cubado_final|floatformat:"0g" }} kg</p>
                     {% endif %}
                 </div>
                 <div class="col-md-6 text-right">
                     <p><strong>Data da Consulta:</strong> {{ agora }}</p>
                     <p><strong>Valor da Carga:</strong> R$ {{ valor_nf|floatformat:"2g" }}</p>
-                    <p><strong>Total de Pacotes:</strong> {{ total_pacotes|floatformat:"g" }}</p>
+                    <p><strong>Total de Pacotes:</strong> {{ total_pacotes|floatformat:"0g" }}</p>
                     {% if pk %}
-                    <p><strong>Total de Unidades:</strong> {{ total_unidades_bd|floatformat:"g" }}</p>
+                    <p><strong>Total de Unidades:</strong> {{ total_unidades_bd|floatformat:"0g" }}</p>
                     {% else %}
-                    <p><strong>Total de Unidades:</strong> {{ total_unidades|floatformat:"g" }}</p>
+                    <p><strong>Total de Unidades:</strong> {{ total_unidades|floatformat:"0g" }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -71,9 +71,9 @@
                                             <td>{{ f.comprimento|floatformat:0  }}</td>
                                             <td>{{ f.largura|floatformat:0  }}</td>
                                             <td>{{ f.altura|floatformat:0  }}</td>
-                                            <td>{{ f.qt_pacotes }}</td>
-                                            <td>{{ f.qt_unidades }}</td>
-                                            <td>{{ unid_item }}</td>
+                                            <td>{{ f.qt_pacotes|floatformat:"0g" }}</td>
+                                            <td>{{ f.qt_unidades|floatformat:"0g" }}</td>
+                                            <td>{{ unid_item|floatformat:"0g"  }}</td>
                                             <td>{{ vol_item|floatformat:"2g"}}</td>                         
                                         </tr>                                             
                                     {% endfor %}	                                                
@@ -102,6 +102,7 @@
                         <th>Região</th>
                         <th>Frete Total</th>
                         <th>Custo por Unidade</th>
+                        <th>Prazo</th>
                     </tr>
                 </thead>
                     <tbody>
@@ -120,23 +121,30 @@
                             <td class="text-right">
                                 R$ 
                                 {% if item.valor_frete %}
-                                    {{ item.valor_frete|floatformat:2 }}
+                                    {{ item.valor_frete|floatformat:"2g" }}
                                 {% else %}
-                                    {{ item.frete_final|floatformat:2 }}
+                                    {{ item.frete_final|floatformat:"2g" }}
                                 {% endif %}
                             </td>
                             <td class="text-right">
-                                R$ {{ item.frete_unidade|floatformat:4 }}
+                                R$ {{ item.frete_unidade|floatformat:"2g" }}
+                            </td>
+                            <td class="text-center">
+                                {{ item.prazo|floatformat:0  }} dias
                             </td>
                         </tr>
                         {% endfor %}
-                    </tbody>
+                    </tbody>                        
             </table>
         </div>
         <div class="card-footer text-muted">
             <a href="{% url 'appFrete:calcular_frete_view' %}" class="btn btn-outline-secondary">Nova Consulta</a>
-        </div>
+                <div class="info-margem text-muted mt-2 text-danger">
+                    <strong>Prazos:</strong> A partir do recebimento da 1ª parcela, baseados em informações das transportadoras.
+                </div>  
     </div>
+        </div>
+
 </div>
 <script>
     function red_white(x) {
