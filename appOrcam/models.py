@@ -19,7 +19,6 @@ class Imposto(models.Model):
         return f"{self.nome} - {self.aliquota}%"
     
     
-
 class EncargosTrabalhistas(models.Model):
     nome = models.CharField(max_length=50)  # Ex: ICMS, PIS/COFINS, IPI
     aliquota = models.DecimalField(max_digits=5, decimal_places=2)  # Ex: 18.00
@@ -45,11 +44,12 @@ class MemoriaCalculoDinamica(models.Model):
 
 
 class Chapa(models.Model):
+    # --- CAMPOS ORIGINAIS (Com seus defaults e configurações) ---
     nome = models.CharField(max_length=100)
     largura_cm = models.DecimalField(max_digits=7, decimal_places=2)
     comprimento_cm = models.DecimalField(max_digits=7, decimal_places=2)
     tipo_papelao = models.CharField(max_length=50, default='Onda B')
-    gramatura_kg_m2 = models.DecimalField( max_digits=7, decimal_places=2, default=0.45)
+    gramatura_kg_m2 = models.DecimalField(max_digits=7, decimal_places=2, default=0.45)
     custo_m2 = models.DecimalField(max_digits=10, decimal_places=2)
     estoque_disponivel = models.BooleanField(default=True)
     larg_apara_m = models.DecimalField(max_digits=7, decimal_places=2, default=0.01)
@@ -57,6 +57,22 @@ class Chapa(models.Model):
     medida_caixa_montada_cm = models.CharField(max_length=50, verbose_name="Medida Montada (cm)", default="0x0x0")
     unidades_chapa = models.PositiveIntegerField(default=1, verbose_name="Unidades por Chapa")
     explicacao_tecnica = models.CharField(max_length=255, blank=True, null=True)
+
+    # --- NOVOS CAMPOS PARA LOGÍSTICA E INTEGRAÇÃO ---
+    peso_pacote = models.DecimalField(max_digits=7, decimal_places=3, default=0.000)
+    comprim_pacote_cm = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    largura_pacote_cm = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    altura_pacote_cm = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    unidades_pacote = models.PositiveIntegerField(default=50, null=True, blank=True)
+    ativo = models.BooleanField(default=True)
+
+    # --- CÁLCULO DINÂMICO DE VOLUME ---
+    @property
+    def volume_pacote_m3(self):
+        if self.comprim_pacote_cm and self.largura_pacote_cm and self.altura_pacote_cm:
+            volume_cm3 = self.comprim_pacote_cm * self.largura_pacote_cm * self.altura_pacote_cm
+            return round(volume_cm3 / 1000000, 4)
+        return 0
 
     @property
     def area_m2(self):  # neste caso, refere-se a chapa do projeto
@@ -202,6 +218,7 @@ class CategoriaProduto(models.Model):
 
     def __str__(self):
         return self.nome
+
 
 class Orcamento(models.Model):
     cliente = models.CharField(max_length=255, db_index=True)
