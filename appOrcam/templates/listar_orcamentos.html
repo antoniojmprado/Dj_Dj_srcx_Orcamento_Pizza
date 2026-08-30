@@ -40,7 +40,7 @@
                 <td class="orc">{{ orc.cliente}}</td>
                 <td class="orc">{{ orc.produto_nome}}</td>
                 <td class = 'direita'>{{ orc.quantidade|floatformat:"g"}}</td>
-                <td class = 'direita'>{{ nome_maquina_impressao}}</td>
+                <td class = 'direita'>{{ orc.nome_maquina_impressao}}</td>
                 <td class = 'direita'> {{ orc.custo_material_unitario|floatformat:2}}</td>
                 <td class = 'direita'> 
                     {% if orc.custo_perda_total > 0 %}

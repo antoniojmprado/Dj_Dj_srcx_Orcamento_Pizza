@@ -12,10 +12,11 @@ Orçamento #{{ orcamento.id }}
     
     <div class="d-flex justify-content-between align-items-center">
         <h4>Data: {{ orcamento.data_criacao|date:"d/m/Y H:i:s" }}</h4>
-        
+        <!--
         <a href="{% url 'simulacoes_orcamentos' orcamento.id %}" class="btn btn-primary btn-sm ms-2 d-print-none shadow-sm">
             📊 Ver Simulações
         </a>
+        -->
     </div>        
 </div>
 
@@ -73,7 +74,7 @@ Orçamento #{{ orcamento.id }}
             <tr>
                 <td class="subtotal" colspan="1">📦 MATERIAIS E INSUMOS</td>
                 <td></td>
-                <td class="subtotal_item">R$ {{ orcamento.custo_total_materials|floatformat:"2g" }}</td>
+                <td class="subtotal_item">R$ {{ orcamento.custo_total_materiais|floatformat:"2g" }}</td>
                 <td class="subtotal_item">{{ orcamento.subtotal_materiais_insumos_porc|floatformat:0 }} %</td>
             </tr>
             <tr>
@@ -101,7 +102,7 @@ Orçamento #{{ orcamento.id }}
                 </td>
                 <td class="col-valor text-danger">R$ {{ orcamento.custo_perda_unitario|floatformat:"2g" }}</td>
                 <td class="col-valor">R$ {{ orcamento.custo_perda_total|floatformat:"2g" }}</td>
-                <td class="col-valor text-danger">{{ orcamento.custo_perda_projeto_porc|floatformat:0 }} %</td>
+                <td class="col-valor text-danger">{{ orcamento.custo_perda_projeto_porc|floatformat:2 }} %</td>
             </tr>
 
             <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td></tr>
@@ -126,7 +127,7 @@ Orçamento #{{ orcamento.id }}
                 </td>
                 <td class="col-valor">R$ {{ orcamento.custo_corte|floatformat:"4g" }}</td>
                 <td class="col-valor">R$ {{ orcamento.custo_total_corte_vinco|floatformat:"2g" }}</td>
-                <td style="font-size: 22px;text-align: right;">{{ orcamento.custo_corte_porc|floatformat:0 }} %</td>
+                <td class="col-valor">{{ orcamento.custo_corte_porc|floatformat:0 }} %</td>
             </tr>
             <tr>
                 <td>🔥 Seladora - Cap. Nominal:  {{ capac_seladora_nominal_hora|floatformat:"g" }} un/h 
@@ -135,7 +136,7 @@ Orçamento #{{ orcamento.id }}
                 </td>
                 <td class="col-valor">R$ {{ custo_seladora|floatformat:"4g" }}</td>
                 <td class="col-valor">R$ {{ orcamento.custo_total_seladora|floatformat:2 }}</td>
-                <td class="col-valor">{{ orcamento.custo_seladora_porc|floatformat:1 }} %</td>
+                <td class="col-valor">{{ orcamento.custo_seladora_porc|floatformat:2 }} %</td>
             </tr>
 
             <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td></tr>

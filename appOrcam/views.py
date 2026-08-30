@@ -539,6 +539,10 @@ def simulacoes_orcamentos(request, pk):
         valor_base_prolabore_5k = custo_operacional_5k / socio_divisor
         prolabores_fixos[m] = valor_base_prolabore_5k * pct_prolabore_socio
 
+        print(f' socio divisor {socio_divisor}')
+        print(f' valor_base_prolabore_5k {valor_base_prolabore_5k}')
+        print(f' prolabores_fixos {prolabores_fixos}')
+
     # Geração dos registros da matriz de simulação
     for q in quantidades:
         for m in margens:
@@ -558,7 +562,10 @@ def simulacoes_orcamentos(request, pk):
             custo_operacional_total = custo_materiais_total + custo_fabricacao_total + custo_logistica_total
             
             # Aplicação exata da nova fórmula: (Custo + Prolabore) / Markup
-            preco_sem_nf_total = (custo_operacional_total + prolabore_lote_fixo) / markup_divisor
+            #### self.preco_final_sem_nota = (custo_industrial_e_frete_sem_margem_atual * (1 + margem_decimal))  + self.prolabore_socio
+            # preco_sem_nf_total = (custo_operacional_total + prolabore_lote_fixo) / markup_divisor
+
+            preco_sem_nf_total = custo_operacional_total * (1 + m/100) + prolabore_lote_fixo
             preco_com_nf_total = preco_sem_nf_total * (1.0 + taxa_imposto_efetivo)
             
             margem_lucro_total = preco_sem_nf_total * (m / 100.0)

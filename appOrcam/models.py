@@ -524,7 +524,8 @@ class Orcamento(models.Model):
                 if margem_decimal > 0:
                     markup_divisor = 1 - margem_decimal
                     # --- CORRIGIDO: Utiliza a variável local comum para calcular o preço final ---
-                    self.preco_final_sem_nota = (custo_industrial_e_frete_sem_margem_atual + self.prolabore_socio) / markup_divisor
+                    # self.preco_final_sem_nota = (custo_industrial_e_frete_sem_margem_atual + self.prolabore_socio) / markup_divisor
+                    self.preco_final_sem_nota = (custo_industrial_e_frete_sem_margem_atual * (1 + margem_decimal))  + self.prolabore_socio
                     print(f"Markup divisor aplicado: {markup_divisor}, Preço final sem nota: {self.preco_final_sem_nota}")
                 else:
                     # --- CORRIGIDO: Utiliza a variável local comum caso não haja markup ---
@@ -850,7 +851,7 @@ class Orcamento(models.Model):
     @property
     # Porcentagen do custo da seladora sobre o custo sem margem
     def custo_seladora_porc(self):
-        return float(self.custo_seladora)/float(self.custo_industrial_e_frete_sem_margem) * 100 if self.custo_seladora else Decimal('0.20')
+        return float(self.custo_total_seladora)/float(self.custo_industrial_e_frete_sem_margem) * 100 if self.custo_seladora else Decimal('0.20')
 
     @property
     # Porcentagen do custo_frete_unitario sobre o custo sem margem
@@ -1215,10 +1216,6 @@ class Orcamento(models.Model):
     def custo_corte_porc(self):
         return float(self.custo_total_corte_vinco)/float(self.custo_industrial_e_frete_sem_margem) * 100 if self.custo_total_corte_vinco  else Decimal('0.20')
 
-    @property
-    # Porcentagen do custo da seladora sobre o custo sem margem
-    def custo_seladora_porc(self):
-        return float(self.custo_seladora)/float(self.custo_industrial_e_frete_sem_margem) * 100 if self.custo_seladora else Decimal('0.20')
 
     @property
     # Porcentagen do custo_frete_unitario sobre o custo sem margem
