@@ -47,3 +47,5 @@ staticfiles/
 *.JPEG
 *.gif
 *.GIF
+*.sql
+*.SQL

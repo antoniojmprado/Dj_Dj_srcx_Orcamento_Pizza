@@ -1,18 +1,21 @@
+
+import os
+import math
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from appOEE.models import ParametroFinanceiro, Maquina, Horas_turno, Turnos_dia
 from appOrcam.forms import OrcamentoForm
 from appOrcam.models import MaquinaFinancasOEE
-# Ajuste o nome do model de parâmetros
 from .models import Chapa, Custo_tinta, EncargosTrabalhistas, Imposto, Orcamento
 from decimal import Decimal
 from django.db import connection
 from django.db.models import Sum
 from .models import MemoriaCalculoDinamica
 
+from appFrete.services_frete import calcular_melhor_frete_interno
 
-import os
+
 #print(f"SISTEMA LENDO DE: {os.path.abspath(__file__)}")
 
 # =========================
@@ -595,3 +598,86 @@ def simulacoes_orcamentos(request, pk):
         'simulacoes': matriz_simulacao,
     }
     return render(request, 'simulacoes_de_orçamentos.html', context)
+
+
+def calcular_orcamento(request):
+    if request.method == "POST":
+        cliente_nome = request.POST.get('nome')
+        produto_id = request.POST.get('produto')
+        quantidade = request.POST.get('quantidade')
+        cep_cliente = request.POST.get('cep')
+        
+        # Validação básica para evitar erros se a tela enviar algo vazio
+        if not all([cliente_nome, produto_id, quantidade, cep_cliente]):
+            return HttpResponse("Por favor, preencha todos os campos (Nome, Produto, Quantidade e CEP).")
+            
+        try:
+            quantidade = int(quantidade)
+            
+            # 1. Puxa as referências do banco de dados via ORM
+            chapa = Chapa.objects.get(id=produto_id)
+            maq_impressao = Maquina.objects.get(id=7)  # ID 7 = Flexo Impressão → referência operacional para orcamento
+            maq_corte = Maquina.objects.get(id=10)     # ID 10 = Flexo Corte → referência operacional para orcamento
+
+            # 2. Instancia o Orçamento (Etapa 1: Produto Bruto Sem Frete)
+            orcamento = Orcamento(
+                cliente=cliente_nome,
+                produto_nome=chapa.nome,
+                quantidade=quantidade,
+                unidades_chapa=chapa.unidades_chapa,
+                maquina_impressao=maq_impressao,
+                maquina_corte=maq_corte,
+                chapa_projeto=chapa,
+                chapa_utilizada=chapa,
+                margem_real=15.00, # → referência operacional para orcamento
+                custo_frete_unitario=0.00 # Inicia zerado para descobrirmos o valor da carga
+            )
+            
+            # Aqui a sua classe 'Fat Model' calcula os custos de máquina e matéria-prima
+            orcamento.save() 
+
+            # 3. Prepara as variáveis logísticas baseadas na física da chapa
+            qt_pacotes = math.ceil(quantidade / int(chapa.unidades_pacote))
+            peso_carga = qt_pacotes * float(chapa.peso_pacote)
+            valor_carga = float(orcamento.preco_final_sem_nota)
+            
+            # 4. Aciona o motor isolado de frete do appFrete
+            melhor_frete_unitario = calcular_melhor_frete_interno(
+                cep_destino=cep_cliente,
+                valor_nf=valor_carga,
+                peso_informado=peso_carga,
+                comp=float(chapa.comprim_pacote_cm),
+                larg=float(chapa.largura_pacote_cm),
+                alt=float(chapa.altura_pacote_cm),
+                qt_pacotes=qt_pacotes,
+                unid_pacote=int(chapa.unidades_pacote)
+            )
+            
+            # 5. Etapa 2: Atualiza o Orçamento com o frete e salva o valor final
+            orcamento.custo_frete_unitario = Decimal(str(melhor_frete_unitario))
+            orcamento.save() # Recalcula o preço final somando o frete
+
+            # 6. Monta a resposta de sucesso formatada
+            mensagem = (
+                f"<h2>Sucesso, {orcamento.cliente}! Produto orçado com sucesso.</h2>"
+                f"<p><b>Produto:</b> {orcamento.produto_nome} | <b>Quantidade:</b> {quantidade} unidades</p>"
+                f"<hr>"
+                f"<h3>Resumo Logístico:</h3>"
+                f"<p>📦 <b>Carga:</b> {qt_pacotes} pacotes ({peso_carga:.2f} kg)<br>"
+                f"🚚 <b>Custo de Frete (Unitário):</b> R$ {melhor_frete_unitario:.4f}</p>"
+                f"<hr>"
+                f"<h3>Resumo Financeiro:</h3>"
+                f"<p>💰 <b>Valor Unitário (Sem Nota):</b> R$ {orcamento.custo_unitario_total_sem_margem:.2f}<br>"
+                f"💵 <b>Valor Final do Pedido (Sem Nota):</b> R$ {orcamento.preco_final_sem_nota:.2f}</p>"
+            )
+            return HttpResponse(mensagem)
+
+        except Chapa.DoesNotExist:
+            return HttpResponse(f"Ops, {cliente_nome}. O produto selecionado não existe no banco de dados.")
+        except Maquina.DoesNotExist:
+            return HttpResponse("Erro interno: As máquinas de impressão (ID 7) ou corte (ID 10) não foram encontradas no banco.")
+        except Exception as e:
+            return HttpResponse(f"Ocorreu um erro inesperado durante o cálculo: {str(e)}")
+
+    # Se for GET, apenas renderiza a página vazia
+    return render(request, 'appOrcam/orcamento_cliente.html')
