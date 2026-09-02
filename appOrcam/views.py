@@ -629,8 +629,8 @@ def calcular_orcamento(request):
                 maquina_corte=maq_corte,
                 chapa_projeto=chapa,
                 chapa_utilizada=chapa,
-                margem_real=15.00, # → referência operacional para orcamento
-                custo_frete_unitario=0.00 # Inicia zerado para descobrirmos o valor da carga
+                margem_real=Decimal('15.00'), # → referência operacional para orcamento
+                custo_frete_unitario=Decimal('0.00') # Inicia zerado para descobrirmos o valor da carga
             )
             
             # Aqui a sua classe 'Fat Model' calcula os custos de máquina e matéria-prima

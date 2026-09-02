@@ -313,7 +313,7 @@ class Orcamento(models.Model):
             self.custo_tinta_unitario = custo_tinta_unitario
 
             # 1. CUSTO FRETE UNITÁRIO
-            self.custo_frete_unitario = self.custo_frete_unitario if self.custo_frete_unitario > 0 else Decimal('0.30')
+            self.custo_frete_unitario = self.custo_frete_unitario if self.custo_frete_unitario is None else Decimal('0.30')
 
             # 2. CUSTO DO MATERIAL
             area_utilizada = Decimal(str(self.chapa_utilizada.area_m2))
@@ -456,6 +456,8 @@ class Orcamento(models.Model):
                             # --- CORRIGIDO: Removido o 'self.' para tornar variável local ---
                             custo_corte_5k = (custo_base * fin_corte.producao_nominal_hora / Decimal(str(q_ref))) * fator_century 
 
+                print(f'self.custo_corte {self.custo_corte}')
+
                 # 3. SELADORA (DINÂMICA - ID 11)
                 fin_seladora = MaquinaFinancasOEE.objects.filter(maquina_id=11).first()
                 if fin_seladora and fin_seladora.producao_nominal_hora > 0:
@@ -465,6 +467,8 @@ class Orcamento(models.Model):
 
                     custo_base = tempo_unit * custo_min
                     self.custo_seladora = (custo_base * fin_seladora.producao_nominal_hora / quantidade_formatada) * fator_seladora
+
+                    print(f'self.custo_seladora {self.custo_seladora}')
                     
                     # --- CORRIGIDO: Removido o 'self.' para tornar variável local ---
                     custo_seladora_5k = (custo_base * fin_seladora.producao_nominal_hora / Decimal(str(q_ref))) * fator_seladora
@@ -490,7 +494,9 @@ class Orcamento(models.Model):
             
             qtd = float(self.quantidade)
             unidades = float(self.unidades_chapa)
-            custo_frete = float(self.custo_frete_unitario) * qtd    
+            custo_frete = float(self.custo_frete_unitario) * qtd
+
+            print(f'self.custo_frete { custo_frete }')
             
             # Lógica de cálculo separada por condição
             if unidades > 1:
@@ -518,6 +524,8 @@ class Orcamento(models.Model):
                 
                 valor_base_prolabore = custo_industrial_e_frete_sem_margem_5k / socio_divisor
                 self.prolabore_socio = valor_base_prolabore * pct_prolabore_socio
+
+                print(f'self.prolabore_socio {self.prolabore_socio}')
                 
                 print(f"margem_decimal: {margem_decimal}, Preço final sem nota: {self.preco_final_sem_nota}")
 
@@ -543,6 +551,9 @@ class Orcamento(models.Model):
                     total_impostos_calculo = total_impostos_calculo - valor_icms
                
                 imposto_decimal = total_impostos_calculo /100
+
+                print(f' imposto_decimal { imposto_decimal }')
+                
                 self.preco_final_com_nota = float(self.preco_final_sem_nota) * (float(1) + float(imposto_decimal)) 
 
                 if self.venda_com_nota:
