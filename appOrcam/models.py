@@ -313,7 +313,9 @@ class Orcamento(models.Model):
             self.custo_tinta_unitario = custo_tinta_unitario
 
             # 1. CUSTO FRETE UNITÁRIO
-            self.custo_frete_unitario = self.custo_frete_unitario if self.custo_frete_unitario is None else Decimal('0.30')
+            # Agora ele só aplica 0.30 se a variável não existir (None). O 0.00 será aceito!
+            if self.custo_frete_unitario is None:
+                self.custo_frete_unitario = Decimal('0.30')
 
             # 2. CUSTO DO MATERIAL
             area_utilizada = Decimal(str(self.chapa_utilizada.area_m2))
@@ -553,7 +555,7 @@ class Orcamento(models.Model):
                 imposto_decimal = total_impostos_calculo /100
 
                 print(f' imposto_decimal { imposto_decimal }')
-                
+
                 self.preco_final_com_nota = float(self.preco_final_sem_nota) * (float(1) + float(imposto_decimal)) 
 
                 if self.venda_com_nota:

@@ -667,7 +667,7 @@ def calcular_orcamento(request):
                 f"🚚 <b>Custo de Frete (Unitário):</b> R$ {melhor_frete_unitario:.4f}</p>"
                 f"<hr>"
                 f"<h3>Resumo Financeiro:</h3>"
-                f"<p>💰 <b>Valor Unitário (Sem Nota):</b> R$ {orcamento.custo_unitario_total_sem_margem:.2f}<br>"
+                f"<p>💰 <b>Valor Unitário (Sem Nota):</b> R$ {orcamento.preco_final_sem_nota_unitario:.2f}<br>"
                 f"💵 <b>Valor Final do Pedido (Sem Nota):</b> R$ {orcamento.preco_final_sem_nota:.2f}</p>"
             )
             return HttpResponse(mensagem)
