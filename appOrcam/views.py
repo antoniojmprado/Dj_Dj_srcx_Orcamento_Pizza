@@ -602,143 +602,167 @@ def simulacoes_orcamentos(request, pk):
 
 
 def calcular_orcamento(request):
-
     if request.method == 'GET':
         # Puxa os produtos do banco (Filtrando apenas os ativos, se tiver esse campo, ou todos)
         produtos = Chapa.objects.all().order_by('nome')
-        
-        # Envia para o template de entrada
         return render(request, 'appOrcam/orcamento_cliente.html', {'produtos': produtos})
 
     if request.method == "POST":
-        cliente_nome = request.POST.get('nome')
-        produto_id = request.POST.get('produto_id')
-        quantidade = request.POST.get('quantidade')
+        # 1. Captura os dados básicos (Ajustado para o novo HTML)
+        cliente_nome = request.POST.get('cliente') 
+        contato = request.POST.get('contato', 'Não informado')
+        telefone = request.POST.get('telefone', 'Não informado')
         cep_cliente = request.POST.get('cep')
         
-        # Validação básica para evitar erros se a tela enviar algo vazio
-        if not all([cliente_nome, produto_id, quantidade, cep_cliente]):
-            return HttpResponse("Por favor, preencha todos os campos (Nome, Produto, Quantidade e CEP).")
+        # Endereço
+        logradouro = request.POST.get('logradouro', '')
+        numero = request.POST.get('numero', '')
+        complemento = request.POST.get('complemento', '')
+        bairro = request.POST.get('bairro', '')
+        cidade = request.POST.get('cidade', '')
+        uf = request.POST.get('uf', '')
+
+        # 2. Captura a lista de produtos marcados nos checkboxes
+        produtos_selecionados = request.POST.getlist('produtos_selecionados')
+
+        # 3. Trava de segurança atualizada
+        if not cliente_nome or not cep_cliente or not produtos_selecionados:
+            return HttpResponse("Por favor, preencha o Cliente, o CEP e selecione pelo menos um Produto.")
             
         try:
-            quantidade = int(quantidade)
-            
-            # 1. Puxa as referências do banco de dados via ORM
-            chapa = Chapa.objects.get(id=produto_id)
-            maq_impressao = Maquina.objects.get(id=7)  # ID 7 = Flexo Impressão → referência operacional para orcamento
-            maq_corte = Maquina.objects.get(id=10)     # ID 10 = Flexo Corte → referência operacional para orcamento
+            # Máquinas base para o orçamento
+            maq_impressao = Maquina.objects.get(id=7)  # Flexo Impressão
+            maq_corte = Maquina.objects.get(id=10)     # Flexo Corte
 
-            # 2. Instancia o Orçamento (Etapa 1: Produto Bruto Sem Frete)
-            orcamento = Orcamento(
-                cliente=cliente_nome,
-                produto_nome=chapa.nome,
-                quantidade=quantidade,
-                unidades_chapa=chapa.unidades_chapa,
-                maquina_impressao=maq_impressao,
-                maquina_corte=maq_corte,
-                chapa_projeto=chapa,
-                chapa_utilizada=chapa,
-                margem_real=Decimal('15.00'), # → referência operacional para orcamento
-                custo_frete_unitario=Decimal('0.00') # Inicia zerado para descobrirmos o valor da carga
-            )
-            
-            # Aqui a sua classe 'Fat Model' calcula os custos de máquina e matéria-prima
-            orcamento.save() 
+            # Variáveis de consolidação do carrinho
+            orcamentos_gerados = []
+            total_geral_carrinho = 0
+            frete_total_carrinho = 0
+            subtotal_produtos_carrinho = 0
+            prazo_dias_final = 0
 
-            # 3. Prepara as variáveis logísticas baseadas na física da chapa
-            qt_pacotes = math.ceil(quantidade / int(chapa.unidades_pacote))
-            peso_carga = qt_pacotes * float(chapa.peso_pacote)
-            valor_carga = float(orcamento.preco_final_sem_nota)
-            
-            # 4. Aciona o motor isolado de frete do appFrete
-            melhor_frete_unitario, prazo_dias = calcular_melhor_frete_interno(
-                cep_destino=cep_cliente,
-                valor_nf=valor_carga,
-                peso_informado=peso_carga,
-                comp=float(chapa.comprim_pacote_cm),
-                larg=float(chapa.largura_pacote_cm),
-                alt=float(chapa.altura_pacote_cm),
-                qt_pacotes=qt_pacotes,
-                unid_pacote=int(chapa.unidades_pacote)
-            )
-            
-            # Etapa 2: Atualiza o Orçamento com o frete e salva o valor final
-            frete_limpo = str(melhor_frete_unitario).replace(',', '.')
-            orcamento.custo_frete_unitario = Decimal(frete_limpo)
-            orcamento.save()
+            # 4. O LOOP DO CARRINHO: Processa cada produto selecionado
+            for prod_id in produtos_selecionados:
+                quantidade = request.POST.get(f'quantidade_{prod_id}')
+                
+                # Pula se marcou o checkbox mas não preencheu a quantidade
+                if not quantidade or int(quantidade) <= 0:
+                    continue
+                    
+                quantidade = int(quantidade)
+                chapa = Chapa.objects.get(id=prod_id)
 
-            # 6. Monta a resposta de sucesso formatada
-            mensagem = (
-                f"<h2>Sucesso, {orcamento.cliente}! Produto orçado com sucesso.</h2>"
-                f"<p><b>Produto:</b> {orcamento.produto_nome} | <b>Quantidade:</b> {quantidade} unidades</p>"
-                f"<hr>"
-                f"<h3>Resumo Logístico:</h3>"
-                f"<p>📦 <b>Carga:</b> {qt_pacotes} pacotes ({peso_carga:.2f} kg)<br>"
-                f"🚚 <b>Custo de Frete (Unitário):</b> R$ {melhor_frete_unitario:.4f}</p>"
-                f"<hr>"
-                f"<h3>Resumo Financeiro:</h3>"
-                f"<p>💰 <b>Valor Unitário (Sem Nota):</b> R$ {orcamento.preco_final_sem_nota_unitario:.2f}<br>"
-                f"💵 <b>Valor Final do Pedido (Sem Nota):</b> R$ {orcamento.preco_final_sem_nota:.2f}</p>"
-                f"<hr>"
-                f"⏰ <b>Prazo de Entrega:</b> {prazo_dias} dias úteis</p>"
-            )
+                # Instancia o Orçamento
+                orcamento = Orcamento(
+                    cliente=cliente_nome,
+                    produto_nome=chapa.nome,
+                    quantidade=quantidade,
+                    unidades_chapa=chapa.unidades_chapa,
+                    maquina_impressao=maq_impressao,
+                    maquina_corte=maq_corte,
+                    chapa_projeto=chapa,
+                    chapa_utilizada=chapa,
+                    margem_real=Decimal('15.00'),
+                    custo_frete_unitario=Decimal('0.00') # Inicia zerado
+                )
+                orcamento.save() 
 
+                # Variáveis logísticas
+                qt_pacotes = math.ceil(quantidade / int(chapa.unidades_pacote))
+                peso_carga = qt_pacotes * float(chapa.peso_pacote)
+                valor_carga = float(orcamento.preco_final_sem_nota)
+                
+                # Motor isolado de frete (Calculado item a item nesta versão)
+                melhor_frete_unitario, prazo_dias = calcular_melhor_frete_interno(
+                    cep_destino=cep_cliente,
+                    valor_nf=valor_carga,
+                    peso_informado=peso_carga,
+                    comp=float(chapa.comprim_pacote_cm),
+                    larg=float(chapa.largura_pacote_cm),
+                    alt=float(chapa.altura_pacote_cm),
+                    qt_pacotes=qt_pacotes,
+                    unid_pacote=int(chapa.unidades_pacote)
+                )
+                
+                # Atualiza o Orçamento com o frete
+                frete_limpo = str(melhor_frete_unitario).replace(',', '.')
+                orcamento.custo_frete_unitario = Decimal(frete_limpo)
+                orcamento.save()
 
-            # 1. Capturando os novos campos do formulário HTML
-            telefone = request.POST.get('telefone', 'Não informado')
-            logradouro = request.POST.get('logradouro', '')
-            numero = request.POST.get('numero', '')
-            complemento = request.POST.get('complemento', '')
-            bairro = request.POST.get('bairro', '')
-            cidade = request.POST.get('cidade', '')
-            uf = request.POST.get('uf', '')
+                # Matemática de separação para exibição
+                total_item = float(orcamento.preco_final_sem_nota)
+                frete_unitario = float(orcamento.custo_frete_unitario)
+                frete_total_item = frete_unitario * quantidade
+                subtotal_item = total_item - frete_total_item
+                valor_unitario_produto = subtotal_item / quantidade
 
-            # 2. Formatando o endereço para exibição
-            endereco_completo = f"{logradouro}, {numero}"
-            if complemento:
-                endereco_completo += f" - {complemento}"
-            endereco_completo += f" - {bairro}, {cidade}/{uf}"
+                # Acumula os valores para o total do carrinho
+                total_geral_carrinho += total_item
+                frete_total_carrinho += frete_total_item
+                subtotal_produtos_carrinho += subtotal_item
+                if prazo_dias > prazo_dias_final:
+                    prazo_dias_final = prazo_dias # Mantém o maior prazo encontrado
 
-            # 3. Função auxiliar para padrão monetário BR
+                # Guarda o resumo deste item na lista
+                orcamentos_gerados.append({
+                    'nome': orcamento.produto_nome,
+                    'quantidade': quantidade,
+                    'unitario_caixa': valor_unitario_produto,
+                    'subtotal': subtotal_item,
+                    'frete_unitario': frete_unitario,
+                    'frete_total': frete_total_item,
+                })
+
+            # Trava caso nenhum produto tenha passado na validação de quantidade
+            if not orcamentos_gerados:
+                return HttpResponse("Por favor, informe a quantidade válida para os produtos selecionados.")
+
+            # 5. Formatação e Construção da Mensagem Final
             def formata_br(valor, casas=2):
                 if valor is None: return "0,00"
                 formatado = f"{float(valor):,.{casas}f}"
                 return formatado.replace(',', 'X').replace('.', ',').replace('X', '.')
 
-            # 4. Matemática de separação (evitando cobrança dupla do frete)
-            total_geral = float(orcamento.preco_final_sem_nota)
-            frete_unitario = float(orcamento.custo_frete_unitario)
-            frete_total = frete_unitario * float(orcamento.quantidade)
-            
-            # Extrai o frete para exibir o valor limpo da caixa
-            subtotal_produtos = total_geral - frete_total 
-            valor_unitario_produto = subtotal_produtos / float(orcamento.quantidade)
+            endereco_completo = f"{logradouro}, {numero}"
+            if complemento:
+                endereco_completo += f" - {complemento}"
+            endereco_completo += f" - {bairro}, {cidade}/{uf}"
 
-            # 5. Construindo a mensagem
+            # Cabeçalho da mensagem
             mensagem = f"""
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-                <h2 style="color: #2c3e50;">Orçamento Concluído com Sucesso! 🎉</h2>
-                <p>Olá, <b>{orcamento.cliente}</b>! Seu orçamento foi processado pelo nosso sistema.</p>
+            <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                <h2 style="color: #2c3e50;">Orçamento Múltiplo Concluído! 🎉</h2>
+                <p>Olá, <b>{contato}</b> da empresa <b>{cliente_nome}</b>! Seus itens foram processados.</p>
                 
-                <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px;">Resumo do Pedido</h3>
-                <ul style="list-style-type: none; padding-left: 0; line-height: 1.8;">
-                    <li>📦 <b>Produto:</b> {orcamento.produto_nome}</li>
-                    <li>🔢 <b>Quantidade:</b> {formata_br(orcamento.quantidade, 0)} unidades</li>
-                    <li>🏷️ <b>Valor Unitário (Caixa):</b> R$ {formata_br(valor_unitario_produto, 2)}</li>
-                    <li>💰 <b>Subtotal (Produtos):</b> R$ {formata_br(subtotal_produtos)}</li>
-                </ul>
+                <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px;">Itens do Pedido</h3>
+            """
 
-                <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px;">Logística e Entrega</h3>
+            # Injeta cada produto orçado na mensagem
+            for item in orcamentos_gerados:
+                mensagem += f"""
+                <div style="background-color: #fcfcfc; border-left: 4px solid #3498db; padding: 10px; margin-bottom: 15px;">
+                    <p style="margin: 0 0 5px 0;">📦 <b>{item['nome']}</b></p>
+                    <ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 0.95em;">
+                        <li>🔢 Quantidade: {formata_br(item['quantidade'], 0)} unidades</li>
+                        <li>🏷️ Valor Unitário (Caixa): R$ {formata_br(item['unitario_caixa'], 2)}</li>
+                        <li>🚚 Frete Unitário: R$ {formata_br(item['frete_unitario'], 2)}</li>
+                        <li style="margin-top: 5px;"><b>💰 Subtotal (Produto + Frete): R$ {formata_br(item['subtotal'] + item['frete_total'], 2)}</b></li>
+                    </ul>
+                </div>
+                """
+
+            # Rodapé com a logística e Totais
+            mensagem += f"""
+                <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 25px;">Logística e Entrega</h3>
                 <ul style="list-style-type: none; padding-left: 0; line-height: 1.8;">
                     <li>📍 <b>Endereço:</b> {endereco_completo}</li>
-                    <li>📦 <b>Frete Unitário:</b> R$ {formata_br(frete_unitario, 2)}</li>
-                    <li>🚚 <b>Frete Total:</b> R$ {formata_br(frete_total)}</li>
-                    <li>⏱️ <b>Prazo Estimado:</b> {int(prazo_dias)} dias úteis</li>
+                    <li>🚚 <b>Custo Total de Frete:</b> R$ {formata_br(frete_total_carrinho)}</li>
+                    <li>⏱️ <b>Prazo Estimado:</b> {int(prazo_dias_final)} dias úteis</li>
                 </ul>
 
                 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 20px;">
                     <h3 style="color: #27ae60; margin: 0; font-size: 1.4em; text-align: center;">
-                        Total Geral: R$ {formata_br(total_geral)}
+                        Total Geral do Pedido: R$ {formata_br(total_geral_carrinho)}
                     </h3>
                 </div>
 
@@ -751,7 +775,7 @@ def calcular_orcamento(request):
             return HttpResponse(mensagem)
 
         except Chapa.DoesNotExist:
-            return HttpResponse(f"Ops, {cliente_nome}. O produto selecionado não existe no banco de dados.")
+            return HttpResponse(f"Ops, {cliente_nome}. Um dos produtos selecionados não existe no banco de dados.")
         except Maquina.DoesNotExist:
             return HttpResponse("Erro interno: As máquinas de impressão (ID 7) ou corte (ID 10) não foram encontradas no banco.")
         except Exception as e:

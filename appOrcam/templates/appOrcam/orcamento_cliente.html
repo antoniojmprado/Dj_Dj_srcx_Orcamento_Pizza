@@ -17,78 +17,94 @@
                     <div class="card-body p-4">
                         <form method="POST" action="{% url 'calcular_orcamento' %}">
                             {% csrf_token %}
-                            <div class="mb-3">
-                                <label for="nome" class="form-label fw-bold">Nome ou Empresa</label>
-                                <input type="text" class="form-control" id="nome" name="nome" required>
-                            </div>
+<!-- Dados do Cliente e Entrega -->
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="cliente"><b>Empresa / Cliente:</b></label>
+        <input type="text" id="cliente" name="cliente" class="form-control" placeholder="Nome da Empresa" required>
+    </div>
+    
+    <!-- Novo Campo: Nome do Contato -->
+    <div class="col-md-6 mb-3">
+        <label for="contato"><b>Nome do Contato:</b></label>
+        <input type="text" id="contato" name="contato" class="form-control" placeholder="Com quem vamos falar?" required>
+    </div>
+</div>
 
-                            <div class="row">
-                                <!-- Contato -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="telefone"><b>Telefone / WhatsApp:</b></label>
-                                    <input type="text" id="telefone" name="telefone" class="form-control" placeholder="(11) 99999-9999">
-                                </div>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="telefone"><b>Telefone / WhatsApp:</b></label>
+        <input type="text" id="telefone" name="telefone" class="form-control" placeholder="(11) 99999-9999" required>
+    </div>
+    
+    <!-- CEP ÚNICO (Gatilho da busca) -->
+    <div class="col-md-6 mb-3">
+        <label for="cep"><b>CEP de Entrega:</b></label>
+        <input type="text" id="cep" name="cep" class="form-control" placeholder="00000-000" required>
+        <small id="cep-status" class="text-muted"></small>
+    </div>
+</div>
 
-                                <!-- CEP com gatilho de busca -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="cep"><b>CEP:</b></label>
-                                    <input type="text" id="cep" name="cep" class="form-control" placeholder="00000-000" required>
-                                    <small id="cep-status" class="text-muted"></small>
-                                </div>
-                            </div>
+<!-- Endereço Auto-preenchido -->
+<div class="row">
+    <div class="col-md-5 mb-3">
+        <label for="logradouro"><b>Rua / Logradouro:</b></label>
+        <input type="text" id="logradouro" name="logradouro" class="form-control" required>
+    </div>
+    <div class="col-md-2 mb-3">
+        <label for="numero"><b>Número:</b></label>
+        <input type="text" id="numero" name="numero" class="form-control" required>
+    </div>
+    <div class="col-md-5 mb-3">
+        <label for="complemento"><b>Complemento:</b></label>
+        <input type="text" id="complemento" name="complemento" class="form-control" placeholder="Galpão, Sala, etc.">
+    </div>
+</div>
 
-                            <div class="row">
-                                <!-- Endereço Auto-preenchido -->
-                                <div class="col-md-5 mb-3">
-                                    <label for="logradouro"><b>Rua / Logradouro:</b></label>
-                                    <input type="text" id="logradouro" name="logradouro" class="form-control" required>
-                                </div>
-                                <div class="col-md-2 mb-3">
-                                    <label for="numero"><b>Número:</b></label>
-                                    <input type="text" id="numero" name="numero" class="form-control" required>
-                                </div>
-                                <div class="col-md-5 mb-3">
-                                    <label for="complemento"><b>Complemento:</b></label>
-                                    <input type="text" id="complemento" name="complemento" class="form-control" placeholder="Galpão, Sala, etc.">
-                                </div>
-                            </div>
+<div class="row">
+    <div class="col-md-5 mb-3">
+        <label for="bairro"><b>Bairro:</b></label>
+        <input type="text" id="bairro" name="bairro" class="form-control" required>
+    </div>
+    <div class="col-md-5 mb-3">
+        <label for="cidade"><b>Cidade:</b></label>
+        <input type="text" id="cidade" name="cidade" class="form-control" required>
+    </div>
+    <div class="col-md-2 mb-3">
+        <label for="uf"><b>UF:</b></label>
+        <input type="text" id="uf" name="uf" class="form-control" maxlength="2" required>
+    </div>
+</div>
+                           
 
-                            <div class="row">
-                                <div class="col-md-5 mb-3">
-                                    <label for="bairro"><b>Bairro:</b></label>
-                                    <input type="text" id="bairro" name="bairro" class="form-control" required>
-                                </div>
-                                <div class="col-md-5 mb-3">
-                                    <label for="cidade"><b>Cidade:</b></label>
-                                    <input type="text" id="cidade" name="cidade" class="form-control" required>
-                                </div>
-                                <div class="col-md-2 mb-3">
-                                    <label for="uf"><b>UF:</b></label>
-                                    <input type="text" id="uf" name="uf" class="form-control" maxlength="2" required>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-
-                                <label for="produto_id" class="form-label">Produto / Caixa:</label>
-                                <select name="produto_id" id="produto_id" class="form-select" required>
-                                    <option value="" disabled selected>Selecione o produto desejado...</option>                                    
-                                    <!-- O Django vai criar uma opção para cada produto do banco -->
-                                    {% for produto in produtos %}
-                                        <option value="{{ produto.id }}">
-                                            {{ produto.nome }} - {{ produto.tipo_papelao }} 
-                                        </option>
-                                    {% endfor %}                                    
-                                </select>
-
-                            </div>
-                            <div class="mb-3">
-                                <label for="quantidade" class="form-label fw-bold">Quantidade de Caixas</label>
-                                <input type="number" class="form-control" id="quantidade" name="quantidade" required min="1" placeholder="Ex: 1000">
-                            </div>
                             <div class="mb-4">
-                                <label for="cep" class="form-label fw-bold">CEP de Entrega (Grande SP)</label>
-                                <input type="text" class="form-control" id="cep" name="cep" required>
+                                <label class="form-label"><b>Selecione as Caixas e Quantidades:</b></label>
+                                
+                                <!-- Caixa delimitada com barra de rolagem interna -->
+                                <div class="border rounded p-2" style="max-height: 220px; overflow-y: auto; background-color: #fdfdfd;">
+                                    <div class="row m-0">
+                                        {% for produto in produtos %}
+                                        <div class="col-md-12 mb-2 px-1">
+                                            <div class="input-group input-group-sm">
+                                                <!-- 1. O Checkbox -->
+                                                <div class="input-group-text bg-white">
+                                                    <input class="form-check-input mt-0" type="checkbox" name="produtos_selecionados" value="{{ produto.id }}" id="check_{{ produto.id }}">
+                                                </div>
+                                                
+                                                <!-- 2. Nome do Produto (clicável) -->
+                                                <input type="text" class="form-control bg-light" value="{{ produto.nome }} - {{ produto.tipo_papelao }}" readonly style="cursor: pointer; font-size: 0.9em;" onclick="document.getElementById('check_{{ produto.id }}').click();">
+                                                
+                                                <!-- 3. Quantidade (mais estreito) -->
+                                                <input type="number" class="form-control" name="quantidade_{{ produto.id }}" placeholder="Qtd (ex: 1000)" min="1" style="max-width: 130px;">
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <small class="text-muted mt-1 d-block">Role a lista para ver todas as opções. Marque a caixa e informe a quantidade ao lado.</small>
                             </div>
+
                             <div class="d-grid mt-4">
                                 <button type="submit" class="btn btn-success btn-lg">Calcular Orçamento</button>
                             </div>
