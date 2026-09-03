@@ -19,4 +19,5 @@ urlpatterns = [
         
     path('orcamento/<int:pk>/simulacao/', views.simulacoes_orcamentos, name='simulacoes_orcamentos'),
     path('orcamento/', views.calcular_orcamento, name='calcular_orcamento'),
+    path('api/consulta-cep/<str:cep_digitado>/', views.consulta_cep_local, name='consulta_cep_local'),
 ]

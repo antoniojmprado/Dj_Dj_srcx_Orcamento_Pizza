@@ -57,5 +57,10 @@ def calcular_melhor_frete_interno(cep_destino, valor_nf, peso_informado, comp, l
 
         if frete_unidade < melhor_frete_unidade:
             melhor_frete_unidade = frete_unidade
+            melhor_prazo = float(t.prazo) # <--- CAPTURA O PRAZO
 
-    return melhor_frete_unidade if melhor_frete_unidade != float('inf') else 0.0
+            # Se não achar nada, devolve 0 para ambos
+            if melhor_frete_unidade == float('inf'):
+                return 0.0, 0
+
+    return melhor_frete_unidade, melhor_prazo 

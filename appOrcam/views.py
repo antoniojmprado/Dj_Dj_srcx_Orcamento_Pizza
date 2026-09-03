@@ -4,6 +4,7 @@ import math
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect, render, get_object_or_404
+from appFrete.models import FreteEdne
 from appOEE.models import ParametroFinanceiro, Maquina, Horas_turno, Turnos_dia
 from appOrcam.forms import OrcamentoForm
 from appOrcam.models import MaquinaFinancasOEE
@@ -601,9 +602,17 @@ def simulacoes_orcamentos(request, pk):
 
 
 def calcular_orcamento(request):
+
+    if request.method == 'GET':
+        # Puxa os produtos do banco (Filtrando apenas os ativos, se tiver esse campo, ou todos)
+        produtos = Chapa.objects.all().order_by('nome')
+        
+        # Envia para o template de entrada
+        return render(request, 'appOrcam/orcamento_cliente.html', {'produtos': produtos})
+
     if request.method == "POST":
         cliente_nome = request.POST.get('nome')
-        produto_id = request.POST.get('produto')
+        produto_id = request.POST.get('produto_id')
         quantidade = request.POST.get('quantidade')
         cep_cliente = request.POST.get('cep')
         
@@ -642,7 +651,7 @@ def calcular_orcamento(request):
             valor_carga = float(orcamento.preco_final_sem_nota)
             
             # 4. Aciona o motor isolado de frete do appFrete
-            melhor_frete_unitario = calcular_melhor_frete_interno(
+            melhor_frete_unitario, prazo_dias = calcular_melhor_frete_interno(
                 cep_destino=cep_cliente,
                 valor_nf=valor_carga,
                 peso_informado=peso_carga,
@@ -653,9 +662,10 @@ def calcular_orcamento(request):
                 unid_pacote=int(chapa.unidades_pacote)
             )
             
-            # 5. Etapa 2: Atualiza o Orçamento com o frete e salva o valor final
-            orcamento.custo_frete_unitario = Decimal(str(melhor_frete_unitario))
-            orcamento.save() # Recalcula o preço final somando o frete
+            # Etapa 2: Atualiza o Orçamento com o frete e salva o valor final
+            frete_limpo = str(melhor_frete_unitario).replace(',', '.')
+            orcamento.custo_frete_unitario = Decimal(frete_limpo)
+            orcamento.save()
 
             # 6. Monta a resposta de sucesso formatada
             mensagem = (
@@ -669,7 +679,75 @@ def calcular_orcamento(request):
                 f"<h3>Resumo Financeiro:</h3>"
                 f"<p>💰 <b>Valor Unitário (Sem Nota):</b> R$ {orcamento.preco_final_sem_nota_unitario:.2f}<br>"
                 f"💵 <b>Valor Final do Pedido (Sem Nota):</b> R$ {orcamento.preco_final_sem_nota:.2f}</p>"
+                f"<hr>"
+                f"⏰ <b>Prazo de Entrega:</b> {prazo_dias} dias úteis</p>"
             )
+
+
+            # 1. Capturando os novos campos do formulário HTML
+            telefone = request.POST.get('telefone', 'Não informado')
+            logradouro = request.POST.get('logradouro', '')
+            numero = request.POST.get('numero', '')
+            complemento = request.POST.get('complemento', '')
+            bairro = request.POST.get('bairro', '')
+            cidade = request.POST.get('cidade', '')
+            uf = request.POST.get('uf', '')
+
+            # 2. Formatando o endereço para exibição
+            endereco_completo = f"{logradouro}, {numero}"
+            if complemento:
+                endereco_completo += f" - {complemento}"
+            endereco_completo += f" - {bairro}, {cidade}/{uf}"
+
+            # 3. Função auxiliar para padrão monetário BR
+            def formata_br(valor, casas=2):
+                if valor is None: return "0,00"
+                formatado = f"{float(valor):,.{casas}f}"
+                return formatado.replace(',', 'X').replace('.', ',').replace('X', '.')
+
+            # 4. Matemática de separação (evitando cobrança dupla do frete)
+            total_geral = float(orcamento.preco_final_sem_nota)
+            frete_unitario = float(orcamento.custo_frete_unitario)
+            frete_total = frete_unitario * float(orcamento.quantidade)
+            
+            # Extrai o frete para exibir o valor limpo da caixa
+            subtotal_produtos = total_geral - frete_total 
+            valor_unitario_produto = subtotal_produtos / float(orcamento.quantidade)
+
+            # 5. Construindo a mensagem
+            mensagem = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                <h2 style="color: #2c3e50;">Orçamento Concluído com Sucesso! 🎉</h2>
+                <p>Olá, <b>{orcamento.cliente}</b>! Seu orçamento foi processado pelo nosso sistema.</p>
+                
+                <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px;">Resumo do Pedido</h3>
+                <ul style="list-style-type: none; padding-left: 0; line-height: 1.8;">
+                    <li>📦 <b>Produto:</b> {orcamento.produto_nome}</li>
+                    <li>🔢 <b>Quantidade:</b> {formata_br(orcamento.quantidade, 0)} unidades</li>
+                    <li>🏷️ <b>Valor Unitário (Caixa):</b> R$ {formata_br(valor_unitario_produto, 2)}</li>
+                    <li>💰 <b>Subtotal (Produtos):</b> R$ {formata_br(subtotal_produtos)}</li>
+                </ul>
+
+                <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px;">Logística e Entrega</h3>
+                <ul style="list-style-type: none; padding-left: 0; line-height: 1.8;">
+                    <li>📍 <b>Endereço:</b> {endereco_completo}</li>
+                    <li>📦 <b>Frete Unitário:</b> R$ {formata_br(frete_unitario, 2)}</li>
+                    <li>🚚 <b>Frete Total:</b> R$ {formata_br(frete_total)}</li>
+                    <li>⏱️ <b>Prazo Estimado:</b> {int(prazo_dias)} dias úteis</li>
+                </ul>
+
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 20px;">
+                    <h3 style="color: #27ae60; margin: 0; font-size: 1.4em; text-align: center;">
+                        Total Geral: R$ {formata_br(total_geral)}
+                    </h3>
+                </div>
+
+                <p style="margin-top: 20px; font-size: 0.9em; color: #7f8c8d; text-align: center;">
+                    <i>Dúvidas? Nossa equipe está à disposição no WhatsApp {telefone}.</i>
+                </p>
+            </div>
+            """
+
             return HttpResponse(mensagem)
 
         except Chapa.DoesNotExist:
@@ -681,3 +759,24 @@ def calcular_orcamento(request):
 
     # Se for GET, apenas renderiza a página vazia
     return render(request, 'appOrcam/orcamento_cliente.html')
+
+
+def consulta_cep_local(request, cep_digitado):
+    # Aplica a mesma regra de limpeza que você já usa no cálculo de frete
+    cep_limpo = ''.join(filter(str.isdigit, str(cep_digitado)))
+    cep_busca = cep_limpo.lstrip('0') if len(cep_limpo) == 8 else cep_limpo
+    
+    destino = FreteEdne.objects.filter(cep=cep_busca).first()
+    
+    if destino:
+        dados = {
+            'erro': False,
+            'logradouro': destino.logradouro if destino.logradouro not in ["", "NaN"] else "",
+            'bairro': destino.bairro if destino.bairro not in ["", "NaN"] else "",
+            'localidade': destino.municipio,
+            'uf': destino.uf
+        }
+    else:
+        dados = {'erro': True}
+        
+    return JsonResponse(dados)

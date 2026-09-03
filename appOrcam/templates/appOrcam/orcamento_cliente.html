@@ -21,13 +21,65 @@
                                 <label for="nome" class="form-label fw-bold">Nome ou Empresa</label>
                                 <input type="text" class="form-control" id="nome" name="nome" required>
                             </div>
-                            <div class="mb-3">
-                                <label for="telefone" class="form-label fw-bold">Telefone / WhatsApp</label>
-                                <input type="tel" class="form-control" id="telefone" name="telefone" required>
+
+                            <div class="row">
+                                <!-- Contato -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="telefone"><b>Telefone / WhatsApp:</b></label>
+                                    <input type="text" id="telefone" name="telefone" class="form-control" placeholder="(11) 99999-9999">
+                                </div>
+
+                                <!-- CEP com gatilho de busca -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="cep"><b>CEP:</b></label>
+                                    <input type="text" id="cep" name="cep" class="form-control" placeholder="00000-000" required>
+                                    <small id="cep-status" class="text-muted"></small>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- Endereço Auto-preenchido -->
+                                <div class="col-md-5 mb-3">
+                                    <label for="logradouro"><b>Rua / Logradouro:</b></label>
+                                    <input type="text" id="logradouro" name="logradouro" class="form-control" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label for="numero"><b>Número:</b></label>
+                                    <input type="text" id="numero" name="numero" class="form-control" required>
+                                </div>
+                                <div class="col-md-5 mb-3">
+                                    <label for="complemento"><b>Complemento:</b></label>
+                                    <input type="text" id="complemento" name="complemento" class="form-control" placeholder="Galpão, Sala, etc.">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-5 mb-3">
+                                    <label for="bairro"><b>Bairro:</b></label>
+                                    <input type="text" id="bairro" name="bairro" class="form-control" required>
+                                </div>
+                                <div class="col-md-5 mb-3">
+                                    <label for="cidade"><b>Cidade:</b></label>
+                                    <input type="text" id="cidade" name="cidade" class="form-control" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <label for="uf"><b>UF:</b></label>
+                                    <input type="text" id="uf" name="uf" class="form-control" maxlength="2" required>
+                                </div>
                             </div>
                             <div class="mb-3">
-                                <label for="produto" class="form-label fw-bold">ID do Produto</label>
-                                <input type="number" class="form-control" id="produto" name="produto" required placeholder="Ex: 1">
+
+                                <label for="produto_id" class="form-label">Produto / Caixa:</label>
+                                <select name="produto_id" id="produto_id" class="form-select" required>
+                                    <option value="" disabled selected>Selecione o produto desejado...</option>                                    
+                                    <!-- O Django vai criar uma opção para cada produto do banco -->
+                                    {% for produto in produtos %}
+                                        <option value="{{ produto.id }}">
+                                            {{ produto.nome }} - {{ produto.tipo_papelao }} 
+                                        </option>
+                                    {% endfor %}                                    
+                                </select>
+
                             </div>
                             <div class="mb-3">
                                 <label for="quantidade" class="form-label fw-bold">Quantidade de Caixas</label>
@@ -48,3 +100,39 @@
     </div>
 </body>
 </html>
+<script>
+    document.getElementById('cep').addEventListener('blur', function() {
+        let cep = this.value.replace(/\D/g, '');
+        let statusText = document.getElementById('cep-status');
+
+        if (cep.length === 8) {
+            statusText.innerText = "Consultando base local...";
+            statusText.style.color = "blue";
+
+            // Dispara a consulta para o SEU servidor, não mais para a internet
+            fetch(`/orcam/api/consulta-cep/${cep}/`) 
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.erro) {
+                        document.getElementById('logradouro').value = data.logradouro;
+                        document.getElementById('bairro').value = data.bairro;
+                        document.getElementById('cidade').value = data.localidade;
+                        document.getElementById('uf').value = data.uf;
+                        
+                        statusText.innerText = "";
+                        document.getElementById('numero').focus();
+                    } else {
+                        statusText.innerText = "CEP não encontrado na base EDNE.";
+                        statusText.style.color = "red";
+                    }
+                })
+                .catch(error => {
+                    statusText.innerText = "Erro ao acessar o banco de dados.";
+                    statusText.style.color = "red";
+                });
+        } else {
+            statusText.innerText = "CEP inválido.";
+            statusText.style.color = "red";
+        }
+    });
+</script>

@@ -314,8 +314,7 @@ class Orcamento(models.Model):
 
             # 1. CUSTO FRETE UNITÁRIO
             # Agora ele só aplica 0.30 se a variável não existir (None). O 0.00 será aceito!
-            if self.custo_frete_unitario is None:
-                self.custo_frete_unitario = Decimal('0.30')
+            if self.custo_frete_unitario is None: self.custo_frete_unitario = Decimal('0.00')
 
             # 2. CUSTO DO MATERIAL
             area_utilizada = Decimal(str(self.chapa_utilizada.area_m2))
@@ -869,8 +868,10 @@ class Orcamento(models.Model):
     @property
     # Porcentagen do custo_frete_unitario sobre o custo sem margem
     def custo_frete_porc(self):
-        return float(self.custo_total_frete)/float(self.custo_industrial_e_frete_sem_margem) * 100 if self.custo_frete_unitario else Decimal('0.20')
-
+        if float(self.custo_industrial_e_frete_sem_margem) > 0:
+            return (float(self.custo_total_frete) / float(self.custo_industrial_e_frete_sem_margem)) * 100 
+        return Decimal('0.00')
+    
     @property
     # BUG #1 CORRIGIDO: era (qtd / unidades_chapa), agora apenas qtd
     def custo_total_frete(self):
@@ -879,20 +880,20 @@ class Orcamento(models.Model):
     @property
     # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem
     def proc_industriais_porc(self):
-                # Convertendo para float uma única vez para limpar o código
         custo_imp = float(self.custo_impressao)
         custo_crt = float(self.custo_corte)
         custo_sel = float(self.custo_seladora)
         qtd = float(self.quantidade)
         unidades = float(self.unidades_chapa)
+        custo_total = float(self.custo_industrial_e_frete_sem_margem)
 
-        # Lógica de cálculo separada por condição
-        if unidades > 1:
-            # Seu primeiro cenário quando unidades_chapa > 1
-            return ((custo_imp * qtd / unidades) + (custo_crt * qtd * 2 / unidades) + (custo_sel * qtd))/self.custo_industrial_e_frete_sem_margem * 100 if self.custo_frete_unitario else Decimal('0.20')
-        else:
-            # Seu cenário alternativo (quando unidades_chapa <= 1)
-            return ((custo_imp * qtd) + (custo_crt * qtd) + (custo_sel * qtd))/self.custo_industrial_e_frete_sem_margem * 100 if self.custo_frete_unitario else Decimal('0.20')
+        if custo_total > 0:
+            if unidades > 1:
+                return ((custo_imp * qtd / unidades) + (custo_crt * qtd * 2 / unidades) + (custo_sel * qtd)) / custo_total * 100
+            else:
+                return ((custo_imp * qtd) + (custo_crt * qtd) + (custo_sel * qtd)) / custo_total * 100
+                
+        return Decimal('0.00')
 
     @property
     # Porcentagen do subtotal_proc_industriais_porc sobre o custo sem margem
