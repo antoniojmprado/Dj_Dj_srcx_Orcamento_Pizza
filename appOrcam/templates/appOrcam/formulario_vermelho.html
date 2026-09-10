@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senhor Caixa - Acesso</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* O fundo vermelho texturizado característico da marca */
+        body {
+            background-color: #d11212;
+            background-image: radial-gradient(circle, #e31b1b 10%, transparent 11%), radial-gradient(circle, #e31b1b 10%, transparent 11%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* O card branco centralizado */
+        .form-card {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 4px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .form-card h2 {
+            font-weight: 700;
+            color: #000;
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+
+        .form-card p.subtitle {
+            text-align: center;
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-card .form-label {
+            font-size: 0.85rem;
+            color: #000;
+            margin-bottom: 2px;
+        }
+
+        .form-card .form-control {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        /* O Botão de Ataque */
+        .btn-custom {
+            background-color: #ff1e27;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-custom:hover {
+            background-color: #d31219;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-card">
+        <h2>Preencha o formulário</h2>
+        <p class="subtitle">e obtenha seu orçamento com frete <b>na mesma hora!</b></p>
+
+        <!-- A Ponte: O formulário real envia o cliente para a sua view de cotação -->
+        <form action="/orcam/orcamento/" method="GET">
+            <label class="form-label">Nome*</label>
+            <input type="text" class="form-control" value="Antonio José Moraes do Prado" readonly>
+
+            <label class="form-label">Telefone*</label>
+            <input type="text" class="form-control" value="+55 (11) 99758-4843" readonly>
+
+            <label class="form-label">Empresa*</label>
+            <input type="text" class="form-control" value="Prado Consultoria" readonly>
+
+            <button type="submit" class="btn btn-custom">
+                Acessar Sistema de Orçamento Agora
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

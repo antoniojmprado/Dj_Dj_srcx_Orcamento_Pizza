@@ -605,6 +605,9 @@ def pagina_inicial_demo(request):
     return render(request, 'appOrcam/demo_senhor_caixa.html')
 
 
+def tela_vermelha_demo(request):
+    return render(request, 'appOrcam/formulario_vermelho.html')
+
 
 def calcular_orcamento(request):
     if request.method == 'GET':

@@ -19,8 +19,13 @@ urlpatterns = [
         
     path('orcamento/<int:pk>/simulacao/', views.simulacoes_orcamentos, name='simulacoes_orcamentos'),
 
-    # Esta é a rota NOVA para a página simulada da Senhor Caixa (caminho vazio '')
-    path('', views.pagina_inicial_demo, name='pagina_inicial'),
+# 1º Passo: Vitrine Escura
+    path('', views.pagina_inicial_demo, name='pagina_inicial'), 
+    
+    # 2º Passo: Tela Vermelha (A ponte que mata o WhatsApp)
+    path('acesso/', views.tela_vermelha_demo, name='tela_vermelha'), 
+    
+    # 3º Passo: O Motor de Orçamento
     path('orcamento/', views.calcular_orcamento, name='calcular_orcamento'),
     path('api/consulta-cep/<str:cep_digitado>/', views.consulta_cep_local, name='consulta_cep_local'),
 ]
