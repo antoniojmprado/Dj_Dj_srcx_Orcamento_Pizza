@@ -740,7 +740,7 @@ def calcular_orcamento(request):
             # 3. FECHAMENTO FINANCEIRO
             total_geral_pedido = total_produtos_sem_frete + custo_total_frete
 
-            # 4. FORMATAÇÃO DO HTML (Layout Preservado)
+            # 4. FORMATAÇÃO DO HTML (Layout Preservado + WhatsApp Detalhado)
             def formata_br(valor, casas=2):
                 if valor is None: return "0,00"
                 formatado = f"{float(valor):,.{casas}f}"
@@ -750,6 +750,33 @@ def calcular_orcamento(request):
             if complemento:
                 endereco_completo += f" - {complemento}"
             endereco_completo += f" - {bairro}, {cidade}/{uf}"
+
+            # --- INÍCIO DA PREPARAÇÃO DO WHATSAPP DETALHADO ---
+            telefone_limpo = ''.join(filter(str.isdigit, telefone))
+            if len(telefone_limpo) > 0 and len(telefone_limpo) <= 11:
+                telefone_limpo = f"55{telefone_limpo}"
+
+            # %0A é o código de "pular linha" para o link do WhatsApp
+            texto_whatsapp = f"*Orçamento Múltiplo Concluído!* 🎉%0A"
+            texto_whatsapp += f"Olá, {contato} da empresa {cliente_nome}! Seus itens foram processados.%0A"
+            texto_whatsapp += f"📱 Seu telefone de contato: {telefone}%0A%0A"
+            
+            texto_whatsapp += f"*Itens do Pedido*%0A"
+            for item in orcamentos_gerados:
+                texto_whatsapp += f"📦 *{item['nome']}*%0A"
+                texto_whatsapp += f"🔢 Quantidade: {formata_br(item['quantidade'], 0)} unidades%0A"
+                texto_whatsapp += f"📦 Volumes: {int(item['qt_pacotes'])} pacotes (Peso: {formata_br(item['peso_carga'])} kg)%0A"
+                texto_whatsapp += f"🏷️ Valor Unitário (Caixa): R$ {formata_br(item['unitario_caixa'], 2)}%0A"
+                texto_whatsapp += f"💰 Subtotal (Produtos): R$ {formata_br(item['subtotal'], 2)}%0A%0A"
+
+            texto_whatsapp += f"*Logística e Entrega*%0A"
+            texto_whatsapp += f"📍 Endereço: {endereco_completo}%0A"
+            texto_whatsapp += f"📍 CEP: {cep_cliente}%0A"
+            texto_whatsapp += f"🚚 Custo Total de Frete: R$ {formata_br(custo_total_frete)}%0A"
+            texto_whatsapp += f"⏱️ Prazo Estimado: {int(prazo_dias_final)} dias úteis a partir da colocação do pedido.%0A%0A"
+            
+            texto_whatsapp += f"✅ *Total Geral do Pedido: R$ {formata_br(total_geral_pedido)}*"
+            # --- FIM DA PREPARAÇÃO DO WHATSAPP DETALHADO ---
 
             mensagem = f"""
             <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
@@ -786,6 +813,15 @@ def calcular_orcamento(request):
                     <h3 style="color: #27ae60; margin: 0; font-size: 1.4em; text-align: center;">
                         Total Geral do Pedido: R$ {formata_br(total_geral_pedido)}
                     </h3>
+                </div>
+
+                <!-- NOVO BOTÃO DO WHATSAPP -->
+                <div style="text-align: center; margin-top: 25px;">
+                    <a href="https://api.whatsapp.com/send?phone={telefone_limpo}&text={texto_whatsapp}" 
+                       target="_blank" 
+                       style="background-color: #25D366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold; font-family: Arial, sans-serif; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                       💬 Enviar cópia para o meu WhatsApp
+                    </a>
                 </div>
 
                 <p style="margin-top: 20px; font-size: 0.9em; color: #7f8c8d; text-align: center;">
