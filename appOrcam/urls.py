@@ -4,7 +4,7 @@ from appOrcam import views
 urlpatterns = [
     # Exemplo de rota para a tela intermediária
     #path('painel/', views.hub_index, name='hub_index'),
-    path('', views.inicial, name='inicial'),
+    #path('', views.inicial, name='inicial'),
     path('orcamento/<int:pk>/', views.orcamento_pdf, name='imprimir_orcamento'),  # Como deve estar no seu urls.py
     path('listar_roteiros_producao/<int:pk>/',views.listar_roteiros_producao, name='listar_roteiros_producao'),
     path('modelForm/', views.form_modelForm, name='form_modelForm'),
@@ -18,6 +18,9 @@ urlpatterns = [
     path('frete/', include('appFrete.urls')),
         
     path('orcamento/<int:pk>/simulacao/', views.simulacoes_orcamentos, name='simulacoes_orcamentos'),
+
+    # Esta é a rota NOVA para a página simulada da Senhor Caixa (caminho vazio '')
+    path('', views.pagina_inicial_demo, name='pagina_inicial'),
     path('orcamento/', views.calcular_orcamento, name='calcular_orcamento'),
     path('api/consulta-cep/<str:cep_digitado>/', views.consulta_cep_local, name='consulta_cep_local'),
 ]

@@ -99,7 +99,7 @@ DATABASES = {
         'NAME': "oee_bd",
         'USER': "root",
         'PASSWORD': "jjokocha@!7157",
-        'HOST': "localhost",
+        'HOST': "127.0.0.1",
         'PORT': 3306,
         'CONN_MAX_AGE': 600,  # Mantém a conexão viva por 10 minutos
     }

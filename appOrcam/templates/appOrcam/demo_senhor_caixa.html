@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senhor Caixa - Embalagens</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Faixa preta superior */
+        .top-bar {
+            background-color: #111111;
+            color: #ffffff;
+            font-size: 0.8rem;
+            padding: 8px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Menu Branco */
+        .navbar {
+            background-color: #ffffff;
+            padding: 15px 5%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-family: 'Georgia', serif;
+            font-size: 1.8rem;
+            color: #000;
+        }
+        
+        .nav-link {
+            color: #333 !important;
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+
+        /* O famoso botão vermelho do Menu */
+        .btn-menu-orcamento {
+            background-color: #e60014;
+            color: white;
+            border-radius: 50px;
+            padding: 8px 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        
+        .btn-menu-orcamento:hover {
+            background-color: #b3000f;
+            color: white;
+        }
+
+        /* Fundo escuro poligonal simulado */
+        .hero-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 50%, #111111 100%);
+            color: white;
+            padding: 100px 5%;
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .hero-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 40px;
+        }
+
+        .hero-list li {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        /* Botão transparente da área escura */
+        .btn-hero-orcamento {
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            border-radius: 50px;
+            padding: 12px 35px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+            background: transparent;
+        }
+
+        .btn-hero-orcamento:hover {
+            background-color: #ffffff;
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Faixa Superior -->
+    <div class="top-bar">
+        <div>Entregamos em todo Brasil</div>
+        <div>📞 (11) 2036-4177 &nbsp;&nbsp;&nbsp; ▶ 📷 📱</div>
+    </div>
+
+    <!-- Navegação (Menu Branco) -->
+    <nav class="navbar navbar-expand-lg d-flex justify-content-between align-items-center">
+        <!-- Logo em texto para simular a real -->
+        <a class="navbar-brand" href="#"><i>Senhor</i> <span style="color: #e60014; font-weight: bold;">Caixa</span></a>
+        
+        <div class="d-none d-lg-flex">
+            <a class="nav-link" href="#">Quem Somos</a>
+            <a class="nav-link" href="#">Produtos ▾</a>
+            <a class="nav-link" href="#">Vídeos</a>
+            <a class="nav-link" href="#">Contato</a>
+            <a class="nav-link" href="#">Parcerias</a>
+            <a class="nav-link" href="#">Artigos</a>
+        </div>
+
+        <!-- AQUI ESTÁ O GATILHO DA SETA VERMELHA -->
+        <a href="/orcam/orcamento/" class="btn-menu-orcamento">📦 Orçamento</a>
+    </nav>
+
+    <!-- Área Principal (Fundo Escuro) -->
+    <div class="hero-section">
+        <div class="container row align-items-center">
+            
+            <div class="col-md-7">
+                <h1 class="hero-title">A CAIXA QUE<br>FIXA SUA MARCA</h1>
+                <ul class="hero-list">
+                    <li>✓ O MELHOR EM IMPRESSÃO</li>
+                    <li>✓ FLEXOGRAFIA EM PAPEL BRANCO KRAFT</li>
+                    <li>✓ OFF SET COM QUALIDADE FOTOGRÁFICA</li>
+                </ul>
+                <!-- O GATILHO SECUNDÁRIO DO MEIO DA TELA -->
+                <a href="/orcam/orcamento/" class="btn-hero-orcamento">Solicite um Orçamento</a>
+            </div>
+
+            <div class="col-md-5 text-center d-none d-md-block" style="font-size: 150px; text-shadow: 0 20px 30px rgba(0,0,0,0.5);">
+                <!-- Emoji gigante apenas para ocupar o espaço da imagem das caixas de pizza na demo -->
+                🍕📦
+            </div>
+            
+        </div>
+    </div>
+
+</body>
+</html>

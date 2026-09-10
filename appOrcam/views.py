@@ -601,6 +601,11 @@ def simulacoes_orcamentos(request, pk):
     return render(request, 'simulacoes_de_orçamentos.html', context)
 
 
+def pagina_inicial_demo(request):
+    return render(request, 'appOrcam/demo_senhor_caixa.html')
+
+
+
 def calcular_orcamento(request):
     if request.method == 'GET':
         # Puxa os produtos do banco (Filtrando apenas os ativos, se tiver esse campo, ou todos)
@@ -613,6 +618,9 @@ def calcular_orcamento(request):
         contato = request.POST.get('contato', 'Não informado')
         telefone = request.POST.get('telefone', 'Não informado')
         cep_cliente = request.POST.get('cep')
+
+        # Captura e limpa o CEP (tira traços, pontos ou espaços acidentais)
+        cep_limpo = ''.join(filter(str.isdigit, cep_cliente))
         
         # Endereço
         logradouro = request.POST.get('logradouro', '')
@@ -626,33 +634,36 @@ def calcular_orcamento(request):
         produtos_selecionados = request.POST.getlist('produtos_selecionados')
 
         # 3. Trava de segurança atualizada
-        if not cliente_nome or not cep_cliente or not produtos_selecionados:
+        if not cliente_nome or not cep_limpo or not produtos_selecionados:
             return HttpResponse("Por favor, preencha o Cliente, o CEP e selecione pelo menos um Produto.")
+
+        if len(cep_limpo) != 8:
+            return HttpResponse(f"Ops! O CEP informado ({cep_limpo}) é inválido. Por favor, digite um CEP com 8 números.")
             
         try:
-            # Máquinas base para o orçamento
-            maq_impressao = Maquina.objects.get(id=7)  # Flexo Impressão
-            maq_corte = Maquina.objects.get(id=10)     # Flexo Corte
+            # Máquinas base
+            maq_impressao = Maquina.objects.get(id=7)
+            maq_corte = Maquina.objects.get(id=10)
 
             # Variáveis de consolidação do carrinho
             orcamentos_gerados = []
-            total_geral_carrinho = 0
-            frete_total_carrinho = 0
-            subtotal_produtos_carrinho = 0
-            prazo_dias_final = 0
+            peso_total_carrinho = 0
+            valor_nf_carrinho = 0
+            qt_pacotes_carrinho = 0
+            volume_total_cm3 = 0
+            total_unidades_carrinho = 0
+            total_produtos_sem_frete = 0
 
-            # 4. O LOOP DO CARRINHO: Processa cada produto selecionado
+            # 1. LOOP DE CUSTOS INDUSTRIAIS (Cálculo Puro)
             for prod_id in produtos_selecionados:
                 quantidade = request.POST.get(f'quantidade_{prod_id}')
-                
-                # Pula se marcou o checkbox mas não preencheu a quantidade
                 if not quantidade or int(quantidade) <= 0:
                     continue
                     
                 quantidade = int(quantidade)
                 chapa = Chapa.objects.get(id=prod_id)
 
-                # Instancia o Orçamento
+                # Salva o orçamento com FRETE ZERADO para blindar o markup (Igual ao Excel)
                 orcamento = Orcamento(
                     cliente=cliente_nome,
                     produto_nome=chapa.nome,
@@ -663,61 +674,70 @@ def calcular_orcamento(request):
                     chapa_projeto=chapa,
                     chapa_utilizada=chapa,
                     margem_real=Decimal('15.00'),
-                    custo_frete_unitario=Decimal('0.00') # Inicia zerado
+                    custo_frete_unitario=Decimal('0.00')
                 )
                 orcamento.save() 
+                
+                # Captura o valor puro de fábrica
+                valor_item_puro = float(orcamento.preco_final_sem_nota)
 
-                # Variáveis logísticas
+                # Acumula os dados físicos para o caminhão
                 qt_pacotes = math.ceil(quantidade / int(chapa.unidades_pacote))
-                peso_carga = qt_pacotes * float(chapa.peso_pacote)
-                valor_carga = float(orcamento.preco_final_sem_nota)
+                peso_item = qt_pacotes * float(chapa.peso_pacote)
                 
-                # Motor isolado de frete (Calculado item a item nesta versão)
-                melhor_frete_unitario, prazo_dias = calcular_melhor_frete_interno(
-                    cep_destino=cep_cliente,
-                    valor_nf=valor_carga,
-                    peso_informado=peso_carga,
-                    comp=float(chapa.comprim_pacote_cm),
-                    larg=float(chapa.largura_pacote_cm),
-                    alt=float(chapa.altura_pacote_cm),
-                    qt_pacotes=qt_pacotes,
-                    unid_pacote=int(chapa.unidades_pacote)
-                )
+                peso_total_carrinho += peso_item
+                valor_nf_carrinho += valor_item_puro
+                qt_pacotes_carrinho += qt_pacotes
+                total_unidades_carrinho += quantidade
+                total_produtos_sem_frete += valor_item_puro
                 
-                # Atualiza o Orçamento com o frete
-                frete_limpo = str(melhor_frete_unitario).replace(',', '.')
-                orcamento.custo_frete_unitario = Decimal(frete_limpo)
-                orcamento.save()
+                # Acumula o volume cúbico em cm³
+                comp = float(chapa.comprim_pacote_cm)
+                larg = float(chapa.largura_pacote_cm)
+                alt = float(chapa.altura_pacote_cm)
+                volume_total_cm3 += (comp * larg * alt * qt_pacotes)
 
-                # Matemática de separação para exibição
-                total_item = float(orcamento.preco_final_sem_nota)
-                frete_unitario = float(orcamento.custo_frete_unitario)
-                frete_total_item = frete_unitario * quantidade
-                subtotal_item = total_item - frete_total_item
-                valor_unitario_produto = subtotal_item / quantidade
-
-                # Acumula os valores para o total do carrinho
-                total_geral_carrinho += total_item
-                frete_total_carrinho += frete_total_item
-                subtotal_produtos_carrinho += subtotal_item
-                if prazo_dias > prazo_dias_final:
-                    prazo_dias_final = prazo_dias # Mantém o maior prazo encontrado
-
-                # Guarda o resumo deste item na lista
+                # Guarda o extrato para exibição
                 orcamentos_gerados.append({
                     'nome': orcamento.produto_nome,
                     'quantidade': quantidade,
-                    'unitario_caixa': valor_unitario_produto,
-                    'subtotal': subtotal_item,
-                    'frete_unitario': frete_unitario,
-                    'frete_total': frete_total_item,
+                    'unitario_caixa': valor_item_puro / quantidade,
+                    'subtotal': valor_item_puro,
+                    'qt_pacotes': qt_pacotes,
+                    'peso_carga': peso_item,
                 })
 
-            # Trava caso nenhum produto tenha passado na validação de quantidade
             if not orcamentos_gerados:
                 return HttpResponse("Por favor, informe a quantidade válida para os produtos selecionados.")
 
-            # 5. Formatação e Construção da Mensagem Final
+            # 2. MOTOR LOGÍSTICO (Consulta Única)
+            prazo_dias_final = 0
+            custo_total_frete = 0
+
+            if qt_pacotes_carrinho > 0:
+                # Modela um "pacote equivalente" para preservar a cubagem matemática da carga mista
+                volume_pacote_medio_cm3 = volume_total_cm3 / qt_pacotes_carrinho
+                aresta_media = volume_pacote_medio_cm3 ** (1/3) # Raiz cúbica
+                unid_pacote_media = total_unidades_carrinho / qt_pacotes_carrinho
+                
+                melhor_frete_unitario, prazo_dias_final = calcular_melhor_frete_interno(
+                    cep_destino=cep_cliente,
+                    valor_nf=valor_nf_carrinho,
+                    peso_informado=peso_total_carrinho,
+                    comp=aresta_media,
+                    larg=aresta_media,
+                    alt=aresta_media,
+                    qt_pacotes=qt_pacotes_carrinho,
+                    unid_pacote=unid_pacote_media
+                )
+                
+                # Reconstrói o valor total consolidado
+                custo_total_frete = melhor_frete_unitario * total_unidades_carrinho
+
+            # 3. FECHAMENTO FINANCEIRO
+            total_geral_pedido = total_produtos_sem_frete + custo_total_frete
+
+            # 4. FORMATAÇÃO DO HTML (Layout Preservado)
             def formata_br(valor, casas=2):
                 if valor is None: return "0,00"
                 formatado = f"{float(valor):,.{casas}f}"
@@ -728,52 +748,50 @@ def calcular_orcamento(request):
                 endereco_completo += f" - {complemento}"
             endereco_completo += f" - {bairro}, {cidade}/{uf}"
 
-            # Cabeçalho da mensagem
             mensagem = f"""
             <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
                 <h2 style="color: #2c3e50;">Orçamento Múltiplo Concluído! 🎉</h2>
-                <p>Olá, <b>{contato}</b> da empresa <b>{cliente_nome}</b>! Seus itens foram processados.</p>
+                <p style="margin-bottom: 5px;">Olá, <b>{contato}</b> da empresa <b>{cliente_nome}</b>! Seus itens foram processados.</p>
+                <p style="margin-top: 0; font-size: 0.95em; color: #555;">📱 <b>Seu telefone de contato:</b> {telefone}</p>
                 
                 <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px;">Itens do Pedido</h3>
             """
 
-            # Injeta cada produto orçado na mensagem
             for item in orcamentos_gerados:
                 mensagem += f"""
                 <div style="background-color: #fcfcfc; border-left: 4px solid #3498db; padding: 10px; margin-bottom: 15px;">
                     <p style="margin: 0 0 5px 0;">📦 <b>{item['nome']}</b></p>
                     <ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 0.95em;">
                         <li>🔢 Quantidade: {formata_br(item['quantidade'], 0)} unidades</li>
+                        <li>📦 Volumes: {int(item['qt_pacotes'])} pacotes (Peso: {formata_br(item['peso_carga'])} kg)</li>
                         <li>🏷️ Valor Unitário (Caixa): R$ {formata_br(item['unitario_caixa'], 2)}</li>
-                        <li>🚚 Frete Unitário: R$ {formata_br(item['frete_unitario'], 2)}</li>
-                        <li style="margin-top: 5px;"><b>💰 Subtotal (Produto + Frete): R$ {formata_br(item['subtotal'] + item['frete_total'], 2)}</b></li>
+                        <li style="margin-top: 5px;"><b>💰 Subtotal (Produtos): R$ {formata_br(item['subtotal'], 2)}</b></li>
                     </ul>
                 </div>
                 """
 
-            # Rodapé com a logística e Totais
             mensagem += f"""
                 <h3 style="color: #34495e; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 25px;">Logística e Entrega</h3>
                 <ul style="list-style-type: none; padding-left: 0; line-height: 1.8;">
                     <li>📍 <b>Endereço:</b> {endereco_completo}</li>
-                    <li>🚚 <b>Custo Total de Frete:</b> R$ {formata_br(frete_total_carrinho)}</li>
-                    <li>⏱️ <b>Prazo Estimado:</b> {int(prazo_dias_final)} dias úteis</li>
+                    <li>📍 <b>CEP:</b> {cep_cliente}</li>
+                    <li>🚚 <b>Custo Total de Frete:</b> R$ {formata_br(custo_total_frete)}</li>
+                    <li>⏱️ <b>Prazo Estimado:</b> {int(prazo_dias_final)} dias úteis a partir da colocação do pedido.</li>
                 </ul>
 
                 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 20px;">
                     <h3 style="color: #27ae60; margin: 0; font-size: 1.4em; text-align: center;">
-                        Total Geral do Pedido: R$ {formata_br(total_geral_carrinho)}
+                        Total Geral do Pedido: R$ {formata_br(total_geral_pedido)}
                     </h3>
                 </div>
 
                 <p style="margin-top: 20px; font-size: 0.9em; color: #7f8c8d; text-align: center;">
-                    <i>Dúvidas? Nossa equipe está à disposição no WhatsApp {telefone}.</i>
+                    <i>Dúvidas? Nossa equipe está à disposição no WhatsApp (11) 1234-1234.</i>
                 </p>
             </div>
             """
-
             return HttpResponse(mensagem)
-
+        
         except Chapa.DoesNotExist:
             return HttpResponse(f"Ops, {cliente_nome}. Um dos produtos selecionados não existe no banco de dados.")
         except Maquina.DoesNotExist:

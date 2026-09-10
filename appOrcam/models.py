@@ -332,6 +332,9 @@ class Orcamento(models.Model):
             
             # 2.1 CÁLCULO DINÂMICO DE PERDAS
             if self.chapa_utilizada:
+
+                print(f'self.produto_nome {self.produto_nome}')
+
                 custo_ref = Decimal(str(self.chapa_utilizada.custo_m2))
                 
                 self.area_total = Decimal(str(self.chapa_utilizada.largura_cm/100)) * Decimal(str(self.chapa_utilizada.comprimento_cm/100))
@@ -370,7 +373,10 @@ class Orcamento(models.Model):
                 self.custo_material_unitario = self.custo_papelao_total + self.custo_total_tinta 
                                                         
                 print(f'self.custo_papelao_total {self.custo_papelao_total}')
-                
+
+                print(f'self.custo_total_tinta {self.custo_total_tinta}')
+
+                print(f'self.custo_material_unitario {self.custo_material_unitario}')
 
             try:
                 # --- CÁLCULO DE MÁQUINAS DINÂMICO ---
