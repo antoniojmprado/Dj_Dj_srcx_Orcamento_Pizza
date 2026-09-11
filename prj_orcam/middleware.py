@@ -19,7 +19,7 @@ class LoginRequiredMiddleware:
 
         # 3. Lista de exceções (rotas que NÃO precisam de login)
         # Usamos 'login' porque está definido como LOGIN_URL = 'login' no seu settings
-        rotas_publicas = ['login']
+        rotas_publicas = ['login', 'pagina_inicial', 'tela_vermelha', 'calcular_orcamento', 'consulta_cep_local']
 
         # 4. Se o usuário for anônimo e a rota não for pública, barra e manda pro login
         if current_url_name not in rotas_publicas and request.path != settings.LOGIN_URL:
