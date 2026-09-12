@@ -9,9 +9,15 @@
     <!-- Carregando Bootstrap para ficar bonito e limpo -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+<style>
+    .bg-light {
+        --bs-bg-opacity: 1;
+        background-color: rgb(237 242 250) !important;
+    }
+</style>
 <body class="bg-light">
     <div class="container mt-5">
-<!-- Cabeçalho de Logout -->
+        <!-- Cabeçalho de Logout -->
         <div class="d-flex justify-content-end align-items-center mb-4">
             <span class="text-muted me-3">Logado como: <strong>{{ request.user.username }}</strong></span>
             
@@ -25,6 +31,26 @@
             <div class="col-md-6 text-center">
                 <h2 class="text-secondary">Mural de Oportunidades</h2>
                 <p class="text-muted">Vendedor(a) Logado(a): <strong>{{ vendedor_nome|upper }}</strong></p>
+
+                <!-- Botão da Carteira com Estatísticas Pessoais -->
+                <div class="mb-3 d-flex flex-column align-items-center">
+                    <a href="{% url 'meus_atendimentos' %}" class="btn btn-outline-primary fw-bold shadow-sm mb-2 px-4">
+                        📂 Ver Meus Clientes
+                    </a>
+                    
+                    <!-- Placar do Vendedor -->
+                    <div class="d-flex gap-2 mt-1">
+                        <span class="badge bg-primary" title="Em Andamento">
+                            {{ meus_andamento }} Em Atendimento
+                        </span>
+                        <span class="badge bg-success" title="Negócios Fechados">
+                            {{ meus_ganhos }} Ganhos
+                        </span>
+                        <span class="badge bg-danger" title="Negócios Perdidos">
+                            {{ meus_perdidos }} Perdidos
+                        </span>
+                    </div>
+                </div>
                 
                 <div class="card mt-4 shadow border-0">
                     <div class="card-body py-5">
@@ -35,7 +61,7 @@
                             <!-- O Botão Cego -->
                             <form method="POST" action="{% url 'puxar_proximo_lead' %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-success btn-lg px-5 py-3 fs-4 fw-bold shadow-lg">
+                                <button type="submit" class="btn btn-dark btn-lg px-5 py-3 fs-4 fw-bold shadow-lg">
                                     🚀 PUXAR PRÓXIMO CLIENTE
                                 </button>
                             </form>

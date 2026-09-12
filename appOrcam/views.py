@@ -741,15 +741,32 @@ def calcular_orcamento(request):
             # 3. FECHAMENTO FINANCEIRO
             total_geral_pedido = total_produtos_sem_frete + custo_total_frete
 
+            # Trazemos a função de formatação para cima, para usá-la no Lead!
+            def formata_br(valor, casas=2):
+                if valor is None: return "0,00"
+                formatado = f"{float(valor):,.{casas}f}"
+                return formatado.replace(',', 'X').replace('.', ',').replace('X', '.')
+
             # ==========================================
             # INÍCIO DA CAPTURA SILENCIOSA DO LEAD (CRM)
             # ==========================================
             try:
-                # Monta um resumo em texto rápido para o vendedor ler no painel
-                resumo_texto = ""
+                # Monta um resumo em HTML estruturado em Listas
+                resumo_texto = "<p class='mb-2'><strong>📦 ITENS DO PEDIDO:</strong></p><ul style='list-style-type: none; padding-left: 0;'>"
                 for item in orcamentos_gerados:
-                    resumo_texto += f"{item['quantidade']}x {item['nome']} | "
+                    resumo_texto += "<li style='margin-bottom: 12px; border-bottom: 1px solid rgba(150, 150, 150, 0.3); padding-bottom: 8px;'>"
+                    resumo_texto += f"  <strong>{item['nome']}</strong><br>"
+                    resumo_texto += f"  <span style='font-size: 0.9em;'>Qtd: {formata_br(item['quantidade'], 0)} un. | Unitário: R$ {formata_br(item['unitario_caixa'], 2)}</span><br>"
+                    resumo_texto += f"  <strong style='color: #28a745;'>Subtotal: R$ {formata_br(item['subtotal'], 2)}</strong>"
+                    resumo_texto += "</li>"
+                resumo_texto += "</ul>"
                 
+                resumo_texto += "<p class='mt-4 mb-2'><strong>🚚 LOGÍSTICA:</strong></p><ul style='list-style-type: none; padding-left: 0;'>"
+                resumo_texto += f"<li>Frete Total: <strong>R$ {formata_br(custo_total_frete)}</strong></li>"
+                resumo_texto += f"<li>CEP Destino: {cep_cliente}</li>"
+                resumo_texto += f"<li>Prazo Estimado: <strong>{int(prazo_dias_final)} dias úteis</strong></li>"
+                resumo_texto += "</ul>"
+
                 LeadOrcamento.objects.create(
                     empresa=cliente_nome,
                     nome_contato=contato,
@@ -761,18 +778,17 @@ def calcular_orcamento(request):
                     valor_cotado=total_geral_pedido
                 )
             except Exception as e_lead:
-                # Se der qualquer erro ao salvar o lead, o sistema apenas imprime no log do servidor,
-                # MAS NÃO TRAVA a tela do cliente, permitindo que a cotação continue normalmente.
+                # Se der erro, não trava a tela do cliente
                 print(f"Erro ao salvar o Lead: {e_lead}")
             # ==========================================
             # FIM DA CAPTURA SILENCIOSA DO LEAD
             # ==========================================
             
             # 4. FORMATAÇÃO DO HTML (Layout Preservado + WhatsApp Detalhado)
-            def formata_br(valor, casas=2):
-                if valor is None: return "0,00"
-                formatado = f"{float(valor):,.{casas}f}"
-                return formatado.replace(',', 'X').replace('.', ',').replace('X', '.')
+            # def formata_br(valor, casas=2):
+            #     if valor is None: return "0,00"
+            #     formatado = f"{float(valor):,.{casas}f}"
+            #     return formatado.replace(',', 'X').replace('.', ',').replace('X', '.')
 
             endereco_completo = f"{logradouro}, {numero}"
             if complemento:
@@ -897,12 +913,20 @@ def consulta_cep_local(request, cep_digitado):
 # A trava mágica: se não estiver logado, joga para a tela do admin
 @login_required(login_url='/admin/login/') 
 def painel_fila_vendas(request):
-    # Conta quantos leads estão aguardando
+    # Conta quantos leads estão aguardando na fila geral
     leads_na_fila = LeadOrcamento.objects.filter(status='NOVO').count()
+    
+    # KPIs do Vendedor Logado
+    meus_andamento = LeadOrcamento.objects.filter(vendedor_responsavel=request.user.username, status='EM_ATENDIMENTO').count()
+    meus_ganhos = LeadOrcamento.objects.filter(vendedor_responsavel=request.user.username, status='GANHO').count()
+    meus_perdidos = LeadOrcamento.objects.filter(vendedor_responsavel=request.user.username, status='PERDIDO').count()
     
     return render(request, 'appOrcam/painel_vendas.html', {
         'leads_na_fila': leads_na_fila,
-        'vendedor_nome': request.user.username # Pega o nome de quem logou!
+        'vendedor_nome': request.user.username,
+        'meus_andamento': meus_andamento,
+        'meus_ganhos': meus_ganhos,
+        'meus_perdidos': meus_perdidos,
     })
 
 
@@ -934,10 +958,9 @@ def detalhe_atendimento(request, lead_id):
 
 @login_required(login_url='/admin/login/')
 def meus_atendimentos(request):
-    # Filtra apenas os clientes do vendedor logado que estão EM ATENDIMENTO
+    # Busca TODOS os leads do vendedor (Atendimento, Ganhos e Perdidos)
     meus_leads = LeadOrcamento.objects.filter(
-        vendedor_responsavel=request.user.username,
-        status='EM_ATENDIMENTO'
-    ).order_by('-atualizado_em') # Mostra os mais recentes primeiro
+        vendedor_responsavel=request.user.username
+    ).exclude(status='NOVO').order_by('-atualizado_em')
     
     return render(request, 'appOrcam/meus_atendimentos.html', {'meus_leads': meus_leads})

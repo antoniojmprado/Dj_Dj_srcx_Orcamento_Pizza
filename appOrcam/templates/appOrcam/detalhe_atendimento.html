@@ -5,25 +5,34 @@
     <title>Atendimento: {{ lead.empresa }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+<style>
+    .bg-light {
+        --bs-bg-opacity: 1;
+        background-color: rgb(237 242 250) !important;
+    }
+</style>    
 <body class="bg-light">
     <div class="container mt-5">
         <div class="card shadow-lg border-0">
-            <div class="card-header bg-success text-white">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Em Atendimento: {{ lead.empresa }}</h4>
+                <span class="badge bg-light text-success fs-6">👤 {{ lead.vendedor_responsavel|upper }}</span>
+                <small class="text-white-50">Contato Inicial: {{ lead.criado_em|date:"d/m/Y H:i" }}h</small><br>
+                <small class="text-white-50">Atualizado em: {{ lead.atualizado_em|date:"d/m/Y H:i" }}h</small>
             </div>
             <div class="card-body fs-5">
                 <p><strong>Contato:</strong> {{ lead.nome_contato }}</p>
                 <p><strong>Telefone / WhatsApp:</strong> {{ lead.telefone }}</p>
                 <p><strong>Local:</strong> {{ lead.cidade }} / {{ lead.uf }} (CEP: {{ lead.cep }})</p>
                 <hr>
-                <p><strong>Resumo da Cotação:</strong><br> {{ lead.resumo_pedido }}</p>
-                <p class="fs-4 text-success fw-bold mt-3">Valor Total: R$ {{ lead.valor_cotado }}</p>
+                <p><strong>Resumo da Cotação:</strong><br> {{ lead.resumo_pedido|safe }}</p>
+                <p class="fs-4 text-dark fw-bold mt-3">Valor Total: R$ {{ lead.valor_cotado|floatformat:"2g" }}
                 <hr>
                 
                 <div class="text-center mt-4">
                     <!-- Botão do WhatsApp já com texto pronto pro Vendedor -->
                     <a href="https://api.whatsapp.com/send?phone=55{{ lead.telefone }}&text=Ol%C3%A1%20{{ lead.nome_contato }}!%20Sou%20o(a)%20{{ request.user.username }}%20da%20f%C3%A1brica.%20Recebi%20sua%20cota%C3%A7%C3%A3o%20das%20caixas.%20Vamos%20dar%20andamento%3F" 
-                       target="_blank" class="btn btn-success btn-lg fw-bold px-5 py-3 shadow">
+                       target="_blank" class="btn btn-dark btn-lg fw-bold px-5 py-3 shadow">
                         💬 CHAMAR NO WHATSAPP
                     </a>
                 </div>
