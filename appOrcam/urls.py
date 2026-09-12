@@ -2,9 +2,6 @@ from django.urls import include, path
 from appOrcam import views
 
 urlpatterns = [
-    # Exemplo de rota para a tela intermediária
-    #path('painel/', views.hub_index, name='hub_index'),
-    #path('', views.inicial, name='inicial'),
     path('orcamento/<int:pk>/', views.orcamento_pdf, name='imprimir_orcamento'),  # Como deve estar no seu urls.py
     path('listar_roteiros_producao/<int:pk>/',views.listar_roteiros_producao, name='listar_roteiros_producao'),
     path('modelForm/', views.form_modelForm, name='form_modelForm'),
@@ -28,4 +25,9 @@ urlpatterns = [
     # 3º Passo: O Motor de Orçamento
     path('orcamento/', views.calcular_orcamento, name='calcular_orcamento'),
     path('api/consulta-cep/<str:cep_digitado>/', views.consulta_cep_local, name='consulta_cep_local'),
+
+    path('vendas/', views.painel_fila_vendas, name='painel_fila_vendas'),
+    path('vendas/puxar/', views.puxar_proximo_lead, name='puxar_proximo_lead'),
+    path('vendas/atendimento/<int:lead_id>/', views.detalhe_atendimento, name='detalhe_atendimento'),
+    path('vendas/meus-atendimentos/', views.meus_atendimentos, name='meus_atendimentos'),
 ]

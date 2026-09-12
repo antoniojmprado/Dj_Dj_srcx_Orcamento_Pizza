@@ -1,7 +1,7 @@
 from django.urls import reverse
 from django.contrib import admin
 from django.utils.html import format_html
-from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, EncargosTrabalhistas, Orcamento, Chapa, CategoriaProduto, Imposto, ComissaoVenda
+from appOrcam.models import ConfiguracaoRateio, Custo_frete, Custo_tinta, EncargosTrabalhistas, Orcamento, Chapa, CategoriaProduto, Imposto, ComissaoVenda, LeadOrcamento
 
 
 @admin.register(Imposto)
@@ -135,3 +135,11 @@ class OrcamentoAdmin(admin.ModelAdmin):
 @admin.register(ComissaoVenda)
 class ComissaoVendaAdmin(admin.ModelAdmin):
     list_display = ('vendedor', 'percentual_comissao', 'ativo')
+
+
+@admin.register(LeadOrcamento)
+class LeadOrcamentoAdmin(admin.ModelAdmin):
+    list_display = ('empresa', 'nome_contato', 'telefone', 'cidade', 'status', 'vendedor_responsavel', 'criado_em')
+    list_filter = ('status', 'vendedor_responsavel', 'uf', 'criado_em')
+    search_fields = ('empresa', 'nome_contato', 'telefone', 'cep', 'vendedor_responsavel')
+    readonly_fields = ('criado_em', 'atualizado_em')

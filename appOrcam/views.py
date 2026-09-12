@@ -8,20 +8,21 @@ from appFrete.models import FreteEdne
 from appOEE.models import ParametroFinanceiro, Maquina, Horas_turno, Turnos_dia
 from appOrcam.forms import OrcamentoForm
 from appOrcam.models import MaquinaFinancasOEE
-from .models import Chapa, Custo_tinta, EncargosTrabalhistas, Imposto, Orcamento
+from .models import Chapa, Custo_tinta, EncargosTrabalhistas, Imposto, Orcamento, LeadOrcamento
 from decimal import Decimal
 from django.db import connection
 from django.db.models import Sum
 from .models import MemoriaCalculoDinamica
+from django.contrib.auth.decorators import login_required
 
 from appFrete.services_frete import calcular_melhor_frete_interno
 
 
 #print(f"SISTEMA LENDO DE: {os.path.abspath(__file__)}")
 
-# =========================
+# =============================
 # LISTAR PRODUTOS-CHAPAS-PADRÃO
-# ========================= 
+# ============================= 
 
 def get_chapa_detalhes(request, chapa_id):
     try:
@@ -740,6 +741,33 @@ def calcular_orcamento(request):
             # 3. FECHAMENTO FINANCEIRO
             total_geral_pedido = total_produtos_sem_frete + custo_total_frete
 
+            # ==========================================
+            # INÍCIO DA CAPTURA SILENCIOSA DO LEAD (CRM)
+            # ==========================================
+            try:
+                # Monta um resumo em texto rápido para o vendedor ler no painel
+                resumo_texto = ""
+                for item in orcamentos_gerados:
+                    resumo_texto += f"{item['quantidade']}x {item['nome']} | "
+                
+                LeadOrcamento.objects.create(
+                    empresa=cliente_nome,
+                    nome_contato=contato,
+                    telefone=telefone,
+                    cep=cep_cliente,
+                    cidade=cidade,
+                    uf=uf,
+                    resumo_pedido=resumo_texto,
+                    valor_cotado=total_geral_pedido
+                )
+            except Exception as e_lead:
+                # Se der qualquer erro ao salvar o lead, o sistema apenas imprime no log do servidor,
+                # MAS NÃO TRAVA a tela do cliente, permitindo que a cotação continue normalmente.
+                print(f"Erro ao salvar o Lead: {e_lead}")
+            # ==========================================
+            # FIM DA CAPTURA SILENCIOSA DO LEAD
+            # ==========================================
+            
             # 4. FORMATAÇÃO DO HTML (Layout Preservado + WhatsApp Detalhado)
             def formata_br(valor, casas=2):
                 if valor is None: return "0,00"
@@ -861,3 +889,55 @@ def consulta_cep_local(request, cep_digitado):
         dados = {'erro': True}
         
     return JsonResponse(dados)
+
+# ==============================================
+# PAINEL DA EQUIPE DE VENDAS (LINHA DE PRODUÇÃO)
+# ==============================================
+
+# A trava mágica: se não estiver logado, joga para a tela do admin
+@login_required(login_url='/admin/login/') 
+def painel_fila_vendas(request):
+    # Conta quantos leads estão aguardando
+    leads_na_fila = LeadOrcamento.objects.filter(status='NOVO').count()
+    
+    return render(request, 'appOrcam/painel_vendas.html', {
+        'leads_na_fila': leads_na_fila,
+        'vendedor_nome': request.user.username # Pega o nome de quem logou!
+    })
+
+
+@login_required(login_url='/admin/login/')
+def puxar_proximo_lead(request):
+    if request.method == 'POST':
+        # Pega o chassi do lead mais antigo (o order_by('criado_em') garante o FIFO)
+        proximo_lead = LeadOrcamento.objects.filter(status='NOVO').order_by('criado_em').first()
+        
+        if proximo_lead:
+            # Assumiu! Muda o status e carimba o nome do vendedor logado
+            proximo_lead.status = 'EM_ATENDIMENTO'
+            proximo_lead.vendedor_responsavel = request.user.username #request.user.username sabe quem está clicando no botão
+            proximo_lead.save()
+            
+            # Redireciona para a tela com os dados do cliente e o botão do WhatsApp
+            return redirect('detalhe_atendimento', lead_id=proximo_lead.id)
+            
+    # Se a fila estiver vazia ou se alguém tentar acessar via GET, volta pro painel
+    return redirect('painel_fila_vendas')
+
+
+@login_required(login_url='/admin/login/')
+def detalhe_atendimento(request, lead_id):
+    # Só deixa ver o lead se for o vendedor responsável por ele
+    lead = get_object_or_404(LeadOrcamento, id=lead_id, vendedor_responsavel=request.user.username)
+    return render(request, 'appOrcam/detalhe_atendimento.html', {'lead': lead})
+
+
+@login_required(login_url='/admin/login/')
+def meus_atendimentos(request):
+    # Filtra apenas os clientes do vendedor logado que estão EM ATENDIMENTO
+    meus_leads = LeadOrcamento.objects.filter(
+        vendedor_responsavel=request.user.username,
+        status='EM_ATENDIMENTO'
+    ).order_by('-atualizado_em') # Mostra os mais recentes primeiro
+    
+    return render(request, 'appOrcam/meus_atendimentos.html', {'meus_leads': meus_leads})

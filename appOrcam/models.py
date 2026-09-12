@@ -1321,3 +1321,41 @@ class ComissaoVenda(models.Model):
 
     def __str__(self):
         return f"{self.vendedor} - {self.percentual_comissao}%"
+
+
+class LeadOrcamento(models.Model):
+    empresa = models.CharField(max_length=150, verbose_name="Empresa / Cliente")
+    nome_contato = models.CharField(max_length=150, verbose_name="Nome do Contato")
+    telefone = models.CharField(max_length=20, verbose_name="Telefone / WhatsApp")
+    
+    cep = models.CharField(max_length=10, verbose_name="CEP")
+    cidade = models.CharField(max_length=100, null=True, blank=True)
+    uf = models.CharField(max_length=2, null=True, blank=True)
+    
+    resumo_pedido = models.TextField(verbose_name="Resumo da Cotação") 
+    valor_cotado = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    vendedor_responsavel = models.CharField(max_length=150, null=True, blank=True, verbose_name="Vendedor Responsável")
+    
+    STATUS_CHOICES = [
+        ('NOVO', 'Novo (Aguardando Contato)'),
+        ('EM_ATENDIMENTO', 'Em Negociação'),
+        ('FECHADO_GANHO', 'Venda Fechada'),
+        ('FECHADO_PERDIDO', 'Venda Perdida'),
+    ]
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='NOVO',
+        verbose_name="Status de Atendimento"
+    )
+    
+    criado_em = models.DateTimeField(auto_now_add=True, verbose_name="Data da Cotação")
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Lead de Orçamento"
+        verbose_name_plural = "Leads de Orçamentos"
+        ordering = ['-criado_em']
+
+    def __str__(self):
+        return f"{self.empresa} - {self.nome_contato} ({self.get_status_display()})"

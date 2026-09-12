@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Meus Clientes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-secondary">Meus Clientes em Atendimento</h2>
+            <a href="{% url 'painel_fila_vendas' %}" class="btn btn-outline-secondary">← Voltar ao Mural</a>
+        </div>
+        
+        <div class="card shadow border-0">
+            <div class="card-body">
+                {% if meus_leads %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Empresa / Cliente</th>
+                                    <th>Contato</th>
+                                    <th>Data que Assumiu</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in meus_leads %}
+                                <tr>
+                                    <td><strong>{{ lead.empresa }}</strong></td>
+                                    <td>{{ lead.nome_contato }} <br><small class="text-muted">{{ lead.telefone }}</small></td>
+                                    <td>{{ lead.atualizado_em|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <!-- Esse botão leva de volta pra tela com os dados e o link do WhatsApp -->
+                                        <a href="{% url 'detalhe_atendimento' lead.id %}" class="btn btn-sm btn-success">Ver / WhatsApp</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <h4 class="text-muted">Você não tem nenhum cliente em andamento.</h4>
+                        <a href="{% url 'painel_fila_vendas' %}" class="btn btn-primary mt-3">🚀 Puxar Novo Cliente</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
