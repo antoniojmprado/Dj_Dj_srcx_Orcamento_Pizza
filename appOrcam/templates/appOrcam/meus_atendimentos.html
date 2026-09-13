@@ -1,64 +1,67 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Meus Clientes</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-    <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-secondary">Meus Clientes em Atendimento</h2>
-            <a href="{% url 'painel_fila_vendas' %}" class="btn btn-outline-secondary">← Voltar ao Mural</a>
-        </div>
-        
-        <div class="card shadow border-0">
-            <div class="card-body">
-                {% if meus_leads %}
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Empresa / Cliente</th>
-                                    <th>Nome do Contato</th>
-                                    <th>Data Contato</th>
-                                    <th>Data que Assumiu</th>
-                                    <th>Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for lead in meus_leads %}
-                                <tr>
-                                    <td>
-                                        {% if lead.status == 'EM_ATENDIMENTO' %}
-                                            <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:#0d6efd; margin-right:5px;" title="Em Atendimento"></span>
-                                        {% elif lead.status == 'GANHO' %}
-                                            <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:#198754; margin-right:5px;" title="Ganho"></span>
-                                        {% elif lead.status == 'PERDIDO' %}
-                                            <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:#dc3545; margin-right:5px;" title="Perdido"></span>
-                                        {% endif %}
-                                        <strong>{{ lead.empresa }}</strong>
-                                    </td>
-                                    <td>{{ lead.nome_contato }} <br><small class="text-muted">{{ lead.telefone }}</small></td>
-                                    <td>{{ lead.criado_em|date:"d/m/Y H:i" }}</td>
-                                    <td>{{ lead.atualizado_em|date:"d/m/Y H:i" }}</td>
-                                    <td>
-                                        <!-- Esse botão leva de volta pra tela com os dados e o link do WhatsApp -->
-                                        <a href="{% url 'detalhe_atendimento' lead.id %}" class="btn btn-sm btn-success">Ver / WhatsApp</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="text-center py-5">
-                        <h4 class="text-muted">Você não tem nenhum cliente em andamento.</h4>
-                        <a href="{% url 'painel_fila_vendas' %}" class="btn btn-primary mt-3">🚀 Puxar Novo Cliente</a>
-                    </div>
-                {% endif %}
+{% extends 'appOrcam/base_crm.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Área Principal do Sistema (Fundo Escuro) -->
+    <div class="crm-section">
+        <div class="container">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-secondary fw-bold" >Minha Carteira de Clientes</h2>
+                <a href="{% url 'painel_fila_vendas' %}" class="btn btn-outline-light rounded-pill px-4 fw-bold shadow-sm">← Voltar ao Mural</a>
             </div>
+            
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4">
+                    {% if meus_leads %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="py-3 px-4 rounded-start">Empresa / Cliente</th>
+                                        <th class="py-3">Contato</th>
+                                        <th class="py-3">Data Inicial</th>
+                                        <th class="py-3">Data Atualizada</th>
+                                        <th class="py-3 rounded-end text-end px-4">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for lead in meus_leads %}
+                                    <tr>
+                                        <td class="px-4">
+                                            {% if lead.status == 'EM_ATENDIMENTO' %}
+                                                <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:#0d6efd; margin-right:8px; box-shadow: 0 0 5px #0d6efd;" title="Em Atendimento"></span>
+                                            {% elif lead.status == 'GANHO' %}
+                                                <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:#198754; margin-right:8px;" title="Ganho"></span>
+                                            {% elif lead.status == 'PERDIDO' %}
+                                                <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:#dc3545; margin-right:8px;" title="Perdido"></span>
+                                            {% endif %}
+                                            <strong class="fs-5">{{ lead.empresa }}</strong>
+                                        </td>
+                                        <td>
+                                            {{ lead.nome_contato }} <br>
+                                            <small class="text-muted fw-bold">{{ lead.telefone }}</small>
+                                        </td>
+                                        <td>{{ lead.criado_em|date:"d/m/Y H:i" }}</td>
+                                        <td>{{ lead.atualizado_em|date:"d/m/Y H:i" }}</td>
+                                        <td class="text-end px-4">
+                                            <a href="{% url 'detalhe_atendimento' lead.id %}" class="btn btn-sm btn-dark rounded-pill px-3 shadow-sm">Abrir / WhatsApp</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <h4 class="text-muted mb-4">Você ainda não assumiu nenhum atendimento.</h4>
+                            <a href="{% url 'painel_fila_vendas' %}" class="btn btn-primary btn-lg rounded-pill shadow">🎯 Puxar Novo Cliente</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
         </div>
     </div>
-</body>
-</html>
+</div>    
+{% endblock %}
