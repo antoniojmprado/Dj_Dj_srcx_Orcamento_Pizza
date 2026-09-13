@@ -3,74 +3,76 @@
 {% block title %}Resultado do Orçamento | Senhor Caixa{% endblock %}
 
 {% block content %}
-<div class="container mt-5 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-header bg-success text-white text-center py-4 rounded-top-4">
-                    <h3 class="mb-0 fw-bold">📦 Orçamento Calculado com Sucesso!</h3>
-                </div>
-                <div class="card-body p-4 p-md-5 fs-5">
-                    
-                    <!-- Cabeçalho de Boas-Vindas -->
-                    <div class="mb-4 pb-3 border-bottom">
-                        <!--<h3 class="text-dark fw-bold mb-2">Orçamento Múltiplo Concluído! 🎉</h3>-->
-                        <p class="mb-1 text-secondary">Olá, <b>{{ contato }}</b> da empresa <b>{{ cliente_nome }}</b>! Seus itens foram processados.</p>
-                        <p class="mb-0 text-muted fs-6">📱 <b>Seu telefone de contato:</b> {{ telefone }}</p>
+ <div class="container-fluid bg-dark text-white py-3 hero-section">
+    <div class="container mt-5 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-success text-white text-center py-4 rounded-top-4">
+                        <h3 class="mb-0 fw-bold">📦 Orçamento Calculado com Sucesso!</h3>
                     </div>
-
-                    <!-- Resumo dos Produtos Escolhidos (Com todos os detalhes restaurados) -->
-                    <h4 class="text-secondary border-bottom  mb-3">Itens do Pedido</h4>
-                    <div class="mb-4">
-                        {% for item in orcamentos_gerados %}
-                        <div style="background-color: #fcfcfc; border-left: 4px solid #3498db; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
-                            <p style="margin: 0 0 5px 0;" class="fw-bold">📦 {{ item.nome }}</p>
-                            <ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 0.95em; line-height: 1.6;" class="text-secondary">
-                                <li>🔢 Quantidade: {{ item.quantidade|floatformat:"0g" }} unidades</li>
-                                <li>📦 Volumes: {{ item.qt_pacotes|floatformat:"0g" }} pacotes (Peso: {{ item.peso_carga|floatformat:"2g" }} kg)</li>
-                                <li>🏷️ Valor Unitário (Caixa): R$ {{ item.unitario_caixa|floatformat:"2g" }}</li>
-                                <li style="margin-top: 5px;" class="text-dark fw-bold">💰 Subtotal (Produtos): R$ {{ item.subtotal|floatformat:"2g" }}</li>
-                            </ul>
+                    <div class="card-body p-4 p-md-5 fs-5">
+                        
+                        <!-- Cabeçalho de Boas-Vindas -->
+                        <div class="mb-4 pb-3 border-bottom">
+                            <!--<h3 class="text-dark fw-bold mb-2">Orçamento Múltiplo Concluído! 🎉</h3>-->
+                            <p class="mb-1 text-secondary">Olá, <b>{{ contato }}</b> da empresa <b>{{ cliente_nome }}</b>! Seus itens foram processados.</p>
+                            <p class="mb-0 text-muted fs-6">📱 <b>Seu telefone de contato:</b> {{ telefone }}</p>
                         </div>
-                        {% endfor %}
+
+                        <!-- Resumo dos Produtos Escolhidos (Com todos os detalhes restaurados) -->
+                        <h4 class="text-secondary border-bottom  mb-3">Itens do Pedido</h4>
+                        <div class="mb-4">
+                            {% for item in orcamentos_gerados %}
+                            <div style="background-color: #fcfcfc; border-left: 4px solid #3498db; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
+                                <p style="margin: 0 0 5px 0;" class="fw-bold">📦 {{ item.nome }}</p>
+                                <ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 0.95em; line-height: 1.6;" class="text-secondary">
+                                    <li>🔢 Quantidade: {{ item.quantidade|floatformat:"0g" }} unidades</li>
+                                    <li>📦 Volumes: {{ item.qt_pacotes|floatformat:"0g" }} pacotes (Peso: {{ item.peso_carga|floatformat:"2g" }} kg)</li>
+                                    <li>🏷️ Valor Unitário (Caixa): R$ {{ item.unitario_caixa|floatformat:"2g" }}</li>
+                                    <li style="margin-top: 5px;" class="text-dark fw-bold">💰 Subtotal (Produtos): R$ {{ item.subtotal|floatformat:"2g" }}</li>
+                                </ul>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Logística e Entrega -->
+                        <h4 class="text-secondary border-bottom pb-2 mb-3">Logística e Entrega</h4>
+                        <ul class="list-unstyled lh-lg text-dark">
+                            <li>📍 <b>Endereço:</b> {{ endereco_completo }}</li>
+                            <li>📍 <b>CEP:</b> {{ cep_cliente }}</li>
+                            <li>🚚 <b>Custo Total de Frete:</b> R$ {{ custo_total_frete }}</li>
+                            <li>⏱️ <b>Prazo Estimado:</b> {{ prazo_dias_final }} dias úteis a partir da colocação do pedido.</li>
+                        </ul>
+
+                        <!-- Bloco de Valor Total -->
+                        <div class="bg-light p-4 rounded-4 text-center mt-4 border">
+                            <span class="text-muted d-block mb-1">Total Geral do Pedido</span>
+                            <h2 class="text-success fw-bold display-6 m-0">
+                                R$ {{ total_geral_pedido }}
+                            </h2>
+                        </div>
+
+                        <!-- Botão do WhatsApp -->
+                        <div class="text-center mt-4">
+                            <a href="https://api.whatsapp.com/send?phone=55{{ telefone_limpo }}&text={{ texto_whatsapp }}" 
+                            target="_blank" 
+                            class="btn btn-success btn-lg fw-bold px-5 py-3 rounded-pill shadow">
+                                💬 Enviar cópia para o meu WhatsApp
+                            </a>
+                        </div>
+
+                        <p class="mt-4 font-monospace text-muted text-center fs-6">
+                            <i>Dúvidas? Nossa equipe está à disposição no WhatsApp (11) 2036-4177.<br>Aguarde pelo contato de nossa representante.</i>
+                        </p>
                     </div>
-
-                    <!-- Logística e Entrega -->
-                    <h4 class="text-secondary border-bottom pb-2 mb-3">Logística e Entrega</h4>
-                    <ul class="list-unstyled lh-lg text-dark">
-                        <li>📍 <b>Endereço:</b> {{ endereco_completo }}</li>
-                        <li>📍 <b>CEP:</b> {{ cep_cliente }}</li>
-                        <li>🚚 <b>Custo Total de Frete:</b> R$ {{ custo_total_frete }}</li>
-                        <li>⏱️ <b>Prazo Estimado:</b> {{ prazo_dias_final }} dias úteis a partir da colocação do pedido.</li>
-                    </ul>
-
-                    <!-- Bloco de Valor Total -->
-                    <div class="bg-light p-4 rounded-4 text-center mt-4 border">
-                        <span class="text-muted d-block mb-1">Total Geral do Pedido</span>
-                        <h2 class="text-success fw-bold display-6 m-0">
-                            R$ {{ total_geral_pedido }}
-                        </h2>
+                    
+                    <div class="card-footer text-center bg-white border-0 pb-4">
+                        <a href="{% url 'calcular_orcamento' %}" class="btn btn-outline-secondary rounded-pill px-4">← Fazer Novo Orçamento</a>
                     </div>
-
-                    <!-- Botão do WhatsApp -->
-                    <div class="text-center mt-4">
-                        <a href="https://api.whatsapp.com/send?phone=55{{ telefone_limpo }}&text={{ texto_whatsapp }}" 
-                           target="_blank" 
-                           class="btn btn-success btn-lg fw-bold px-5 py-3 rounded-pill shadow">
-                            💬 Enviar cópia para o meu WhatsApp
-                        </a>
-                    </div>
-
-                    <p class="mt-4 font-monospace text-muted text-center fs-6">
-                        <i>Dúvidas? Nossa equipe está à disposição no WhatsApp (11) 2036-4177.<br>Aguarde pelo contato de nossa representante.</i>
-                    </p>
-                </div>
-                
-                <div class="card-footer text-center bg-white border-0 pb-4">
-                    <a href="{% url 'calcular_orcamento' %}" class="btn btn-outline-secondary rounded-pill px-4">← Fazer Novo Orçamento</a>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</div>    
 {% endblock %}

@@ -1,50 +1,52 @@
 {% extends 'appOrcam/base_crm.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <!-- Área Principal do Sistema (Fundo Escuro) -->
-    <div class="crm-section">
-        <div class="container">
-            <!-- Painel Branco flutuante -->
-            <div class="card shadow-lg border-0 rounded-4 p-5 bg-white text-center">
-                
-                <h2 class="text-secondary fw-bold">Mural de Oportunidades</h2>
-                <p class="text-muted mb-4 fs-5">Vendedor(a) Logado(a): <strong class="text-dark">{{ vendedor_nome|upper }}</strong></p>
-                
-                <div class="mb-4 d-flex flex-column align-items-center">
-                    <a href="{% url 'meus_atendimentos' %}" class="btn btn-outline-primary fw-bold shadow-sm mb-3 px-4 py-2">
-                        📂 Ver Minha Carteira
-                    </a>
+ <div class="container-fluid bg-dark text-white py-3 hero-section">
+    <div class="container mt-5">
+        <!-- Área Principal do Sistema (Fundo Escuro) -->
+        <div class="crm-section">
+            <div class="container">
+                <!-- Painel Branco flutuante -->
+                <div class="card shadow-lg border-0 rounded-4 p-5 bg-white text-center">
                     
-                    <div class="d-flex gap-3 mt-1">
-                        <span class="badge bg-primary fs-6 px-3 py-2 shadow-sm" title="Em Atendimento">{{ meus_andamento }} Em Atendimento</span>
-                        <span class="badge bg-success fs-6 px-3 py-2 shadow-sm" title="Negócios Fechados">{{ meus_ganhos }} Ganhos</span>
-                        <span class="badge bg-danger fs-6 px-3 py-2 shadow-sm" title="Negócios Perdidos">{{ meus_perdidos }} Perdidos</span>
+                    <h2 class="text-secondary fw-bold">Mural de Oportunidades</h2>
+                    <p class="text-muted mb-4 fs-5">Vendedor(a) Logado(a): <strong class="text-dark">{{ vendedor_nome|upper }}</strong></p>
+                    
+                    <div class="mb-4 d-flex flex-column align-items-center">
+                        <a href="{% url 'meus_atendimentos' %}" class="btn btn-outline-primary fw-bold shadow-sm mb-3 px-4 py-2">
+                            📂 Ver Minha Carteira
+                        </a>
+                        
+                        <div class="d-flex gap-3 mt-1">
+                            <span class="badge bg-primary fs-6 px-3 py-2 shadow-sm" title="Em Atendimento">{{ meus_andamento }} Em Atendimento</span>
+                            <span class="badge bg-success fs-6 px-3 py-2 shadow-sm" title="Negócios Fechados">{{ meus_ganhos }} Ganhos</span>
+                            <span class="badge bg-danger fs-6 px-3 py-2 shadow-sm" title="Negócios Perdidos">{{ meus_perdidos }} Perdidos</span>
+                        </div>
                     </div>
-                </div>
 
-                <hr class="my-4">
+                    <hr class="my-4">
 
-                <div class="py-3">
-                    <h1 class="display-3 fw-bold text-dark mb-4">{{ leads_na_fila }}</h1>
-                    <h4 class="text-muted mb-4">clientes aguardando atendimento agora.</h4>
-                    
-                    {% if leads_na_fila > 0 %}
-                        <form action="{% url 'puxar_proximo_lead' %}" method="POST">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-dark btn-lg px-5 py-4 fs-3 fw-bold shadow-lg rounded-pill" style="transition: transform 0.2s;">
-                                🚀 PUXAR PRÓXIMO CLIENTE
+                    <div class="py-3">
+                        <h1 class="display-3 fw-bold text-dark mb-4">{{ leads_na_fila }}</h1>
+                        <h4 class="text-muted mb-4">clientes aguardando atendimento agora.</h4>
+                        
+                        {% if leads_na_fila > 0 %}
+                            <form action="{% url 'puxar_proximo_lead' %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-dark btn-lg px-5 py-4 fs-3 fw-bold shadow-lg rounded-pill" style="transition: transform 0.2s;">
+                                    🚀 PUXAR PRÓXIMO CLIENTE
+                                </button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-secondary btn-lg px-5 py-4 fs-3 fw-bold shadow-lg rounded-pill" disabled>
+                                Fila Vazia no Momento
                             </button>
-                        </form>
-                    {% else %}
-                        <button class="btn btn-secondary btn-lg px-5 py-4 fs-3 fw-bold shadow-lg rounded-pill" disabled>
-                            Fila Vazia no Momento
-                        </button>
-                        <p class="text-muted mt-3">Aguarde a entrada de novos orçamentos.</p>
-                    {% endif %}
+                            <p class="text-muted mt-3">Aguarde a entrada de novos orçamentos.</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </div>    
 </div>    
 {% endblock %}

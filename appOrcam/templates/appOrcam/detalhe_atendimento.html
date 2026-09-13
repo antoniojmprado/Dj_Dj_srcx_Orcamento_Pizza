@@ -4,55 +4,57 @@
 
 {% block content %}
 <!-- Área de Detalhes do Lead (Sem precisar repetir navbar nem body) -->
-<div class="container mb-5">
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Reg.:  {{ lead.id }} - Em Atendimento: {{ lead.empresa }}</h4>
-            <span class="badge bg-light text-success fs-6">👤 {{ lead.vendedor_responsavel|upper }}</span>
-            <div class="text-end">
-                <small class="text-white-50 d-block">Contato Inicial: {{ lead.criado_em|date:"d/m/Y H:i" }}h</small>
-                <small class="text-white-50 d-block">Atualizado em: {{ lead.atualizado_em|date:"d/m/Y H:i" }}h</small>
+ <div class="container-fluid bg-dark text-white py-3 hero-section">
+    <div class="container mb-5">
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Reg.:  {{ lead.id }} - Em Atendimento: {{ lead.empresa }}</h4>
+                <span class="badge bg-light text-success fs-6">👤 {{ lead.vendedor_responsavel|upper }}</span>
+                <div class="text-end">
+                    <small class="text-white-50 d-block">Contato Inicial: {{ lead.criado_em|date:"d/m/Y H:i" }}h</small>
+                    <small class="text-white-50 d-block">Atualizado em: {{ lead.atualizado_em|date:"d/m/Y H:i" }}h</small>
+                </div>
             </div>
-        </div>
-        <div class="card-body fs-5 text-dark">
-            <p><strong>Contato:</strong> {{ lead.nome_contato }}</p>
-            <p><strong>Telefone / WhatsApp:</strong> {{ lead.telefone }}</p>
-            <p><strong>Local:</strong> {{ lead.cidade }} / {{ lead.uf }} (CEP: {{ lead.cep }})</p>
-            <hr>
-            <p><strong>Resumo da Cotação:</strong><br> {{ lead.resumo_pedido|safe }}</p>
-            <p class="fs-4 text-dark fw-bold mt-3">Valor Total: R$ {{ lead.valor_cotado|floatformat:"2g" }}</p>
-            <hr>
-            
-            <div class="text-center mt-4">
-                <a href="https://api.whatsapp.com/send?phone=55{{ lead.telefone }}&text=Ol%C3%A1%20{{ lead.nome_contato }}!%20Sou%20o(a)%20{{ request.user.username }}%20da%20f%C3%A1brica.%20Recebi%20sua%20cota%C3%A7%C3%A3o%20das%20caixas.%20Vamos%20dar%20andamento%3F" 
-                   target="_blank" class="btn btn-dark btn-lg fw-bold px-5 py-3 shadow">
-                    💬 CHAMAR NO WHATSAPP
-                </a>
+            <div class="card-body fs-5 text-dark">
+                <p><strong>Contato:</strong> {{ lead.nome_contato }}</p>
+                <p><strong>Telefone / WhatsApp:</strong> {{ lead.telefone }}</p>
+                <p><strong>Local:</strong> {{ lead.cidade }} / {{ lead.uf }} (CEP: {{ lead.cep }})</p>
+                <hr>
+                <p><strong>Resumo da Cotação:</strong><br> {{ lead.resumo_pedido|safe }}</p>
+                <p class="fs-4 text-dark fw-bold mt-3">Valor Total: R$ {{ lead.valor_cotado|floatformat:"2g" }}</p>
+                <hr>
+                
+                <div class="text-center mt-4">
+                    <a href="https://api.whatsapp.com/send?phone=55{{ lead.telefone }}&text=Ol%C3%A1%20{{ lead.nome_contato }}!%20Sou%20o(a)%20{{ request.user.username }}%20da%20f%C3%A1brica.%20Recebi%20sua%20cota%C3%A7%C3%A3o%20das%20caixas.%20Vamos%20dar%20andamento%3F" 
+                    target="_blank" class="btn btn-dark btn-lg fw-bold px-5 py-3 shadow">
+                        💬 CHAMAR NO WHATSAPP
+                    </a>
+                </div>
+                
+                <!-- Início: Ações de Fechamento -->
+                <div class="card-footer bg-light text-center py-4 mt-4 border-top">
+                    {% if lead.status == 'EM_ATENDIMENTO' %}
+                        <h5 class="mb-3 text-secondary">Qual foi o resultado desta negociação?</h5>
+                        <div class="d-flex justify-content-center gap-4">
+                            <a href="{% url 'atualizar_status_lead' lead.id 'GANHO' %}" class="btn btn-success btn-lg px-4 fw-bold shadow-sm">
+                                🤝 Fechado / Venda Ganha!
+                            </a>
+                            <a href="{% url 'atualizar_status_lead' lead.id 'PERDIDO' %}" class="btn btn-danger btn-lg px-4 fw-bold shadow-sm">
+                                👎 Negócio Perdido
+                            </a>
+                        </div>
+                    {% else %}
+                        <span class="badge {% if lead.status == 'GANHO' %}bg-success{% else %}bg-danger{% endif %} fs-5 px-4 py-3 shadow-sm">
+                            Negócio finalizado como: {{ lead.status }}
+                        </span>
+                    {% endif %}
+                </div>
+                <!-- Fim: Ações de Fechamento -->
             </div>
-            
-            <!-- Início: Ações de Fechamento -->
-            <div class="card-footer bg-light text-center py-4 mt-4 border-top">
-                {% if lead.status == 'EM_ATENDIMENTO' %}
-                    <h5 class="mb-3 text-secondary">Qual foi o resultado desta negociação?</h5>
-                    <div class="d-flex justify-content-center gap-4">
-                        <a href="{% url 'atualizar_status_lead' lead.id 'GANHO' %}" class="btn btn-success btn-lg px-4 fw-bold shadow-sm">
-                            🤝 Fechado / Venda Ganha!
-                        </a>
-                        <a href="{% url 'atualizar_status_lead' lead.id 'PERDIDO' %}" class="btn btn-danger btn-lg px-4 fw-bold shadow-sm">
-                            👎 Negócio Perdido
-                        </a>
-                    </div>
-                {% else %}
-                    <span class="badge {% if lead.status == 'GANHO' %}bg-success{% else %}bg-danger{% endif %} fs-5 px-4 py-3 shadow-sm">
-                        Negócio finalizado como: {{ lead.status }}
-                    </span>
-                {% endif %}
+            <div class="card-footer text-center bg-white border-0 mt-3 pb-4">
+                <a href="{% url 'painel_fila_vendas' %}" class="btn btn-outline-secondary">← Voltar ao Mural de Vendas</a>
             </div>
-            <!-- Fim: Ações de Fechamento -->
-        </div>
-        <div class="card-footer text-center bg-white border-0 mt-3 pb-4">
-            <a href="{% url 'painel_fila_vendas' %}" class="btn btn-outline-secondary">← Voltar ao Mural de Vendas</a>
         </div>
     </div>
-</div>
+</div>    
 {% endblock %}

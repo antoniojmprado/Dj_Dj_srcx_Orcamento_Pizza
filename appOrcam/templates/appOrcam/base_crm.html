@@ -15,7 +15,214 @@
         .btn-menu-orcamento { background-color: #e60014; color: white; border-radius: 50px; padding: 8px 30px; font-weight: 600; font-size: 1.4rem; text-decoration: none; transition: 0.3s; }
         .btn-menu-orcamento:hover { background-color: #b3000f; color: white; }
         
+        <!-- CSS específico para a página de CRM demo_senhor_caixa.html -->
+        div.container-fluid { background-color: #111111; }
+        /* Faixa preta superior */
+        .top-bar {
+            background-color: #111111;
+            color: #ffffff;
+            font-size: 1.4rem;
+            padding: 8px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Menu Branco */
+        .navbar {
+            background-color: #ffffff;
+            padding: 15px 5%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-family: 'Georgia', serif;
+            font-size: 1.8rem;
+            color: #000;
+        }
+        
+        .nav-link {
+            color: #333 !important;
+            font-size: 1.4rem;
+            margin: 0 10px;
+        }
+
+        /* O famoso botão vermelho do Menu */
+        .btn-menu-orcamento {
+            background-color: #e60014;
+            color: white;
+            border-radius: 50px;
+            padding: 8px 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        
+        .btn-menu-orcamento:hover {
+            background-color: #b3000f;
+            color: white;
+        }
+
+        /* Botão transparente da área escura */
+        .btn-hero-orcamento {
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            border-radius: 50px;
+            padding: 12px 35px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+            background: transparent;
+            margin-top: 30px;
+        }
+
+        .btn-hero-orcamento:hover {
+            background-color: #ffffff;
+            color: #000000;
+        }
         /* Espaço para as páginas injetarem seu próprio CSS se precisarem */
+
+        
+    /* =========================================================
+       HERO
+       ========================================================= */
+
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+        color: white;
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        padding: 100px 5%;
+
+        /*
+         * Fundo base preto/grafite.
+         * As pequenas diferenças entre os tons
+         * ajudam a dar profundidade.
+         */
+         
+        background:
+            radial-gradient(
+                ellipse at 70% 45%,
+                #202020 0%,
+                #181818 35%,
+                #111111 70%,
+                #0c0c0c 100%
+            );
+    }
+
+
+    /* =========================================================
+       FACETAS GEOMÉTRICAS
+       ========================================================= */
+
+    .hero-section::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+
+        /*
+         * Várias faixas diagonais extremamente sutis.
+         */
+        background:
+            /* Faceta superior esquerda */
+            linear-gradient(
+                135deg,
+                rgba(255,255,255,0.045) 0%,
+                rgba(255,255,255,0.045) 18%,
+                transparent 18.2%,
+                transparent 100%
+            ),
+
+            /* Faceta superior */
+            linear-gradient(
+                155deg,
+                transparent 0%,
+                transparent 27%,
+                rgba(255,255,255,0.025) 27.2%,
+                rgba(255,255,255,0.025) 45%,
+                transparent 45.2%
+            ),
+
+            /* Faceta central */
+            linear-gradient(
+                35deg,
+                transparent 0%,
+                transparent 42%,
+                rgba(255,255,255,0.035) 42.2%,
+                rgba(255,255,255,0.035) 62%,
+                transparent 62.2%
+            ),
+
+            /* Faceta inferior */
+            linear-gradient(
+                145deg,
+                transparent 0%,
+                transparent 65%,
+                rgba(255,255,255,0.025) 65.2%,
+                rgba(255,255,255,0.025) 82%,
+                transparent 82.2%
+            );
+    }
+
+
+    /* =========================================================
+       SEGUNDA CAMADA DE FACETAS
+       ========================================================= */
+
+    .hero-section::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+
+        background:
+            /* grande polígono esquerdo */
+            linear-gradient(
+                145deg,
+                transparent 0%,
+                transparent 12%,
+                rgba(255,255,255,0.025) 12.2%,
+                rgba(255,255,255,0.025) 28%,
+                transparent 28.2%
+            ),
+
+            /* polígono central */
+            linear-gradient(
+                125deg,
+                transparent 0%,
+                transparent 35%,
+                rgba(255,255,255,0.018) 35.2%,
+                rgba(255,255,255,0.018) 55%,
+                transparent 55.2%
+            ),
+
+            /* polígono direito */
+            linear-gradient(
+                155deg,
+                transparent 0%,
+                transparent 54%,
+                rgba(255,255,255,0.03) 54.2%,
+                rgba(255,255,255,0.03) 72%,
+                transparent 72.2%
+            ),
+
+            /* região inferior direita */
+            linear-gradient(
+                25deg,
+                transparent 0%,
+                transparent 70%,
+                rgba(255,255,255,0.02) 70.2%,
+                rgba(255,255,255,0.02) 90%,
+                transparent 90.2%
+            );
+    }
         {% block extra_css %}{% endblock %}
     </style>
 </head>
@@ -57,8 +264,18 @@
     </nav>
 
     <!-- O Mágico BURAKO onde as outras páginas vão entrar -->
-    {% block content %}
-    {% endblock %}
+    {% block content %}{% endblock %}
+    <hr>
+   
+    <!-- Rodapé Personalizado -->
+    <footer class="text-center py-4 mt-5" style="background-color: #111111; border-top: 2px solid #222;">
+        <small style="color: #666;">
+            Engineered by Antonio Prado | Powered by Django & Python <b style="color: #999;"> _ v.1.0 ago/26</b>
+        </small>
+    </footer>
+
+    <!-- Bloco Mágico para injeção de Scripts (Vamos usar no DataTables) -->
+    {% block extra_js %}{% endblock %}
 
 </body>
 </html>
