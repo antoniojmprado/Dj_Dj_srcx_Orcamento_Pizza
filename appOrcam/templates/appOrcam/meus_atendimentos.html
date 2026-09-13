@@ -18,16 +18,20 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-dark">
                                     <tr>
+                                        <th class="py-3 px-4 rounded-start">Reg.</th>
                                         <th class="py-3 px-4 rounded-start">Empresa / Cliente</th>
                                         <th class="py-3">Contato</th>
                                         <th class="py-3">Data Inicial</th>
                                         <th class="py-3">Data Atualizada</th>
-                                        <th class="py-3 rounded-end text-end px-4">Ação</th>
+                                        <th class="py-3 px-4 rounded-end" style="text-align: center;">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for lead in meus_leads %}
                                     <tr>
+                                        <td class="px-4">
+                                             <strong class="fs-5">{{ lead.id }}</strong>
+                                        </td>
                                         <td class="px-4">
                                             {% if lead.status == 'EM_ATENDIMENTO' %}
                                                 <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:#0d6efd; margin-right:8px; box-shadow: 0 0 5px #0d6efd;" title="Em Atendimento"></span>

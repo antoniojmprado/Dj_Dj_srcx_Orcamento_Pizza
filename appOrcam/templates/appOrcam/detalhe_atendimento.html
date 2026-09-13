@@ -7,7 +7,7 @@
 <div class="container mb-5">
     <div class="card shadow-lg border-0">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Em Atendimento: {{ lead.empresa }}</h4>
+            <h4 class="mb-0">Reg.:  {{ lead.id }} - Em Atendimento: {{ lead.empresa }}</h4>
             <span class="badge bg-light text-success fs-6">👤 {{ lead.vendedor_responsavel|upper }}</span>
             <div class="text-end">
                 <small class="text-white-50 d-block">Contato Inicial: {{ lead.criado_em|date:"d/m/Y H:i" }}h</small>

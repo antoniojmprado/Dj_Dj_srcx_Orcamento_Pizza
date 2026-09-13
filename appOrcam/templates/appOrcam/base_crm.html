@@ -29,7 +29,8 @@
             {% if not request.user.is_authenticated %}
                 <a href="/admin/login/?next=/orcam/" style="color: #555; text-decoration: none;" title="Acesso Restrito">🔒</a>
             {% else %}
-                <a href="/orcam/logout/" style="color: #ff4d4d; text-decoration: none; font-weight: bold;">Sair ({{ request.user.username }})</a>
+                <a href="/orcam/logout/" style="color: #ff4d4d; text-decoration: none; font-weight: bold;">Sair ( <span style="color:#FFFF00">{{ request.user.username }}</span> )                    
+                </a>
             {% endif %}
         </div>
     </div>
