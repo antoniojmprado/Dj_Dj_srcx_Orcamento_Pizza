@@ -91,7 +91,7 @@
                                                 <input type="text" class="form-control bg-light" value="{{ produto.nome }} - {{ produto.tipo_papelao }}" readonly style="cursor: pointer; font-size: 0.9em;" onclick="document.getElementById('check_{{ produto.id }}').click();">
                                                 
                                                 <!-- 3. Quantidade (mais estreito) -->
-                                                <input type="number" class="form-control" name="quantidade_{{ produto.id }}" placeholder="Qtd (ex: 1000)" min="1" style="max-width: 130px;">
+                                                <input type="number" class="form-control" name="quantidade_{{ produto.id }}" placeholder="quant..." min="1" style="max-width: 130px;">
                                             </div>
                                         </div>
                                         {% endfor %}
@@ -129,15 +129,63 @@
                 }
             });
         }
+
+        // Captura o formulário da página
+        const formOrcamento = document.querySelector('form');
+
+        if (formOrcamento) {
+            formOrcamento.addEventListener('submit', function(event) {
+                // Pega todos os checkboxes que foram marcados
+                const produtosMarcados = document.querySelectorAll('input[name="produtos_selecionados"]:checked');
+                
+                // 1. Verifica se esqueceu de marcar pelo menos um produto
+                if (produtosMarcados.length === 0) {
+                    alert("Ops! Por favor, selecione pelo menos um produto na lista marcando a caixinha.");
+                    event.preventDefault(); // Trava o envio do formulário
+                    return; // Sai da função
+                }
+
+                let erroQuantidade = false;
+
+                // 2. Verifica se cada produto marcado tem uma quantidade válida preenchida
+                produtosMarcados.forEach(function(checkbox) {
+                    const produtoId = checkbox.value;
+                    const inputQuantidade = document.querySelector('input[name="quantidade_' + produtoId + '"]');
+                    
+                    if (inputQuantidade) {
+                        const valor = parseInt(inputQuantidade.value, 10);
+                        // Se estiver vazio, não for número, ou for zero/negativo
+                        if (isNaN(valor) || valor <= 0) {
+                            erroQuantidade = true;
+                            inputQuantidade.style.borderColor = "red"; // Pinta a borda de vermelho pra chamar atenção
+                        } else {
+                            inputQuantidade.style.borderColor = ""; // Remove a borda vermelha se consertou
+                        }
+                    }
+                });
+
+                // Se encontrou erro na quantidade de algum produto marcado, exibe o alerta
+                if (erroQuantidade) {
+                    alert("Por favor, informe uma quantidade válida (maior que zero) para os produtos que você selecionou.");
+                    event.preventDefault(); // Trava o envio
+                }
+            });
+        }
     });
+
 
     document.getElementById('cep').addEventListener('blur', function() {
         let cep = this.value.replace(/\D/g, '');
         let statusText = document.getElementById('cep-status');
+        let cepInput = this; // O próprio campo do CEP
+
+        // Arranca a classe do Bootstrap que estava bloqueando a mudança de cor
+        statusText.classList.remove('text-muted');
 
         if (cep.length === 8) {
             statusText.innerText = "Consultando base local...";
             statusText.style.color = "blue";
+            cepInput.style.borderColor = ""; // Limpa a borda enquanto busca
 
             fetch(`/orcam/api/consulta-cep/${cep}/`) 
                 .then(response => response.json())
@@ -148,20 +196,34 @@
                         document.getElementById('cidade').value = data.localidade;
                         document.getElementById('uf').value = data.uf;
                         
-                        statusText.innerText = "";
+                        statusText.innerText = "CEP localizado!";
+                        statusText.style.color = "green";
+                        cepInput.style.borderColor = "green"; // Borda verde de sucesso
+                        
+                        // Espera meio segundo e limpa a mensagem de sucesso para não poluir a tela
+                        setTimeout(() => { statusText.innerText = ""; }, 1500);
+                        
                         document.getElementById('numero').focus();
                     } else {
                         statusText.innerText = "CEP não encontrado na base.";
                         statusText.style.color = "red";
+                        cepInput.style.borderColor = "red"; // Borda vermelha de erro
                     }
                 })
                 .catch(error => {
                     statusText.innerText = "Erro ao acessar o banco.";
                     statusText.style.color = "red";
+                    cepInput.style.borderColor = "red"; // Borda vermelha de erro
                 });
-        } else {
-            statusText.innerText = "CEP inválido.";
+        } else if (cep.length > 0) {
+            // Se ele digitou algo, mas não tem 8 números
+            statusText.innerText = "CEP inválido. Digite os 8 números.";
             statusText.style.color = "red";
+            cepInput.style.borderColor = "red"; // Borda vermelha de erro
+        } else {
+            // Se ele só clicou no campo e saiu sem digitar nada, limpa tudo
+            statusText.innerText = "";
+            cepInput.style.borderColor = "";
         }
     });
 </script>

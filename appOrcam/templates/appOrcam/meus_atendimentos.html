@@ -1,5 +1,16 @@
 {% extends 'appOrcam/base_crm.html' %}
 
+{% block extra_css %}
+<!-- CSS do DataTables para Bootstrap 5 -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<style>
+    /* Ajustes finos para a busca não colar nos botões e ficar elegante */
+    .dataTables_wrapper .row { margin-bottom: 15px; }
+    div.dataTables_filter input { border-radius: 6px; border: 1px solid #ccc; padding: 4px 10px; }
+    div.dataTables_paginate { margin-top: 15px; }
+</style>
+{% endblock %}
+
 {% block content %}
  <div class="container-fluid bg-dark text-white py-3 hero-section">
     <div class="container mt-5">
@@ -16,7 +27,7 @@
                     <div class="card-body p-4">
                         {% if meus_leads %}
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
+                                <table id="tabelaCarteira" class="table table-hover align-middle mb-0">
                                     <thead class="table-dark">
                                         <tr>
                                             <th class="py-3 px-4 rounded-start">Reg.</th>
@@ -70,4 +81,27 @@
         </div>
     </div>    
 </div>    
+{% endblock %}
+
+{% block extra_js %}
+<!-- jQuery (Necessário para o DataTables) -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<!-- Scripts do DataTables -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#tabelaCarteira').DataTable({
+            // Tradução para Português do Brasil
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json"
+            },
+            // Ordena pela 1ª coluna (índice 0). Se quiser ordenar pela data, mude o 0 para o número da coluna da data!
+            "order": [[ 0, "desc" ]], 
+            "pageLength": 10,           // Mostra 10 clientes por página
+            "lengthChange": false       // Esconde aquele menu feio de "Mostrar X itens"
+        });
+    });
+</script>
 {% endblock %}
