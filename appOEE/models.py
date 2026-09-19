@@ -328,6 +328,13 @@ class ParametroFinanceiro(models.Model):
     # Relacao custos variaveis e faturamento real
     custo_variav_fatur_real_pct = models.DecimalField( max_digits=5, decimal_places=2, default=5.00)
 
+    refugo_perdas = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0.00,
+        verbose_name="Refugo e Perdas (%)"
+    )
+
     class Meta:
         verbose_name = "Parâmetro Financeiro"
         verbose_name_plural = "Parâmetros Financeiros"

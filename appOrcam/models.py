@@ -684,6 +684,7 @@ class Orcamento(models.Model):
     def custo_perda_unitario(self):
         return self.area_perda_projeto *  Decimal(str(self.chapa_utilizada.custo_m2))          
 
+
     @property
     def custo_total_unitario_fabricacao(self):
         """Soma de todos os custos reais (Material (perdas inclusas) + Máquinas"""
@@ -692,6 +693,7 @@ class Orcamento(models.Model):
                 self.custo_impressao +
                 self.custo_corte +
                 self.custo_seladora)
+
 
     @property
     def custo_total_fabricacao(self):
@@ -712,10 +714,12 @@ class Orcamento(models.Model):
             # Seu cenário alternativo (quando unidades_chapa <= 1)
             return custo_total_papel + custo_total_tinta + (custo_imp * qtd) + (custo_crt * qtd) + (custo_sel * qtd)
         
+
     @property
     def custo_total_fabricacao_porc(self):
         """Soma de todos os custos reais (Material (perdas inclusas) + Máquinas"""
         return (self.custo_total_fabricacao*100/self.custo_industrial_e_frete_sem_margem) if self.custo_papelao_total else Decimal('0.20')
+
 
     @property
     def custo_unitario_total_sem_margem(self):
@@ -725,6 +729,7 @@ class Orcamento(models.Model):
                 self.custo_corte +
                 self.custo_seladora +
                 self.custo_frete_unitario)
+
 
     @property
     def custo_industrial_e_frete_sem_margem(self):
@@ -747,16 +752,19 @@ class Orcamento(models.Model):
             return custo_total_papel + custo_total_tinta + (custo_imp * qtd) + (custo_crt * qtd) + (custo_sel * qtd) + custo_frete
 
 
+    
     @property
     def preco_final_sem_nota_unitario(self):
         """Preço Final Unitário x Quantidade"""
         return self.preco_final_sem_nota / self.quantidade
 
+    
     @property
     def preco_final_com_nota_unitario(self):
         """Preço Final Unitário x Quantidade"""
         return self.preco_final_com_nota / self.quantidade
 
+    
     @property
     def soma_unitario_materiais(self):
         """Soma: Papelão + Perda + Tinta"""

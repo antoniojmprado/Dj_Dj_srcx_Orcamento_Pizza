@@ -18,10 +18,14 @@ class EncargosTrabalhistasAdmin(admin.ModelAdmin):
 class ChapaAdmin(admin.ModelAdmin):
     list_display = ('id', 'nome', 'largura_cm', 'comprimento_cm',
                     'tipo_papelao', 'custo_m2', 'gramatura_kg_m2',
-                    'larg_apara_m', 'preco_apara_kg', 'explicacao_tecnica')
+                    'larg_apara_m', 'preco_apara_kg', 'explicacao_tecnica',
+                    'comprim_pacote_cm', 'largura_pacote_cm', 'altura_pacote_cm',
+                    'unidades_pacote', 'peso_pacote', 'ativo')
 
     list_editable = ('nome', 'largura_cm', 'comprimento_cm', 'tipo_papelao',
-                     'custo_m2', 'gramatura_kg_m2', 'larg_apara_m', 'preco_apara_kg', 'explicacao_tecnica')
+                     'custo_m2', 'gramatura_kg_m2', 'larg_apara_m', 'preco_apara_kg', 'explicacao_tecnica',
+                     'comprim_pacote_cm', 'largura_pacote_cm', 'altura_pacote_cm', 'unidades_pacote', 'peso_pacote', 'ativo')
+    
     search_fields = ('nome',)
 
 

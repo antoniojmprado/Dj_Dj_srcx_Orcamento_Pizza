@@ -109,10 +109,6 @@ def listar_orcamentos(request):
 # LISTAR ORÇAMENTOS x ROTEIROS DE PRODUÇÃO
 # ==========================================
 
-# ==========================================
-# LISTAR ORÇAMENTOS x ROTEIROS DE PRODUÇÃO
-# ==========================================
-
 def listar_roteiros_producao(request, pk):
 
     # 1. Busca o orçamento específico
