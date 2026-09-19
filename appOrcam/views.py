@@ -15,6 +15,7 @@ from django.db.models import Sum
 from .models import MemoriaCalculoDinamica
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
+from django.db import transaction
 
 from appFrete.services_frete import calcular_melhor_frete_interno
 
@@ -599,6 +600,88 @@ def simulacoes_orcamentos(request, pk):
     return render(request, 'simulacoes_de_orçamentos.html', context)
 
 
+def simulador_orcamento(request):
+    # Traz as opções direto do banco para popular os <select> do HTML
+    chapas = Chapa.objects.all()
+# CORREÇÃO: Usando os campos reais do seu modelo Maquina
+    maquinas_imp = Maquina.objects.filter(impressora=True) 
+    maquinas_crt = Maquina.objects.filter(corte=True)
+    
+    contexto = {
+        'chapas': chapas,
+        'maquinas_imp': maquinas_imp,
+        'maquinas_crt': maquinas_crt
+    }
+    return render(request, 'appOrcam/simulador_orcamento.html', contexto)
+
+
+def api_simulador_dinamico(request):
+    # 1. Capturas da URL (agora pegando o ID da Chapa)
+    chapa_id = request.GET.get('chapa')
+    qtd = float(request.GET.get('qtd', 1000))
+    preco_papel = float(request.GET.get('papel', 4.50))
+    preco_tinta = float(request.GET.get('tinta', 0.20))
+    margem = float(request.GET.get('margem', 15.0))
+    imp_id = request.GET.get('imp')
+    crt_id = request.GET.get('crt')
+
+    try:
+        with transaction.atomic():
+            # 2. Busca a Chapa Exata e ajusta o preço temporário
+            chapa_obj = Chapa.objects.get(id=int(chapa_id))
+            chapa_obj.custo_m2 = Decimal(str(preco_papel))
+            chapa_obj.save() # Fica salvo apenas na transação "fantasma"
+
+            # 3. Busca as Máquinas
+            maq_imp = Maquina.objects.get(id=int(imp_id)) if imp_id else None
+            maq_crt = Maquina.objects.get(id=int(crt_id)) if crt_id else None
+
+            # Ajusta tinta globalmente na transação
+            from .models import Custo_tinta
+            tinta_param = Custo_tinta.objects.first()
+            if tinta_param:
+                tinta_param.custo_tinta_unitario = Decimal(str(preco_tinta))
+                tinta_param.save()
+
+            # 4. A MÁGICA: Cria o orçamento dinâmico do zero
+            orc = Orcamento(
+                cliente="Simulação do Sócio",
+                produto_nome=f"Caixa Simulada {chapa_obj.tipo_papelao}",
+                quantidade=int(qtd),
+                chapa_projeto=chapa_obj,
+                chapa_utilizada=chapa_obj,
+                maquina_impressao=maq_imp,
+                maquina_corte=maq_crt,
+                margem_real=Decimal(str(margem))
+                # unidades_chapa=1 (se quiser deixar fixo ou mandar via JS)
+            )
+            # Força o frete como zero para a simulação
+            orc.custo_frete_unitario = Decimal('0.00')
+            
+            # 5. Salva e aciona toda a engenharia de cálculo!
+            orc.save()
+
+# 5. Coleta os resultados processados (Bypass do erro de Decimal vs Float)
+            custo_total = float(orc.custo_industrial_e_frete_sem_margem)
+            qtd_float = float(orc.quantidade)
+
+            resultados = {
+                'custo_unitario': float(orc.custo_industrial_e_frete_sem_margem) / float(orc.quantidade) if orc.quantidade > 0 else 0.0,
+                'preco_venda_unit': float(orc.preco_final_com_nota_unitario),
+                'total_sem_nota': float(orc.preco_final_sem_nota),
+                'total_com_nota': float(orc.preco_final_com_nota),
+            }
+            # 6. Desfaz tudo sem sujar o banco
+            transaction.set_rollback(True)
+
+            return JsonResponse(resultados)
+
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc()) # Imprime o erro no console do VS Code
+        return JsonResponse({'erro': str(e)}, status=500)
+
+    
 def pagina_inicial_demo(request):
     return render(request, 'appOrcam/demo_senhor_caixa.html')
 

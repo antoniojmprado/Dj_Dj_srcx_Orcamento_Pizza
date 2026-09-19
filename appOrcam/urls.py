@@ -16,6 +16,10 @@ urlpatterns = [
         
     path('orcamento/<int:pk>/simulacao/', views.simulacoes_orcamentos, name='simulacoes_orcamentos'),
 
+    path('simulador/', views.simulador_orcamento, name='simulador_orcamento'),
+
+    path('api/simulador/', views.api_simulador_dinamico, name='api_simulador_dinamico'),
+
 # 1º Passo: Vitrine Escura
     path('', views.pagina_inicial_demo, name='pagina_inicial'), 
     

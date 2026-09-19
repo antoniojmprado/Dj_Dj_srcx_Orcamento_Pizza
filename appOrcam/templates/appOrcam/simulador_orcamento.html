@@ -1,0 +1,178 @@
+{% extends 'appOrcam/base_crm.html' %}
+
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary">Simulador Dinâmico de Orçamento</h2>
+
+    <!-- Seleção de Chapa Base -->
+    <div class="mb-3">
+        <label for="input-chapa" class="form-label fw-bold">Chapa / Papelão Base:</label>
+        <select class="form-select border-primary" id="input-chapa" onchange="atualizarValores()">
+            {% for chapa in chapas %}
+                <option value="{{ chapa.id }}">{{ chapa.tipo_papelao }} - {{ chapa.largura_cm }}x{{ chapa.comprimento_cm }}cm</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- ... (quantidade, custo papel, custo tinta, margem ficam iguais) ... -->
+
+    <hr>
+    <h6 class="text-secondary fw-bold">Roteiro de Produção (Setup)</h6>
+    
+    <!-- Máquina de Impressão -->
+    <div class="mb-3">
+        <label for="input-impressora" class="form-label fw-bold">Impressora:</label>
+        <select class="form-select" id="input-impressora" onchange="atualizarValores()">
+            {% for maq in maquinas_imp %}
+                <option value="{{ maq.id }}">{{ maq.nome }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Máquina de Corte e Vinco -->
+    <div class="mb-3">
+        <label for="input-corte" class="form-label fw-bold">Corte e Vinco:</label>
+        <select class="form-select" id="input-corte" onchange="atualizarValores()">
+            {% for maq in maquinas_crt %}
+                <option value="{{ maq.id }}">{{ maq.nome }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="row">
+        <!-- Coluna dos Controles Deslizantes -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Parâmetros de Custo e Produção</h5>
+                </div>
+                <div class="card-body">
+
+                    <!-- Produto Base (Molde) -->
+                    <div class="mb-3">
+                        <label for="input-produto" class="form-label fw-bold">Produto / Formato Base:</label>
+                        <select class="form-select border-primary" id="input-produto" onchange="atualizarValores()">
+                            <!-- Use IDs de orçamentos reais que servem de modelo perfeito -->
+                            <option value="209">Caixa de Pizza (Grande) 35cm</option> 
+                            <option value="210">Caixa para Esfiha (Onda E)</option>
+                            <option value="211">Caixa de Embarque Padrão</option>
+                        </select>
+                    </div>
+
+                    <!-- Quantidade -->
+                    <div class="mb-3">
+                        <label for="input-qtd" class="form-label fw-bold">Quantidade de Caixas: <span class="text-primary" id="val-qtd">1000</span> un</label>
+                        <input type="range" class="form-range" id="input-qtd" min="500" max="50000" step="500" value="1000" oninput="atualizarValores()">
+                    </div>
+
+                    <!-- Preço do Papel -->
+                    <div class="mb-3">
+                        <label for="input-papel" class="form-label fw-bold">Custo do Papel (R$/m²): R$ <span class="text-primary" id="val-papel">4.50</span></label>
+                        <input type="range" class="form-range" id="input-papel" min="2.00" max="10.00" step="0.10" value="4.50" oninput="atualizarValores()">
+                    </div>
+
+                    <!-- Preço da Tinta (Rótulo e Step corrigidos) -->
+                    <div class="mb-3">
+                        <label for="input-tinta" class="form-label fw-bold">Custo da Tinta (R$/unidade): R$ <span class="text-primary" id="val-tinta">0.20</span></label>
+                        <input type="range" class="form-range" id="input-tinta" min="0.05" max="1.00" step="0.01" value="0.20" oninput="atualizarValores()">
+                    </div>
+
+                    <!-- Margem de Lucro -->
+                    <div class="mb-3">
+                        <label for="input-margem" class="form-label fw-bold">Margem de Lucro Desejada: <span class="text-primary" id="val-margem">15</span>%</label>
+                        <input type="range" class="form-range" id="input-margem" min="5" max="50" step="1" value="15" oninput="atualizarValores()">
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna dos Resultados Financeiros -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Projeção Financeira Instantânea</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush text-end">
+                        <li class="list-group-item d-flex justify-content-between align-items-center fs-5">
+                            Custo de Fabricação (Unitário):
+                            <strong id="out-custo-unit">R$ 0,00</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fs-5">
+                            Preço de Venda (Unitário):
+                            <strong id="out-preco-unit" class="text-success">R$ 0,00</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fs-5">
+                            Faturamento Bruto (Sem Impostos):
+                            <strong id="out-total-sem-nota">R$ 0,00</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center fs-4 bg-light">
+                            <strong>Total do Pedido (Com NF):</strong>
+                            <strong id="out-total-com-nota" class="text-primary">R$ 0,00</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script de Cálculo Instantâneo -->
+<script>
+    // Função de formatação para Moeda Brasileira
+    function formatarMoeda(valor) {
+        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    // Variável de controle para não bombardear o servidor se o usuário arrastar muito rápido
+    let timeoutId;
+
+    function atualizarValores() {
+        // 1. Capturar os valores atuais dos controles deslizantes
+        let idProduto = document.getElementById('input-produto').value; // NOVA CAPTURA
+        let qtd = document.getElementById('input-qtd').value;
+        let precoPapel = document.getElementById('input-papel').value;
+        let precoTinta = document.getElementById('input-tinta').value;
+        let margemLucro = document.getElementById('input-margem').value;
+
+        // NOVAS CAPTURAS
+        let idChapa = document.getElementById('input-chapa').value;
+        let idImpressora = document.getElementById('input-impressora').value;
+        let idCorte = document.getElementById('input-corte').value;
+
+        // 2. Atualizar os textos numéricos na tela
+        document.getElementById('val-qtd').innerText = parseInt(qtd).toLocaleString('pt-BR');
+        document.getElementById('val-papel').innerText = parseFloat(precoPapel).toFixed(2).replace('.', ',');
+        document.getElementById('val-tinta').innerText = parseFloat(precoTinta).toFixed(2).replace('.', ',');
+        document.getElementById('val-margem').innerText = margemLucro;
+
+        // 3. Monta a URL para "perguntar" ao Django
+        const baseUrl = "{% url 'api_simulador_dinamico' %}";
+        const url = `${baseUrl}?chapa=${idChapa}&qtd=${qtd}&papel=${precoPapel}&tinta=${precoTinta}&margem=${margemLucro}&imp=${idImpressora}&crt=${idCorte}`;
+
+        // Debounce: Aguarda 150ms depois que o usuário parar de arrastar para consultar o Django
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.erro) {
+                        console.error("Erro do servidor:", data.erro);
+                        return;
+                    }
+                    // 4. Injeta os resultados oficiais da sua Model na tela
+                    document.getElementById('out-custo-unit').innerText = formatarMoeda(data.custo_unitario);
+                    document.getElementById('out-preco-unit').innerText = formatarMoeda(data.preco_venda_unit);
+                    document.getElementById('out-total-sem-nota').innerText = formatarMoeda(data.total_sem_nota);
+                    document.getElementById('out-total-com-nota').innerText = formatarMoeda(data.total_com_nota);
+                })
+                .catch(error => console.error('Erro de conexão:', error));
+        }, 150);
+    }
+
+    // Disparar a função ao carregar a página
+    document.addEventListener("DOMContentLoaded", atualizarValores);
+</script>
+{% endblock %}
