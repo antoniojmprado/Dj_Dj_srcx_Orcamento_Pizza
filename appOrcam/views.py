@@ -663,15 +663,24 @@ def api_simulador_dinamico(request):
             # 5. Salva e aciona toda a engenharia de cálculo!
             orc.save()
 
-# 5. Coleta os resultados processados (Bypass do erro de Decimal vs Float)
+            # 5. Coleta os resultados processados (Bypass do erro de Decimal vs Float)
             custo_total = float(orc.custo_industrial_e_frete_sem_margem)
             qtd_float = float(orc.quantidade)
 
             resultados = {
-                'custo_unitario': float(orc.custo_industrial_e_frete_sem_margem) / float(orc.quantidade) if orc.quantidade > 0 else 0.0,
-                'preco_venda_unit': float(orc.preco_final_com_nota_unitario),
-                'total_sem_nota': float(orc.preco_final_sem_nota),
-                'total_com_nota': float(orc.preco_final_com_nota),
+                'status': 'success',
+                'preco_s_nf': float(orc.preco_final_sem_nota),
+                'preco_c_nf': float(orc.preco_final_com_nota),
+                'r_un_s_nf': float(orc.preco_final_sem_nota / orc.quantidade),
+                'r_un_c_nf': float(orc.preco_final_com_nota / orc.quantidade),
+                'impostos_pct': float(orc.aliquota_imposto_aplicada),
+                
+                # Detalhamento para o Tooltip / Cards
+                'custo_materia_prima': float((orc.custo_papelao_unitario+orc.custo_tinta_unitario) * orc.quantidade),
+                'custo_maquinas': float((orc.custo_impressao+orc.custo_corte+orc.custo_seladora) * orc.quantidade),
+                'custo_fabricacao': float((orc.custo_papelao_unitario+orc.custo_tinta_unitario+orc.custo_impressao+orc.custo_corte+orc.custo_seladora) * orc.quantidade),
+                'margem_percentual': float(orc.margem_real),
+                'prolabore_socio': float(orc.prolabore_socio),
             }
             # 6. Desfaz tudo sem sujar o banco
             transaction.set_rollback(True)

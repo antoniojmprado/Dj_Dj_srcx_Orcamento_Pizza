@@ -54,7 +54,7 @@
                     <!-- Quantidade -->
                     <div class="mb-3">
                         <label for="input-qtd" class="form-label fw-bold">Quantidade de Caixas: <span class="text-primary" id="val-qtd">1000</span> un</label>
-                        <input type="range" class="form-range" id="input-qtd" min="500" max="20000" step="500" value="1000" oninput="atualizarValores()">
+                        <input type="range" class="form-range" id="input-qtd" min="500" max="20000" step="100" value="1000" oninput="atualizarValores()">
                     </div>
 
                     <!-- Preço do Papel -->
@@ -70,7 +70,7 @@
                     </div>
 
                     <!-- Margem de Lucro -->
-                    <div class="mb-3">
+                    <div>
                         <label for="input-margem" class="form-label fw-bold">Margem de Lucro Desejada: <span class="text-primary" id="val-margem">15</span>%</label>
                         <input type="range" class="form-range" id="input-margem" min="0" max="50" step="1" value="15" oninput="atualizarValores()">
                     </div>
@@ -81,34 +81,75 @@
 
         <!-- Coluna dos Resultados Financeiros -->
         <div class="col-md-6">
-            <div class="card shadow-sm border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Projeção Financeira Instantânea</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush text-end">
-                        <li class="list-group-item d-flex justify-content-between align-items-center fs-5">
-                            Custo de Fabricação (Unitário):
-                            <strong id="out-custo-unit">R$ 0,00</strong>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center fs-5">
-                            Preço de Venda (Unitário):
-                            <strong id="out-preco-unit" class="text-success">R$ 0,00</strong>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center fs-5">
-                            Faturamento Bruto (Sem Impostos):
-                            <strong id="out-total-sem-nota">R$ 0,00</strong>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center fs-4 bg-light">
-                            <strong>Total do Pedido (Com NF):</strong>
-                            <strong id="out-total-com-nota" class="text-primary">R$ 0,00</strong>
-                        </li>
-                    </ul>
-                </div>
+            <div class="card shadow-sm mb-4">
+                    <!-- Cabeçalho limpo (removido o bg-dark) -->
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Resumo Executivo do Orçamento</h5>
+                    </div>
+                    
+                    <!-- O card-body agora abraça TUDO o que está dentro do card -->
+                    <div class="card-body">
+                        <!-- Indicadores Principais -->
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-6"><h5>Preço s/NF: <span id="res-preco-s-nf" class="fw-bold text-dark">R$ 0,00</span></h5></div>
+                                <div class="col-6"><h5 class="text-muted mb-1">R$ un s/NF: <span id="res-run-s-nf" class="fw-bold text-primary">R$ 0,00</span></h5></div>
+                            </div>
+                            <h6 class="text-secondary">Impostos: <span id="res-imposto-pct">0</span>%</h6>
+
+                            <div class="row mt-1">
+                                <div class="col-6"><h5 class="text-muted mb-1">Preço c/NF: <span id="res-preco-c-nf" class="fw-bold text-dark">R$ 0,00</span></h5></div>
+                                <div class="col-6"><h5 class="text-muted mb-1">R$ un c/NF: <span id="res-run-c-nf" class="fw-bold text-primary">R$ 0,00</span></h5></div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Título da Composição -->
+                        <div class="bg-dark text-white mb-3"><h5>🔍 Composição de Custos</h5></div>
+                        
+                        <hr>
+
+                        <!-- Detalhamento Organizado -->
+                        <div class="row">
+                            <div class="col-6"> 
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-muted">• Matéria-prima:</td>
+                                            <td class="text-end fw-bold text-dark" id="tip-materia">R$ 0,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">• Máquinas:</td>
+                                            <td class="text-end fw-bold text-dark" id="tip-maquinas">R$ 0,00</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">• Custo Fabricação:</td>
+                                            <td class="text-end fw-bold text-dark" id="tip-fabrica">R$ 0,00</td>
+                                        </tr>
+                                    </tbody><tr><td>-</td></tr>
+                                </table>
+                            </div> 
+                            <div class="col-6">
+                                 <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-muted">• Margem Aplicada:</td>
+                                            <td class="text-end fw-bold text-dark"><span id="tip-margem">0</span>%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">• Pró-labore Sócio:</td>
+                                            <td class="text-end fw-bold text-dark" id="tip-socio">R$ 0,00</td>
+                                        </tr>
+                                    </tbody><tr><td>-</td></tr>
+                                </table>
+                            </div>
+                        </div>    
+                    </div> 
             </div>
         </div>
-    </div>
 </div>
+
 
 <!-- Script de Cálculo Instantâneo -->
 <script>
@@ -153,10 +194,25 @@
                         return;
                     }
                     // 4. Injeta os resultados oficiais da sua Model na tela
-                    document.getElementById('out-custo-unit').innerText = formatarMoeda(data.custo_unitario);
-                    document.getElementById('out-preco-unit').innerText = formatarMoeda(data.preco_venda_unit);
-                    document.getElementById('out-total-sem-nota').innerText = formatarMoeda(data.total_sem_nota);
-                    document.getElementById('out-total-com-nota').innerText = formatarMoeda(data.total_com_nota);
+                    // Dentro do fetch().then(data => { ... })
+                    // Função auxiliar para o padrão brasileiro (Ex: 3.526,12)
+                    const fmtDinheiro = (val) => `R$ ${(Number(val) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+                    // Dentro do seu bloco .then(data => { ... })
+                    document.getElementById('res-preco-s-nf').innerText = fmtDinheiro(data.preco_s_nf);
+                    document.getElementById('res-preco-c-nf').innerText = fmtDinheiro(data.preco_c_nf);
+                    document.getElementById('res-imposto-pct').innerText = (Number(data.impostos_pct) || 0).toFixed(1).replace('.', ',');
+
+                    document.getElementById('res-run-s-nf').innerText = fmtDinheiro(data.r_un_s_nf);
+                    document.getElementById('res-run-c-nf').innerText = fmtDinheiro(data.r_un_c_nf);
+
+                    // Detalhamento de Custos
+                    document.getElementById('tip-materia').innerText = fmtDinheiro(data.custo_materia_prima);
+                    document.getElementById('tip-maquinas').innerText = fmtDinheiro(data.custo_maquinas);
+                    document.getElementById('tip-fabrica').innerText = fmtDinheiro(data.custo_fabricacao);
+                    document.getElementById('tip-margem').innerText = (Number(data.margem_percentual) || 0).toFixed(0);
+                    document.getElementById('tip-socio').innerText = fmtDinheiro(data.prolabore_socio);
+
                 })
                 .catch(error => console.error('Erro de conexão:', error));
         }, 150);
@@ -165,4 +221,5 @@
     // Disparar a função ao carregar a página
     document.addEventListener("DOMContentLoaded", atualizarValores);
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}

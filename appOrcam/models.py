@@ -939,7 +939,6 @@ class Orcamento(models.Model):
             f"🚚 Frete: R$ {self.custo_frete_unitario:.2f} | "
             f"💰 Custo_total_com_margem: R$ {(float(self.custo_total_com_margem)):.2f}"
             f"💰 Custo_industrial_e_frete_sem_margem: R$ {(float(self.custo_industrial_e_frete_sem_margem)):.2f}"
-            f"💰 Margem de lucro: R$ {lucro_bruto:.2f}"
             f"💰 Preço Final (Sem Nota): R$ {(float(self.preco_final_sem_nota)):.2f}"
             f"💰 Preço Final Unitário(Sem Nota): R$ {(float(self.preco_final_sem_nota_unitario)):.2f}"
             f"💰 Preço Final (Com Nota): R$ {(float(self.preco_final_com_nota)):.2f}"
