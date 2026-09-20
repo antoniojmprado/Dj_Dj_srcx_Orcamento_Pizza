@@ -621,7 +621,9 @@ def api_simulador_dinamico(request):
     qtd = float(request.GET.get('qtd', 1000))
     preco_papel = float(request.GET.get('papel', 4.50))
     preco_tinta = float(request.GET.get('tinta', 0.20))
-    margem = float(request.GET.get('margem', 15.0))
+    # Captura a margem enviada pelo slider (se vier vazia, assume 0.0)
+    margem_raw = request.GET.get('margem')
+    margem = float(margem_raw) if margem_raw else 0.0
     imp_id = request.GET.get('imp')
     crt_id = request.GET.get('crt')
 
@@ -645,15 +647,15 @@ def api_simulador_dinamico(request):
 
             # 4. A MÁGICA: Cria o orçamento dinâmico do zero
             orc = Orcamento(
-                cliente="Simulação do Sócio",
-                produto_nome=f"Caixa Simulada {chapa_obj.tipo_papelao}",
+                cliente="Simulação Interna (Sócio)",
+                produto_nome=chapa_obj.nome, # Puxa direto da tabela chapa!
                 quantidade=int(qtd),
                 chapa_projeto=chapa_obj,
                 chapa_utilizada=chapa_obj,
                 maquina_impressao=maq_imp,
                 maquina_corte=maq_crt,
-                margem_real=Decimal(str(margem))
-                # unidades_chapa=1 (se quiser deixar fixo ou mandar via JS)
+                margem_real=Decimal(str(margem)),
+                custo_frete_unitario=Decimal('0.00') # Frete zerado conforme combinamos
             )
             # Força o frete como zero para a simulação
             orc.custo_frete_unitario = Decimal('0.00')

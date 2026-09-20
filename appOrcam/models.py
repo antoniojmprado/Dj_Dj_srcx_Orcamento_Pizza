@@ -543,8 +543,9 @@ class Orcamento(models.Model):
                     self.preco_final_sem_nota = (custo_industrial_e_frete_sem_margem_atual * (1 + margem_decimal))  + self.prolabore_socio
                     print(f"Markup divisor aplicado: {markup_divisor}, Preço final sem nota: {self.preco_final_sem_nota}")
                 else:
+                    markup_divisor = Decimal('1.00') # Garante que a variável sempre existe, evitando o UnboundLocalError
                     # --- CORRIGIDO: Utiliza a variável local comum caso não haja markup ---
-                    self.preco_final_sem_nota = custo_industrial_e_frete_sem_margem_atual
+                    self.preco_final_sem_nota = custo_industrial_e_frete_sem_margem_atual * (1 + margem_decimal) + self.prolabore_socio
                     print(f"Markup divisor aplicado sem markup: {markup_divisor}, Preço final sem nota: {self.preco_final_sem_nota}")
 
                 total_impostos = Imposto.objects.filter(ativo_no_calculo=True).aggregate(Sum('aliquota'))['aliquota__sum'] or Decimal('0.00')

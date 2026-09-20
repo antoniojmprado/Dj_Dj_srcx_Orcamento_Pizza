@@ -5,12 +5,14 @@
 <div class="container mt-4">
     <h2 class="mb-4 text-primary">Simulador Dinâmico de Orçamento</h2>
 
-    <!-- Seleção de Chapa Base -->
+    <!-- Seletor Único de Modelo / Chapa -->
     <div class="mb-3">
-        <label for="input-chapa" class="form-label fw-bold">Chapa / Papelão Base:</label>
+        <label for="input-chapa" class="form-label fw-bold">Modelo de Caixa / Chapa Base:</label>
         <select class="form-select border-primary" id="input-chapa" onchange="atualizarValores()">
             {% for chapa in chapas %}
-                <option value="{{ chapa.id }}">{{ chapa.tipo_papelao }} - {{ chapa.largura_cm }}x{{ chapa.comprimento_cm }}cm</option>
+                <option value="{{ chapa.id }}">
+                    {{ chapa.nome }} — {{ chapa.tipo_papelao }} ({{ chapa.largura_cm|floatformat:0 }}x{{ chapa.comprimento_cm|floatformat:0 }} cm)
+                </option>
             {% endfor %}
         </select>
     </div>
@@ -49,21 +51,10 @@
                 </div>
                 <div class="card-body">
 
-                    <!-- Produto Base (Molde) -->
-                    <div class="mb-3">
-                        <label for="input-produto" class="form-label fw-bold">Produto / Formato Base:</label>
-                        <select class="form-select border-primary" id="input-produto" onchange="atualizarValores()">
-                            <!-- Use IDs de orçamentos reais que servem de modelo perfeito -->
-                            <option value="209">Caixa de Pizza (Grande) 35cm</option> 
-                            <option value="210">Caixa para Esfiha (Onda E)</option>
-                            <option value="211">Caixa de Embarque Padrão</option>
-                        </select>
-                    </div>
-
                     <!-- Quantidade -->
                     <div class="mb-3">
                         <label for="input-qtd" class="form-label fw-bold">Quantidade de Caixas: <span class="text-primary" id="val-qtd">1000</span> un</label>
-                        <input type="range" class="form-range" id="input-qtd" min="500" max="50000" step="500" value="1000" oninput="atualizarValores()">
+                        <input type="range" class="form-range" id="input-qtd" min="500" max="20000" step="500" value="1000" oninput="atualizarValores()">
                     </div>
 
                     <!-- Preço do Papel -->
@@ -81,7 +72,7 @@
                     <!-- Margem de Lucro -->
                     <div class="mb-3">
                         <label for="input-margem" class="form-label fw-bold">Margem de Lucro Desejada: <span class="text-primary" id="val-margem">15</span>%</label>
-                        <input type="range" class="form-range" id="input-margem" min="5" max="50" step="1" value="15" oninput="atualizarValores()">
+                        <input type="range" class="form-range" id="input-margem" min="0" max="50" step="1" value="15" oninput="atualizarValores()">
                     </div>
 
                 </div>
@@ -131,7 +122,6 @@
 
     function atualizarValores() {
         // 1. Capturar os valores atuais dos controles deslizantes
-        let idProduto = document.getElementById('input-produto').value; // NOVA CAPTURA
         let qtd = document.getElementById('input-qtd').value;
         let precoPapel = document.getElementById('input-papel').value;
         let precoTinta = document.getElementById('input-tinta').value;
