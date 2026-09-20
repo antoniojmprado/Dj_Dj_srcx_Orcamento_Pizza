@@ -627,6 +627,19 @@ def api_simulador_dinamico(request):
     imp_id = request.GET.get('imp')
     crt_id = request.GET.get('crt')
 
+    # Captura as unidades por chapa enviadas (padrão 1 se não vier nada)
+    unidades_por_chapa = int(request.GET.get('unidades_chapa', 1))
+    # 1. Captura o valor vindo do GET (com segurança)
+    unidades_chapa_str = request.GET.get('unidades_chapa', '1')
+    
+    print(f"Debug: unidades_chapa_str capt = {unidades_chapa_str}, unidades_por_chapa = {unidades_por_chapa}")
+    try:
+        unidades_chapa_val = int(unidades_chapa_str)
+        if unidades_chapa_val < 1:
+            unidades_chapa_val = 1
+    except ValueError:
+        unidades_chapa_val = 1
+
     try:
         with transaction.atomic():
             # 2. Busca a Chapa Exata e ajusta o preço temporário
@@ -657,8 +670,14 @@ def api_simulador_dinamico(request):
                 margem_real=Decimal(str(margem)),
                 custo_frete_unitario=Decimal('0.00') # Frete zerado conforme combinamos
             )
+
+            # Atribui ao objeto com o nome exato do campo na sua Model
+            orc.unidades_chapa = unidades_por_chapa
+                   
+
             # Força o frete como zero para a simulação
             orc.custo_frete_unitario = Decimal('0.00')
+
             
             # 5. Salva e aciona toda a engenharia de cálculo!
             orc.save()
@@ -676,9 +695,9 @@ def api_simulador_dinamico(request):
                 'impostos_pct': float(orc.aliquota_imposto_aplicada),
                 
                 # Detalhamento para o Tooltip / Cards
-                'custo_materia_prima': float((orc.custo_papelao_unitario+orc.custo_tinta_unitario) * orc.quantidade),
-                'custo_maquinas': float((orc.custo_impressao+orc.custo_corte+orc.custo_seladora) * orc.quantidade),
-                'custo_fabricacao': float((orc.custo_papelao_unitario+orc.custo_tinta_unitario+orc.custo_impressao+orc.custo_corte+orc.custo_seladora) * orc.quantidade),
+                'custo_materia_prima': float((orc.custo_papelao_unitario * orc.quantidade * 2 / orc.unidades_chapa) + (orc.custo_tinta_unitario * orc.quantidade)),
+                'custo_maquinas': float((orc.custo_impressao/orc.unidades_chapa + orc.custo_corte* 2/orc.unidades_chapa +orc.custo_seladora) * orc.quantidade),
+                'custo_fabricacao': float((orc.custo_papelao_unitario * orc.quantidade * 2 / orc.unidades_chapa) + (orc.custo_tinta_unitario * orc.quantidade)) + float((orc.custo_impressao/orc.unidades_chapa + orc.custo_corte* 2/orc.unidades_chapa +orc.custo_seladora) * orc.quantidade),
                 'margem_percentual': float(orc.margem_real),
                 'prolabore_socio': float(orc.prolabore_socio),
             }

@@ -32,6 +32,12 @@
         </select>
     </div>
 
+    <!-- Campo de Unidades por Chapa (Visível apenas se Wonder estiver ativa) -->
+    <div class="mb-3" id="grupo-unidades-Wonder" style="display: none;">
+        <label for="unidades_por_chapa" class="form-label fw-bold text-muted">Unidades por Chapa (Wonder):</label>
+        <input type="number" class="form-control" id="unidades_chapa" name="unidades_chapa" value="1" min="1">
+    </div>
+
     <!-- Máquina de Corte e Vinco -->
     <div class="mb-3">
         <label for="input-corte" class="form-label fw-bold">Corte e Vinco:</label>
@@ -153,22 +159,44 @@
 
 <!-- Script de Cálculo Instantâneo -->
 <script>
-    // Função de formatação para Moeda Brasileira
-    function formatarMoeda(valor) {
-        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    }
 
-    // Variável de controle para não bombardear o servidor se o usuário arrastar muito rápido
+    document.addEventListener("DOMContentLoaded", function() {
+        const selectImpressora = document.getElementById('input-impressora');
+        const grupoUnidades = document.getElementById('grupo-unidades-Wonder');
+
+        function checarImpressoraWonder() {
+            if (!selectImpressora || !grupoUnidades) return;
+            
+            const textoSelecionado = selectImpressora.options[selectImpressora.selectedIndex].text.toLowerCase();
+            
+            if (textoSelecionado.includes('wonder')) {
+                grupoUnidades.style.display = 'block';
+            } else {
+                grupoUnidades.style.display = 'none';
+                const inputUnidades = document.getElementById('unidades_chapa');
+                if (inputUnidades) inputUnidades.value = '1';
+            }
+        }
+
+        if (selectImpressora) {
+            selectImpressora.addEventListener('change', checarImpressoraWonder);
+            checarImpressoraWonder();
+        }
+
+        // Disparar a atualização inicial após carregar
+        atualizarValores();
+    });
+
+    // Variável de controle para debounce
     let timeoutId;
 
     function atualizarValores() {
-        // 1. Capturar os valores atuais dos controles deslizantes
+        // 1. Capturar os valores atuais dos controles deslizantes e selects
         let qtd = document.getElementById('input-qtd').value;
         let precoPapel = document.getElementById('input-papel').value;
         let precoTinta = document.getElementById('input-tinta').value;
         let margemLucro = document.getElementById('input-margem').value;
 
-        // NOVAS CAPTURAS
         let idChapa = document.getElementById('input-chapa').value;
         let idImpressora = document.getElementById('input-impressora').value;
         let idCorte = document.getElementById('input-corte').value;
@@ -179,11 +207,15 @@
         document.getElementById('val-tinta').innerText = parseFloat(precoTinta).toFixed(2).replace('.', ',');
         document.getElementById('val-margem').innerText = margemLucro;
 
-        // 3. Monta a URL para "perguntar" ao Django
-        const baseUrl = "{% url 'api_simulador_dinamico' %}";
-        const url = `${baseUrl}?chapa=${idChapa}&qtd=${qtd}&papel=${precoPapel}&tinta=${precoTinta}&margem=${margemLucro}&imp=${idImpressora}&crt=${idCorte}`;
+        // Captura o valor de unidades por chapa (Wonder)
+        const inputUnidades = document.getElementById('unidades_chapa');
+        const unidadesChapa = inputUnidades ? (inputUnidades.value || 1) : 1;
 
-        // Debounce: Aguarda 150ms depois que o usuário parar de arrastar para consultar o Django
+        // 3. Monta a URL para "perguntar" ao Django com segurança
+        const baseUrl = "{% url 'api_simulador_dinamico' %}";
+        const url = `${baseUrl}?chapa=${idChapa}&qtd=${qtd}&papel=${precoPapel}&tinta=${precoTinta}&margem=${margemLucro}&imp=${idImpressora}&crt=${idCorte}&unidades_chapa=${unidadesChapa}`;
+
+        // Debounce: Aguarda 150ms depois que o usuário parar de mexer para consultar o Django
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
             fetch(url)
@@ -193,12 +225,11 @@
                         console.error("Erro do servidor:", data.erro);
                         return;
                     }
-                    // 4. Injeta os resultados oficiais da sua Model na tela
-                    // Dentro do fetch().then(data => { ... })
-                    // Função auxiliar para o padrão brasileiro (Ex: 3.526,12)
+                    
+                    // Função auxiliar para o padrão brasileiro
                     const fmtDinheiro = (val) => `R$ ${(Number(val) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
-                    // Dentro do seu bloco .then(data => { ... })
+                    // 4. Injeta os resultados oficiais da sua Model na tela
                     document.getElementById('res-preco-s-nf').innerText = fmtDinheiro(data.preco_s_nf);
                     document.getElementById('res-preco-c-nf').innerText = fmtDinheiro(data.preco_c_nf);
                     document.getElementById('res-imposto-pct').innerText = (Number(data.impostos_pct) || 0).toFixed(1).replace('.', ',');
@@ -217,9 +248,15 @@
                 .catch(error => console.error('Erro de conexão:', error));
         }, 150);
     }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    // Disparar a função ao carregar a página
-    document.addEventListener("DOMContentLoaded", atualizarValores);
+    // Função de formatação para Moeda Brasileira
+    function formatarMoeda(valor) {
+        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
