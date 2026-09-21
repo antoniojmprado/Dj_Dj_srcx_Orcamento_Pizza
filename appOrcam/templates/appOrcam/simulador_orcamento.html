@@ -3,6 +3,7 @@
 {% block content %}
 <style>
     /* Controla a trilha do slider no Chrome, Edge, Safari */
+    body { font-family: 'Arial', sans-serif; background-color: #2E2E2E; }
     .form-range::-webkit-slider-runnable-track {
         background: var(--track-bg, #dee2e6) !important;
     }
@@ -12,7 +13,7 @@
     }
 </style>
 
-<div class="container mt-4">
+<div class="container bg-dark text-white">
     <h2 class="mb-4 text-primary">Simulador Dinâmico de Orçamento</h2>
 
     <!-- Seletor Único de Modelo / Chapa -->
@@ -61,32 +62,32 @@
     <div class="row">
         <!-- Coluna dos Controles Deslizantes -->
         <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
+            <div class="card shadow-sm mb-4 h-100">
                 <div class="card-header bg-dark text-white">
                     <h5 class="mb-0">Parâmetros de Custo e Produção</h5>
                 </div>
                 <div class="card-body">
                     <!-- Quantidade -->
-                    <div class="mb-2">
-                        <label for="input-qtd" class="form-label fw-bold">Quantidade de Caixas: <span class="text-primary" id="val-qtd">1000</span> un</label>
+                    <div class="mb-4">
+                        <label for="input-qtd" class="form-label fw-bold text-muted">Quantidade de Caixas: <span class="text-primary" id="val-qtd">1000</span> un</label>
                         <input type="range" class="form-range" id="input-qtd" min="500" max="20000" step="100" value="1000" oninput="atualizarValores()">
                     </div>
 
                     <!-- Preço do Papel -->
-                    <div class="mb-2">
-                        <label for="input-papel" class="form-label fw-bold">Custo do Papel (R$/m²): R$ <span class="text-primary" id="val-papel">4.50</span></label>
+                    <div class="mb-3">
+                        <label for="input-papel" class="form-label fw-bold text-muted">Custo do Papel (R$/m²): R$ <span class="text-primary" id="val-papel">4.50</span></label>
                         <input type="range" class="form-range" id="input-papel" min="2.00" max="10.00" step="0.10" value="4.50" oninput="atualizarValores()">
                     </div>
 
                     <!-- Preço da Tinta (Rótulo e Step corrigidos) -->
-                    <div class="mb-2">
-                        <label for="input-tinta" class="form-label fw-bold">Custo da Tinta (R$/unidade): R$ <span class="text-primary" id="val-tinta">0.20</span></label>
+                    <div class="mb-3">
+                        <label for="input-tinta" class="form-label fw-bold text-muted">Custo da Tinta (R$/unidade): R$ <span class="text-primary" id="val-tinta">0.20</span></label>
                         <input type="range" class="form-range" id="input-tinta" min="0.05" max="1.00" step="0.01" value="0.20" oninput="atualizarValores()">
                     </div>
 
                     <!-- Margem de Lucro -->
-                    <div class="mb-2">
-                        <label for="input-margem" class="form-label fw-bold">Margem de Lucro Desejada: <span class="text-primary" id="val-margem">15</span>%</label>
+                    <div class="mb-3">
+                        <label for="input-margem" class="form-label fw-bold text-muted">Margem de Lucro Desejada: <span class="text-primary" id="val-margem">15</span>%</label>
                         <input type="range" class="form-range" id="input-margem" min="0" max="50" step="1" value="15" oninput="atualizarValores()">
                     </div>
 
@@ -104,7 +105,7 @@
 
         <!-- Coluna dos Resultados Financeiros -->
         <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
+            <div class="card shadow-sm mb-4 h-100">
                 <!-- Cabeçalho limpo (removido o bg-dark) -->
                 <div class="card-header bg-dark text-white">
                     <h5 class="mb-0">Resumo Executivo do Orçamento</h5>
@@ -135,22 +136,21 @@
                     <div class="row">
                         <!-- Coluna Esquerda: Custos Industriais -->
                         <div class="col-6"> 
-                            <table class="table table-sm table-borderless mb-0">
+                            <table class="table table-sm table-border  mb-0">
                                 <tbody>
                                     <tr>
-                                        <td class="text-muted">• Matéria-prima: <strong><span id="lbl-materia-pct">0,00</span></strong></td>
+                                        <!--<td class="text-muted">• Matéria-prima: <strong><span id="lbl-materia-pct">0,00</span></strong></td>-->
+                                        <td class="text-muted" id="lbl-materia-pct"></td>
                                         <td class="text-end fw-bold text-dark" id="tip-materia">R$ 0,00</td>
                                     </tr>
                                     <tr>
-                                        <td class="text-muted">• Máquinas: <strong><span id="lbl-maquinas-pct">0,00</span></strong></td>
+                                        <td class="text-muted" id="lbl-maquinas-pct"></td>
                                         <td class="text-end fw-bold text-dark" id="tip-maquinas">R$ 0,00</td>
                                     </tr>
                                     <tr>
-                                        <td class="text-muted">• Custo Fabr.: <strong><span id="lbl-fabrica-pct">0,00</span></strong></td>
+                                        <td class="text-muted" id="lbl-fabrica-pct"></td>
                                         <td class="text-end fw-bold text-dark" id="tip-fabrica">R$ 0,00</td>
                                     </tr>
-                                    <!-- Linha invisível apenas para igualar a altura com a tabela da direita -->
-                                    <tr><td colspan="2" class="text-transparent border-0 opacity-0">_</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -160,19 +160,19 @@
                                 <table class="table table-sm table-borderless mb-0">
                                 <tbody>
                                     <tr>
-                                        <td class="text-muted">• Margem Aplicada:</td>
+                                        <td class="text-muted">Margem Aplicada:</td>
                                         <td class="text-end fw-bold text-dark"><span id="tip-margem">0</span>%</td>
                                     </tr>
                                     <tr>
-                                        <td class="text-muted">• Pró-labore Sócio:</td>
+                                        <td class="text-muted">Pró-labore Sócio:</td>
                                         <td class="text-end fw-bold text-dark" id="tip-socio">R$ 0,00</td>
                                     </tr>
                                     <tr>
-                                        <td class="text-muted">• Comissão (<span id="lbl-comissao-pct">5.0</span>%):</td>
+                                        <td class="text-muted">Comissão (<span id="lbl-comissao-pct">5.0</span>%):</td>
                                         <td class="text-end fw-bold text-danger" id="tip-comissao">R$ 0,00</td>
                                     </tr>
                                     <tr class="border-top">
-                                        <td class="text-muted fw-bold">• Lucro Real: <span id="lbl-lucro-pct" class="fw-bold text-danger ">0,00</span></td>
+                                        <td class="text-muted fw-bold">Lucro Real: <span id="lbl-lucro-pct" class="text-danger ">0,00</span></td>
                                         <td class="text-end fw-bold text-success" id="tip-lucro">R$ 0,00</td>
                                     </tr>
                                 </tbody>
@@ -185,7 +185,7 @@
                         <div> 
                             <small class="text-muted">
                                 • <strong>Papelão: </strong><span id="tip-papelao" class="text-dark">R$ 0,00</span> →
-                                <strong><span id="lbl-papelao-pct" class="text-dark">0,00</span>%</strong>
+                                <strong><span id="lbl-papelao-pct" class="text-dark">0,00</span></strong>
                             </small>
                         </div>
                         
@@ -193,7 +193,7 @@
                         <div>  
                             <small class="text-muted">
                                 • <strong>Tinta: </strong><span id="tip-tinta" class="text-dark">R$ 0,00</span> →
-                                <strong><span id="lbl-tinta-pct" class="text-dark">0,00</span>%</strong>
+                                <strong><span id="lbl-tinta-pct" class="text-dark">0,00</span></strong>
                             </small>
                         </div>
                     </div> 
@@ -327,11 +327,11 @@
                     document.getElementById('lbl-lucro-pct').innerText = (Number(data.porc_lucro_real) || 0).toFixed(2).replace('.', ',') + "%";
                     document.getElementById('tip-papelao').innerText = fmtDinheiro(data.custo_papelao_total);
                     document.getElementById('tip-tinta').innerText = fmtDinheiro(data.custo_tinta_total);
-                    document.getElementById('lbl-materia-pct').innerText = (Number(data.porc_materia_prima) || 0).toFixed(0).replace('.', ',') + "%";
-                    document.getElementById('lbl-maquinas-pct').innerText = (Number(data.porc_maquinas) || 0).toFixed(0).replace('.', ',') + "%";
-                    document.getElementById('lbl-fabrica-pct').innerText = (Number(data.porc_custo_fabricacao) || 0).toFixed(0).replace('.', ',') + "%";
-                    document.getElementById('lbl-papelao-pct').innerText = (Number(data.porc_custo_papelao_total) || 0).toFixed(0).replace('.', ',') + "%";
-                    document.getElementById('lbl-tinta-pct').innerText = (Number(data.porc_custo_tinta_total) || 0).toFixed(0).replace('.', ',') + "%";
+                    document.getElementById('lbl-materia-pct').innerText = "Matéria-prima: " + (Number(data.porc_materia_prima) || 0).toFixed(0).replace('.', ',') + "%";
+                    document.getElementById('lbl-maquinas-pct').innerText = "Máquinas: " + (Number(data.porc_maquinas) || 0).toFixed(0).replace('.', ',') + "%";
+                    document.getElementById('lbl-fabrica-pct').innerText = "Fabricação: " + (Number(data.porc_custo_fabricacao) || 0).toFixed(0).replace('.', ',') + "%";
+                    document.getElementById('lbl-papelao-pct').innerText = "Papelão: " + (Number(data.porc_custo_papelao_total) || 0).toFixed(0).replace('.', ',') + "%";
+                    document.getElementById('lbl-tinta-pct').innerText = "Tinta: " + (Number(data.porc_custo_tinta_total) || 0).toFixed(0).replace('.', ',') + "%";
                     document.getElementById('res-chapas-papelao').innerText = data.chapas_papelao || 0;
 
                 
