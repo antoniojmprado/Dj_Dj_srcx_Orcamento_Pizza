@@ -601,6 +601,18 @@ def simulacoes_orcamentos(request, pk):
 
 
 def simulador_orcamento(request):
+
+    # 1. Verifica se no final do link tem o aviso "?origem=paq"
+    origem = request.GET.get('origem')
+
+    if origem == 'packmetric':
+        # Veio do PaqMetric: usa o layout verdadeiro sem a navbar fake
+        # (Substitua 'base.html' pelo nome do arquivo base real do PaqMetric)
+        base_escolhido = 'base_orcam.html' 
+    else:
+        # Veio do caminho normal de fora: usa a navbar fake
+        base_escolhido = 'appOrcam/base_crm.html'
+
     # Traz as opções direto do banco para popular os <select> do HTML
     chapas = Chapa.objects.all()
     # CORREÇÃO: Usando os campos reais do seu modelo Maquina
@@ -612,12 +624,14 @@ def simulador_orcamento(request):
     
     # Se achar, usa o valor do banco. Se por algum motivo não achar, usa 5.0
     perc_comissao_inicial = comissao_bd.percentual_comissao if comissao_bd else 5.0
-    
+
+    # Busca o layout base do banco   
     contexto = {
         'chapas': chapas,
         'maquinas_imp': maquinas_imp,
         'maquinas_crt': maquinas_crt,
         'perc_comissao_inicial': perc_comissao_inicial,
+        'layout_base': base_escolhido,
     }
     return render(request, 'appOrcam/simulador_orcamento.html', contexto)
 
