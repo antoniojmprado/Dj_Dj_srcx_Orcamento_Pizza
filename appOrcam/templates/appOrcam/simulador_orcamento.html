@@ -2,6 +2,17 @@
 
 
 {% block content %}
+<style>
+    /* Controla a trilha do slider no Chrome, Edge, Safari */
+    .form-range::-webkit-slider-runnable-track {
+        background: var(--track-bg, #dee2e6) !important;
+    }
+    /* Controla a trilha do slider no Firefox */
+    .form-range::-moz-range-track {
+        background: var(--track-bg, #dee2e6) !important;
+    }
+</style>
+
 <div class="container mt-4">
     <h2 class="mb-4 text-primary">Simulador Dinâmico de Orçamento</h2>
 
@@ -58,30 +69,30 @@
                 <div class="card-body">
 
                     <!-- Quantidade -->
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label for="input-qtd" class="form-label fw-bold">Quantidade de Caixas: <span class="text-primary" id="val-qtd">1000</span> un</label>
                         <input type="range" class="form-range" id="input-qtd" min="500" max="20000" step="100" value="1000" oninput="atualizarValores()">
                     </div>
 
                     <!-- Preço do Papel -->
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label for="input-papel" class="form-label fw-bold">Custo do Papel (R$/m²): R$ <span class="text-primary" id="val-papel">4.50</span></label>
                         <input type="range" class="form-range" id="input-papel" min="2.00" max="10.00" step="0.10" value="4.50" oninput="atualizarValores()">
                     </div>
 
                     <!-- Preço da Tinta (Rótulo e Step corrigidos) -->
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label for="input-tinta" class="form-label fw-bold">Custo da Tinta (R$/unidade): R$ <span class="text-primary" id="val-tinta">0.20</span></label>
                         <input type="range" class="form-range" id="input-tinta" min="0.05" max="1.00" step="0.01" value="0.20" oninput="atualizarValores()">
                     </div>
 
                     <!-- Margem de Lucro -->
-                    <div>
+                    <div class="mb-2">
                         <label for="input-margem" class="form-label fw-bold">Margem de Lucro Desejada: <span class="text-primary" id="val-margem">15</span>%</label>
                         <input type="range" class="form-range" id="input-margem" min="0" max="50" step="1" value="15" oninput="atualizarValores()">
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-1">
                         <label for="input-comissao" class="form-label fw-bold text-muted">
                             Comissão de Vendas: <span id="val-comissao" class="text-primary">{{ perc_comissao_inicial|stringformat:".1f" }}</span>%
                         </label>
@@ -118,15 +129,11 @@
                             </div>
                         </div>
 
-                        <hr>
-
                         <!-- Título da Composição -->
                         <div class="bg-dark text-white p-2 rounded mb-3">
-                            <h5 class="mb-0">🔍 Composição de Custos e Resultados - <span id="res-chapas-papelao">0</span> chapas</h5>
+                            <h5 class="mb-1">🔍 Composição de Custos e Resultados - <span id="res-chapas-papelao">0</span> chapas</h5>
                         </div>
                         
-                        <hr>
-
                         <!-- Detalhamento Organizado em Duas Colunas -->
                         <div class="row">
                             <!-- Coluna Esquerda: Custos Industriais -->
@@ -175,26 +182,24 @@
                                 </table>
                             </div>
                         </div>
-                        <hr>
-                        <div class="row">
-                                <table>
-                                    <tr>
-                                        <td class="text-muted"> 
-                                            <small>
-                                                • <strong>Papelão: </strong><span id="tip-papelao">R$ 0,00 </span> →
-                                                <strong><span id="lbl-papelao-pct">0,00</span></strong>
-                                            </small>
-                                        </td>
-                                        <td>  
-                                            <small>
-                                                • <strong>Tinta: </strong><span id="tip-tinta">R$ 0,00</span> →
-                                                 <strong><span id="lbl-tinta-pct">0,00</span></strong>
-                                            </small>
-                                        </td>
-                                    </tr>                                    
-                                </table>      
+                       <hr>
+                        <div class="col-12 d-flex justify-content-evenly text-center mt-2 ">
+                            <!-- Bloco do Papelão -->
+                            <div> 
+                                <small class="text-muted">
+                                    • <strong>Papelão: </strong><span id="tip-papelao" class="text-dark">R$ 0,00</span> →
+                                    <strong><span id="lbl-papelao-pct" class="text-dark">0,00</span>%</strong>
+                                </small>
+                            </div>
+                            
+                            <!-- Bloco da Tinta -->
+                            <div>  
+                                <small class="text-muted">
+                                    • <strong>Tinta: </strong><span id="tip-tinta" class="text-dark">R$ 0,00</span> →
+                                    <strong><span id="lbl-tinta-pct" class="text-dark">0,00</span>%</strong>
+                                </small>
+                            </div>
                         </div> 
-   
                     </div> 
             </div>
         </div>
@@ -229,10 +234,38 @@
 
         // Disparar a atualização inicial após carregar
         atualizarValores();
+        aplicarSombreamentoSliders(); // NOSSA NOVA CHAMADA!
     });
 
     // Variável de controle para debounce
     let timeoutId;
+
+    function aplicarSombreamentoSliders() {
+        // Seleciona todos os sliders da página que usam a classe do Bootstrap
+        const sliders = document.querySelectorAll('.form-range');
+        
+        sliders.forEach(slider => {
+            const atualizarCor = () => {
+                const min = parseFloat(slider.min) || 0;
+                const max = parseFloat(slider.max) || 100;
+                const val = parseFloat(slider.value);
+                
+                // Calcula qual a porcentagem atual do slider (ex: 50%)
+                const percent = ((val - min) / (max - min)) * 100;
+                
+                // Cria o degradê: Azul (#0d6efd) até o ponto, Cinza (#dee2e6) depois do ponto
+                slider.style.setProperty('--track-bg', `linear-gradient(to right, #0d6efd ${percent}%, #dee2e6 ${percent}%)`);
+            };
+
+            // Escuta o evento de arrastar para atualizar a cor em tempo real
+            slider.addEventListener('input', atualizarCor);
+            
+            // Dispara uma vez ao carregar a página para pintar a posição inicial
+            atualizarCor();
+        });
+    }
+
+
 
     function atualizarValores() {
         // 1. Capturar os valores atuais dos controles deslizantes e selects

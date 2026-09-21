@@ -88,141 +88,143 @@
        HERO
        ========================================================= */
 
-    .hero-section {
-        position: relative;
-        overflow: hidden;
-        isolation: isolate;
-        color: white;
-        min-height: 70vh;
-        display: flex;
-        align-items: center;
-        padding: 100px 5%;
+        .hero-section {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            color: white;
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            padding: 100px 5%;
 
-        /*
-         * Fundo base preto/grafite.
-         * As pequenas diferenças entre os tons
-         * ajudam a dar profundidade.
-         */
-         
-        background:
-            radial-gradient(
-                ellipse at 70% 45%,
-                #202020 0%,
-                #181818 35%,
-                #111111 70%,
-                #0c0c0c 100%
-            );
-    }
+            /*
+            * Fundo base preto/grafite.
+            * As pequenas diferenças entre os tons
+            * ajudam a dar profundidade.
+            */
+            
+            background:
+                radial-gradient(
+                    ellipse at 70% 45%,
+                    #202020 0%,
+                    #181818 35%,
+                    #111111 70%,
+                    #0c0c0c 100%
+                );
+        }
 
 
     /* =========================================================
        FACETAS GEOMÉTRICAS
        ========================================================= */
 
-    .hero-section::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
+        .hero-section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
 
-        /*
-         * Várias faixas diagonais extremamente sutis.
-         */
-        background:
-            /* Faceta superior esquerda */
-            linear-gradient(
-                135deg,
-                rgba(255,255,255,0.045) 0%,
-                rgba(255,255,255,0.045) 18%,
-                transparent 18.2%,
-                transparent 100%
-            ),
+            /*
+            * Várias faixas diagonais extremamente sutis.
+            */
+            background:
+                /* Faceta superior esquerda */
+                linear-gradient(
+                    135deg,
+                    rgba(255,255,255,0.045) 0%,
+                    rgba(255,255,255,0.045) 18%,
+                    transparent 18.2%,
+                    transparent 100%
+                ),
 
-            /* Faceta superior */
-            linear-gradient(
-                155deg,
-                transparent 0%,
-                transparent 27%,
-                rgba(255,255,255,0.025) 27.2%,
-                rgba(255,255,255,0.025) 45%,
-                transparent 45.2%
-            ),
+                /* Faceta superior */
+                linear-gradient(
+                    155deg,
+                    transparent 0%,
+                    transparent 27%,
+                    rgba(255,255,255,0.025) 27.2%,
+                    rgba(255,255,255,0.025) 45%,
+                    transparent 45.2%
+                ),
 
-            /* Faceta central */
-            linear-gradient(
-                35deg,
-                transparent 0%,
-                transparent 42%,
-                rgba(255,255,255,0.035) 42.2%,
-                rgba(255,255,255,0.035) 62%,
-                transparent 62.2%
-            ),
+                /* Faceta central */
+                linear-gradient(
+                    35deg,
+                    transparent 0%,
+                    transparent 42%,
+                    rgba(255,255,255,0.035) 42.2%,
+                    rgba(255,255,255,0.035) 62%,
+                    transparent 62.2%
+                ),
 
-            /* Faceta inferior */
-            linear-gradient(
-                145deg,
-                transparent 0%,
-                transparent 65%,
-                rgba(255,255,255,0.025) 65.2%,
-                rgba(255,255,255,0.025) 82%,
-                transparent 82.2%
-            );
-    }
+                /* Faceta inferior */
+                linear-gradient(
+                    145deg,
+                    transparent 0%,
+                    transparent 65%,
+                    rgba(255,255,255,0.025) 65.2%,
+                    rgba(255,255,255,0.025) 82%,
+                    transparent 82.2%
+                );
+        }
 
 
     /* =========================================================
        SEGUNDA CAMADA DE FACETAS
        ========================================================= */
 
-    .hero-section::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
+        .hero-section::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
 
-        background:
-            /* grande polígono esquerdo */
-            linear-gradient(
-                145deg,
-                transparent 0%,
-                transparent 12%,
-                rgba(255,255,255,0.025) 12.2%,
-                rgba(255,255,255,0.025) 28%,
-                transparent 28.2%
-            ),
+            background:
+                /* grande polígono esquerdo */
+                linear-gradient(
+                    145deg,
+                    transparent 0%,
+                    transparent 12%,
+                    rgba(255,255,255,0.025) 12.2%,
+                    rgba(255,255,255,0.025) 28%,
+                    transparent 28.2%
+                ),
 
-            /* polígono central */
-            linear-gradient(
-                125deg,
-                transparent 0%,
-                transparent 35%,
-                rgba(255,255,255,0.018) 35.2%,
-                rgba(255,255,255,0.018) 55%,
-                transparent 55.2%
-            ),
+                /* polígono central */
+                linear-gradient(
+                    125deg,
+                    transparent 0%,
+                    transparent 35%,
+                    rgba(255,255,255,0.018) 35.2%,
+                    rgba(255,255,255,0.018) 55%,
+                    transparent 55.2%
+                ),
 
-            /* polígono direito */
-            linear-gradient(
-                155deg,
-                transparent 0%,
-                transparent 54%,
-                rgba(255,255,255,0.03) 54.2%,
-                rgba(255,255,255,0.03) 72%,
-                transparent 72.2%
-            ),
+                /* polígono direito */
+                linear-gradient(
+                    155deg,
+                    transparent 0%,
+                    transparent 54%,
+                    rgba(255,255,255,0.03) 54.2%,
+                    rgba(255,255,255,0.03) 72%,
+                    transparent 72.2%
+                ),
 
-            /* região inferior direita */
-            linear-gradient(
-                25deg,
-                transparent 0%,
-                transparent 70%,
-                rgba(255,255,255,0.02) 70.2%,
-                rgba(255,255,255,0.02) 90%,
-                transparent 90.2%
-            );
-    }
+                /* região inferior direita */
+                linear-gradient(
+                    25deg,
+                    transparent 0%,
+                    transparent 70%,
+                    rgba(255,255,255,0.02) 70.2%,
+                    rgba(255,255,255,0.02) 90%,
+                    transparent 90.2%
+                );
+        }
+
+        
         {% block extra_css %}{% endblock %}
     </style>
 </head>
