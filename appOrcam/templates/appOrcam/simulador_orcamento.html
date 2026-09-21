@@ -81,6 +81,15 @@
                         <input type="range" class="form-range" id="input-margem" min="0" max="50" step="1" value="15" oninput="atualizarValores()">
                     </div>
 
+                    <div class="mb-3">
+                        <label for="input-comissao" class="form-label fw-bold text-muted">
+                            Comissão de Vendas: <span id="val-comissao" class="text-primary">{{ perc_comissao_inicial|stringformat:".1f" }}</span>%
+                        </label>
+                        <!-- O slider inicia com o valor do banco e permite alterar de 0 a 15% -->
+                        <input type="range" class="form-range" id="input-comissao" min="0" max="15" step="0.5" value="{{ perc_comissao_inicial|stringformat:".1f" }}" 
+                            oninput="document.getElementById('val-comissao').innerText = this.value; atualizarValores();">
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -112,30 +121,37 @@
                         <hr>
 
                         <!-- Título da Composição -->
-                        <div class="bg-dark text-white mb-3"><h5>🔍 Composição de Custos</h5></div>
+                        <div class="bg-dark text-white p-2 rounded mb-3">
+                            <h5 class="mb-0">🔍 Composição de Custos e Resultados - <span id="res-chapas-papelao">0</span> chapas</h5>
+                        </div>
                         
                         <hr>
 
-                        <!-- Detalhamento Organizado -->
+                        <!-- Detalhamento Organizado em Duas Colunas -->
                         <div class="row">
+                            <!-- Coluna Esquerda: Custos Industriais -->
                             <div class="col-6"> 
                                 <table class="table table-sm table-borderless mb-0">
                                     <tbody>
                                         <tr>
-                                            <td class="text-muted">• Matéria-prima:</td>
+                                            <td class="text-muted">• Matéria-prima: <strong><span id="lbl-materia-pct">0,00</span></strong></td>
                                             <td class="text-end fw-bold text-dark" id="tip-materia">R$ 0,00</td>
                                         </tr>
                                         <tr>
-                                            <td class="text-muted">• Máquinas:</td>
+                                            <td class="text-muted">• Máquinas: <strong><span id="lbl-maquinas-pct">0,00</span></strong></td>
                                             <td class="text-end fw-bold text-dark" id="tip-maquinas">R$ 0,00</td>
                                         </tr>
                                         <tr>
-                                            <td class="text-muted">• Custo Fabricação:</td>
+                                            <td class="text-muted">• Custo Fabr.: <strong><span id="lbl-fabrica-pct">0,00</span></strong></td>
                                             <td class="text-end fw-bold text-dark" id="tip-fabrica">R$ 0,00</td>
                                         </tr>
-                                    </tbody><tr><td>-</td></tr>
+                                        <!-- Linha invisível apenas para igualar a altura com a tabela da direita -->
+                                        <tr><td colspan="2" class="text-transparent border-0 opacity-0">_</td></tr>
+                                    </tbody>
                                 </table>
-                            </div> 
+                            </div>
+                            
+                            <!-- Coluna Direita: Financeiro e Resultados -->
                             <div class="col-6">
                                  <table class="table table-sm table-borderless mb-0">
                                     <tbody>
@@ -147,10 +163,38 @@
                                             <td class="text-muted">• Pró-labore Sócio:</td>
                                             <td class="text-end fw-bold text-dark" id="tip-socio">R$ 0,00</td>
                                         </tr>
-                                    </tbody><tr><td>-</td></tr>
+                                        <tr>
+                                            <td class="text-muted">• Comissão (<span id="lbl-comissao-pct">5.0</span>%):</td>
+                                            <td class="text-end fw-bold text-danger" id="tip-comissao">R$ 0,00</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted fw-bold">• Lucro Real: <span id="lbl-lucro-pct" class="fw-bold text-danger ">0,00</span></td>
+                                            <td class="text-end fw-bold text-success" id="tip-lucro">R$ 0,00</td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
-                        </div>    
+                        </div>
+                        <hr>
+                        <div class="row">
+                                <table>
+                                    <tr>
+                                        <td class="text-muted"> 
+                                            <small>
+                                                • <strong>Papelão: </strong><span id="tip-papelao">R$ 0,00 </span> →
+                                                <strong><span id="lbl-papelao-pct">0,00</span></strong>
+                                            </small>
+                                        </td>
+                                        <td>  
+                                            <small>
+                                                • <strong>Tinta: </strong><span id="tip-tinta">R$ 0,00</span> →
+                                                 <strong><span id="lbl-tinta-pct">0,00</span></strong>
+                                            </small>
+                                        </td>
+                                    </tr>                                    
+                                </table>      
+                        </div> 
+   
                     </div> 
             </div>
         </div>
@@ -196,10 +240,12 @@
         let precoPapel = document.getElementById('input-papel').value;
         let precoTinta = document.getElementById('input-tinta').value;
         let margemLucro = document.getElementById('input-margem').value;
+        let percentualComissao = document.getElementById('input-comissao').value;
 
         let idChapa = document.getElementById('input-chapa').value;
         let idImpressora = document.getElementById('input-impressora').value;
         let idCorte = document.getElementById('input-corte').value;
+
 
         // 2. Atualizar os textos numéricos na tela
         document.getElementById('val-qtd').innerText = parseInt(qtd).toLocaleString('pt-BR');
@@ -213,7 +259,7 @@
 
         // 3. Monta a URL para "perguntar" ao Django com segurança
         const baseUrl = "{% url 'api_simulador_dinamico' %}";
-        const url = `${baseUrl}?chapa=${idChapa}&qtd=${qtd}&papel=${precoPapel}&tinta=${precoTinta}&margem=${margemLucro}&imp=${idImpressora}&crt=${idCorte}&unidades_chapa=${unidadesChapa}`;
+        const url = `${baseUrl}?chapa=${idChapa}&qtd=${qtd}&papel=${precoPapel}&tinta=${precoTinta}&margem=${margemLucro}&imp=${idImpressora}&crt=${idCorte}&unidades_chapa=${unidadesChapa}&comissao=${percentualComissao}`;;
 
         // Debounce: Aguarda 150ms depois que o usuário parar de mexer para consultar o Django
         clearTimeout(timeoutId);
@@ -243,7 +289,23 @@
                     document.getElementById('tip-fabrica').innerText = fmtDinheiro(data.custo_fabricacao);
                     document.getElementById('tip-margem').innerText = (Number(data.margem_percentual) || 0).toFixed(0);
                     document.getElementById('tip-socio').innerText = fmtDinheiro(data.prolabore_socio);
+                    
+                    // Injeta os novos resultados de comissão e lucro
+                    document.getElementById('lbl-comissao-pct').innerText = data.percentual_comissao;
+                    document.getElementById('tip-comissao').innerText = fmtDinheiro(data.valor_comissao);
+                    document.getElementById('tip-lucro').innerText = fmtDinheiro(data.lucro_real_empresa);
+                    // NOVA LINHA AQUI: Formata a porcentagem com 2 casas decimais e vírgula
+                    document.getElementById('lbl-lucro-pct').innerText = (Number(data.porc_lucro_real) || 0).toFixed(2).replace('.', ',') + "%";
+                    document.getElementById('tip-papelao').innerText = fmtDinheiro(data.custo_papelao_total);
+                    document.getElementById('tip-tinta').innerText = fmtDinheiro(data.custo_tinta_total);
+                    document.getElementById('lbl-materia-pct').innerText = (Number(data.porc_materia_prima) || 0).toFixed(0).replace('.', ',') + "%";
+                    document.getElementById('lbl-maquinas-pct').innerText = (Number(data.porc_maquinas) || 0).toFixed(0).replace('.', ',') + "%";
+                    document.getElementById('lbl-fabrica-pct').innerText = (Number(data.porc_custo_fabricacao) || 0).toFixed(0).replace('.', ',') + "%";
+                    document.getElementById('lbl-papelao-pct').innerText = (Number(data.porc_custo_papelao_total) || 0).toFixed(0).replace('.', ',') + "%";
+                    document.getElementById('lbl-tinta-pct').innerText = (Number(data.porc_custo_tinta_total) || 0).toFixed(0).replace('.', ',') + "%";
+                    document.getElementById('res-chapas-papelao').innerText = data.chapas_papelao || 0;
 
+                
                 })
                 .catch(error => console.error('Erro de conexão:', error));
         }, 150);

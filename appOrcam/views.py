@@ -8,7 +8,7 @@ from appFrete.models import FreteEdne
 from appOEE.models import ParametroFinanceiro, Maquina, Horas_turno, Turnos_dia
 from appOrcam.forms import OrcamentoForm
 from appOrcam.models import MaquinaFinancasOEE
-from .models import Chapa, Custo_tinta, EncargosTrabalhistas, Imposto, Orcamento, LeadOrcamento
+from .models import Chapa, Custo_tinta, EncargosTrabalhistas, Imposto, Orcamento, LeadOrcamento, ComissaoVenda
 from decimal import Decimal
 from django.db import connection
 from django.db.models import Sum
@@ -603,14 +603,21 @@ def simulacoes_orcamentos(request, pk):
 def simulador_orcamento(request):
     # Traz as opções direto do banco para popular os <select> do HTML
     chapas = Chapa.objects.all()
-# CORREÇÃO: Usando os campos reais do seu modelo Maquina
+    # CORREÇÃO: Usando os campos reais do seu modelo Maquina
     maquinas_imp = Maquina.objects.filter(impressora=True) 
     maquinas_crt = Maquina.objects.filter(corte=True)
+
+    # Busca o vendedor ativo no banco
+    comissao_bd = ComissaoVenda.objects.filter(ativo=True).first()
+    
+    # Se achar, usa o valor do banco. Se por algum motivo não achar, usa 5.0
+    perc_comissao_inicial = comissao_bd.percentual_comissao if comissao_bd else 5.0
     
     contexto = {
         'chapas': chapas,
         'maquinas_imp': maquinas_imp,
-        'maquinas_crt': maquinas_crt
+        'maquinas_crt': maquinas_crt,
+        'perc_comissao_inicial': perc_comissao_inicial,
     }
     return render(request, 'appOrcam/simulador_orcamento.html', contexto)
 
@@ -686,6 +693,34 @@ def api_simulador_dinamico(request):
             custo_total = float(orc.custo_industrial_e_frete_sem_margem)
             qtd_float = float(orc.quantidade)
 
+            # 1. Captura o percentual que veio do JavaScript
+            comissao_str = request.GET.get('comissao', '0')
+            percentual_comissao = Decimal(comissao_str.replace(',', '.')) # Garante que vira Decimal
+
+            # Define o total de chapas com a regra da Wonder vs Padrão
+            chapas_papelao = (orc.quantidade * 2 / orc.unidades_chapa) if orc.unidades_chapa > 1 else orc.quantidade
+
+            custo_papelao_total = float(orc.custo_papelao_unitario) * chapas_papelao
+            custo_tinta_total = float(orc.custo_tinta_unitario) * orc.quantidade
+
+            # Aplica a matemática financeira
+            custo_materia_prima =  (float(orc.custo_papelao_unitario) * chapas_papelao) + (float(orc.custo_tinta_unitario) * orc.quantidade)
+            custo_maquinas = float(orc.custo_impressao/orc.unidades_chapa + orc.custo_corte* 2/orc.unidades_chapa + orc.custo_seladora) * orc.quantidade
+            custo_fabricacao = float(custo_materia_prima) + custo_maquinas
+            valor_comissao = Decimal(orc.preco_final_sem_nota) * (percentual_comissao / Decimal('100.0'))
+            prolabore_socio = float(orc.prolabore_socio)
+            lucro_real_empresa = Decimal(orc.preco_final_sem_nota) - Decimal(custo_fabricacao) - Decimal(prolabore_socio) - valor_comissao 
+
+            porc_materia_prima = (Decimal(custo_materia_prima) / Decimal(custo_fabricacao)) * Decimal('100.0') if custo_fabricacao > 0 else Decimal('0.00')
+            porc_maquinas = (Decimal(custo_maquinas) / Decimal(custo_fabricacao)) * Decimal('100.0') if custo_fabricacao> 0 else Decimal('0.00')
+            porc_custo_fabricacao = (Decimal(custo_fabricacao) / Decimal(custo_fabricacao)) * Decimal('100.0') if custo_fabricacao> 0 else Decimal('0.00')
+            porc_custo_papelao_total = (Decimal(custo_papelao_total) / Decimal(custo_fabricacao)) * Decimal('100.0') if custo_fabricacao> 0 else Decimal('0.00')
+            porc_custo_tinta_total = (Decimal(custo_tinta_total) / Decimal(custo_fabricacao)) * Decimal('100.0') if custo_fabricacao> 0 else Decimal('0.00')
+
+            porc_lucro_real = (Decimal(lucro_real_empresa) / Decimal(orc.preco_final_sem_nota)) * Decimal('100.0') if orc.preco_final_sem_nota > 0 else Decimal('0.00')
+
+            print(f"Debug: custo_materia_prima={custo_materia_prima}, custo_maquinas={custo_maquinas}, custo_fabricacao={custo_fabricacao}, valor_comissao={valor_comissao}, prolabore_socio={prolabore_socio}, lucro_real_empresa={lucro_real_empresa}, porc_lucro_real={porc_lucro_real}")
+
             resultados = {
                 'status': 'success',
                 'preco_s_nf': float(orc.preco_final_sem_nota),
@@ -695,11 +730,26 @@ def api_simulador_dinamico(request):
                 'impostos_pct': float(orc.aliquota_imposto_aplicada),
                 
                 # Detalhamento para o Tooltip / Cards
-                'custo_materia_prima': float((orc.custo_papelao_unitario * orc.quantidade * 2 / orc.unidades_chapa) + (orc.custo_tinta_unitario * orc.quantidade)),
-                'custo_maquinas': float((orc.custo_impressao/orc.unidades_chapa + orc.custo_corte* 2/orc.unidades_chapa +orc.custo_seladora) * orc.quantidade),
-                'custo_fabricacao': float((orc.custo_papelao_unitario * orc.quantidade * 2 / orc.unidades_chapa) + (orc.custo_tinta_unitario * orc.quantidade)) + float((orc.custo_impressao/orc.unidades_chapa + orc.custo_corte* 2/orc.unidades_chapa +orc.custo_seladora) * orc.quantidade),
+                'custo_materia_prima': custo_materia_prima,
+                'custo_papelao_total': custo_papelao_total,
+                'custo_tinta_total': custo_tinta_total,
+
+                'custo_maquinas': custo_maquinas,
+                'custo_fabricacao': custo_fabricacao,
+
+                'chapas_papelao': chapas_papelao,
+
                 'margem_percentual': float(orc.margem_real),
-                'prolabore_socio': float(orc.prolabore_socio),
+                'prolabore_socio': prolabore_socio,
+                'percentual_comissao': float(percentual_comissao),
+                'valor_comissao': valor_comissao,
+                'lucro_real_empresa': lucro_real_empresa,
+                'porc_lucro_real': porc_lucro_real,
+                'porc_materia_prima': porc_materia_prima,
+                'porc_maquinas': porc_maquinas,
+                'porc_custo_fabricacao': porc_custo_fabricacao,
+                'porc_custo_papelao_total': porc_custo_papelao_total,
+                'porc_custo_tinta_total': porc_custo_tinta_total
             }
             # 6. Desfaz tudo sem sujar o banco
             transaction.set_rollback(True)
