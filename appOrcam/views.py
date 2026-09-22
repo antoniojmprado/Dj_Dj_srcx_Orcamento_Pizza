@@ -713,13 +713,14 @@ def api_simulador_dinamico(request):
 
             # Define o total de chapas com a regra da Wonder vs Padrão
             chapas_papelao = (orc.quantidade * 2 / orc.unidades_chapa) if orc.unidades_chapa > 1 else orc.quantidade
+            quantidade_corte =  2 / orc.unidades_chapa if orc.unidades_chapa > 1 else 1
 
             custo_papelao_total = float(orc.custo_papelao_unitario) * chapas_papelao
             custo_tinta_total = float(orc.custo_tinta_unitario) * orc.quantidade
 
             # Aplica a matemática financeira
             custo_materia_prima =  (float(orc.custo_papelao_unitario) * chapas_papelao) + (float(orc.custo_tinta_unitario) * orc.quantidade)
-            custo_maquinas = float(orc.custo_impressao/orc.unidades_chapa + orc.custo_corte* 2/orc.unidades_chapa + orc.custo_seladora) * orc.quantidade
+            custo_maquinas = float(orc.custo_impressao/orc.unidades_chapa + orc.custo_corte * quantidade_corte + orc.custo_seladora) * orc.quantidade
             custo_fabricacao = float(custo_materia_prima) + custo_maquinas
             valor_comissao = Decimal(orc.preco_final_sem_nota) * (percentual_comissao / Decimal('100.0'))
             prolabore_socio = float(orc.prolabore_socio)
