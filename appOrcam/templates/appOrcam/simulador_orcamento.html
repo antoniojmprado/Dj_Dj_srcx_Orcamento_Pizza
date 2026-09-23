@@ -332,8 +332,7 @@
                     document.getElementById('lbl-fabrica-pct').innerText = "Fabricação: " + (Number(data.porc_custo_fabricacao) || 0).toFixed(0).replace('.', ',') + "%";
                     document.getElementById('lbl-papelao-pct').innerText = "Papelão: " + (Number(data.porc_custo_papelao_total) || 0).toFixed(0).replace('.', ',') + "%";
                     document.getElementById('lbl-tinta-pct').innerText = "Tinta: " + (Number(data.porc_custo_tinta_total) || 0).toFixed(0).replace('.', ',') + "%";
-                    document.getElementById('res-chapas-papelao').innerText = data.chapas_papelao || 0;
-
+                    document.getElementById('res-chapas-papelao').innerText =  (Number(data.chapas_papelao) || 0).toFixed(0).replace('.', ',') || 0;                
                 
                 })
                 .catch(error => console.error('Erro de conexão:', error));

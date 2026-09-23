@@ -142,7 +142,7 @@ Orçamento #{{ orcamento.id }}
             <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td></tr>
 
             <tr style="font-size: 22px; font-weight:bold;">
-                <td class="subtotal" colspan="1">🏭 SUBTOTAL - CUSTO INDUSTRIAL</td>
+                <td class="subtotal" colspan="1">🏭 SUBTOTAL - CUSTOS INDUSTRIAIS</td>
                 <td></td>
                 <td class="subtotal_item">R$ {{ orcamento.custo_total_fabricacao|floatformat:"2g" }}</td>   
                 <td class="subtotal_item">{{ orcamento.custo_total_fabricacao_porc|floatformat:0 }} %</td>
@@ -159,7 +159,7 @@ Orçamento #{{ orcamento.id }}
             <tr style="line-height:2px; background-color:#212529"><td>.</td><td>.</td><td>.</td><td>.</td></tr>
                     
             <tr>
-                <td class="subtotal">TOTAL CUSTO INDUSTRIAL + FRETE (SEM MARGEM)</td>
+                <td class="subtotal">TOTAL CUSTOS INDUSTRIAIS + FRETE (SEM MARGEM)</td>
                 <td></td>
                 <td class="subtotal_item">R$ {{ orcamento.custo_industrial_e_frete_sem_margem|floatformat:"2g" }}</td>
                 <td class="subtotal_item">{{ orcamento.custo_total_sem_margem_porc|floatformat:0 }} %</td>        
@@ -171,7 +171,7 @@ Orçamento #{{ orcamento.id }}
                 <td class='bg-warning p-1 total_margem_lucro'>R$ {{ orcamento.lucro|floatformat:"2g" }}</td>
             </tr>
             <tr>
-                <td class="subtotal">TOTAL CUSTO INDUSTRIAL + FRETE e MARGEM</td>
+                <td class="subtotal">TOTAL CUSTOS INDUSTRIAIS + FRETE e MARGEM</td>
                 <td></td>
                 <td class="subtotal_item">R$ {{ orcamento.custo_total_com_margem|floatformat:"2g" }}</td>
             </tr>

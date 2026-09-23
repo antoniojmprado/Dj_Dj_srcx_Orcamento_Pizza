@@ -720,7 +720,7 @@ def api_simulador_dinamico(request):
 
             # Aplica a matemática financeira
             custo_materia_prima =  (float(orc.custo_papelao_unitario) * chapas_papelao) + (float(orc.custo_tinta_unitario) * orc.quantidade)
-            custo_maquinas = float(orc.custo_impressao/orc.unidades_chapa + orc.custo_corte * quantidade_corte + orc.custo_seladora) * orc.quantidade
+            custo_maquinas = (float(orc.custo_impressao)/float(orc.unidades_chapa) + float(orc.custo_corte) * float(quantidade_corte) + float(orc.custo_seladora)) * float(orc.quantidade)
             custo_fabricacao = float(custo_materia_prima) + custo_maquinas
             valor_comissao = Decimal(orc.preco_final_sem_nota) * (percentual_comissao / Decimal('100.0'))
             prolabore_socio = float(orc.prolabore_socio)
